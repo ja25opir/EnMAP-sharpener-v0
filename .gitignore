@@ -1,0 +1,16 @@
+# Environments
+.env
+.venv
+.idea
+
+# Input Data
+data/EnMAP/
+data/Sentinel2/
+data/UFZ_flightdata/
+
+# Output Data
+output/visualization/EnMAP/
+output/visualization/Seninel2/
+output/visualization/UFZ_flightdata/
+output/ufz_sued.txt
+
