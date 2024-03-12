@@ -34,13 +34,19 @@ def request_and_save_response(image_path, time, evalscript, output_dir, save_nam
     sentinel = Sentinel(image_path, time, evalscript)
     url = "https://sh.dataspace.copernicus.eu/api/v1/process"
     # request options: https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/S2L1C.html
-    response = OAUTH_SESSION.post(url, json=sentinel.request(), headers={"Accept": "image/tiff"})
+    # response = OAUTH_SESSION.post(url, json=sentinel.request(), headers={"Accept": "image/tiff"})
+    # TODO
+    response = OAUTH_SESSION.post(url, json=sentinel.request(), headers={"Accept": "application/tar"})
 
     print('Response status:', response.status_code)
     if response.status_code == 200:
-        file_name = 'Sentinel_' + save_name + '.tiff'
+        # file_name = 'Sentinel_' + save_name + '.tiff'
+        # TODO
+        file_name = 'Sentinel_' + save_name + '.zip'
         with open(output_dir + file_name, "wb") as f:
             f.write(response.content)
+    else:
+        print(response.content)
 
 
 class Sentinel:
@@ -49,6 +55,7 @@ class Sentinel:
         self.enmap_raster = rasterio.open(img_path)
         self.bbox = [self.enmap_raster.bounds[0], self.enmap_raster.bounds[1], self.enmap_raster.bounds[2],
                      self.enmap_raster.bounds[3]]
+        self.epsg_crs = self.enmap_raster.crs.to_epsg()
         self.time_from = None
         self.time_to = None
         self.timerange_days = timerange_days
@@ -78,7 +85,7 @@ class Sentinel:
         return {
             "input": {
                 "bounds": {
-                    "properties": {"crs": "http://www.opengis.net/def/crs/EPSG/0/32633"},
+                    "properties": {"crs": "http://www.opengis.net/def/crs/EPSG/0/" + str(self.epsg_crs)},
                     "bbox": self.bbox,
                 },
                 "data": [
@@ -95,16 +102,22 @@ class Sentinel:
                     }
                 ],
             },
+            # output cannot exceed 2500x2500 pixels which also limits the resolution
+            # (e.g. 25.000m x 25.000m land section for 10m/pixel resolution)
             "output": {
                 "resx": 10,
                 "resy": 10,
+                "responses": [
+                    {
+                        "identifier": "spectral_image",
+                        "format": {"type": "image/tiff"}
+                    },
+                    {
+                        "identifier": "cloud_mask",
+                        "format": {"type": "image/tiff"}
+                    }
+                ]
             },
-            # output cannot exceed 2500x2500 pixels which also limits the resolution
-            # (e.g. 25.000m x 25.000m land section for 10m/pixel resolution)
-            # "output": {
-            #     "height": 500,
-            #     "width": 500,
-            # },
             "evalscript": self.evalscript,
         }
 
@@ -124,19 +137,28 @@ function setup() {
       bands: ["B02", "B03", "B04", "B08", "SCL"], // bands to be used + scene classification algorithm for masking clouds
       units: "DN" // value = reflectance * 10000
     }],
-    output: { 
+    output: [
+    { 
+      id: "spectral_image",
       bands: 4,
       sampleType: "INT16" // output type
-    },
+    },{ 
+      id: "cloud_mask",
+      bands: 1,
+      sampleType: "AUTO" // output type
+    },]
   }
 }
 
 // masks cloudy pixels
 function evaluatePixel(sample) {
+  let cloudmask = 0
   if ([8, 9, 10].includes(sample.SCL)) {
-    return [1, 0, 0, 0] // cloud mask
-  } else {
-    return [sample.B02, sample.B03, sample.B04, sample.B08]
+      cloudmask = 1
+  }
+  return {
+    spectral_image: [sample.B02, sample.B03, sample.B04, sample.B08], 
+    cloud_mask: [cloudmask] // cloud mask
   }
 }
 """
@@ -170,8 +192,8 @@ test_file = '../../data/EnMAP/ENMAP01-____L2A-DT0000001280_20220627T104548Z_012_
 test_dir = '../../data/Sentinel2/scraped/tests/'
 time = get_time_from_enmap(test_file)
 # request_and_save_response(test_file, time, EVALSCRIPT, OUTPUT_DIR, test_file.split('/')[-1])
-request_and_save_response(test_file, time, EVALSCRIPT, OUTPUT_DIR, 'dn_int16')
+request_and_save_response(test_file, time, EVALSCRIPT, test_dir, 'dn_int16')
 
-# TODO: evalscript, output resolution, timerange, fileformat (currently tiff, maybe envi better?)
-# TODO: validate found images
-# TODO: convert all coordinates to one CRS and insert this into scraping script!
+# TODO: provide cloud mask as an extra file https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Process/Examples/S2L2A.html#true-color-multi-part-reponse-different-formats-and-sampletype
+# -> see TODOs in codes above
+# TODO: (optional) validate found images
