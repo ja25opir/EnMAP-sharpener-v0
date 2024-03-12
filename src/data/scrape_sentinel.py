@@ -29,7 +29,7 @@ def get_auth_token():
     return oauth
 
 
-def request_save_response(image_path, time, evalscript, output_dir, save_name):
+def request_and_save_response(image_path, time, evalscript, output_dir, save_name):
     print("Requesting Sentinel image for EnMAP scene: ", save_name + '...')
     sentinel = Sentinel(image_path, time, evalscript)
     url = "https://sh.dataspace.copernicus.eu/api/v1/process"
@@ -37,9 +37,10 @@ def request_save_response(image_path, time, evalscript, output_dir, save_name):
     response = OAUTH_SESSION.post(url, json=sentinel.request(), headers={"Accept": "image/tiff"})
 
     print('Response status:', response.status_code)
-    file_name = 'Sentinel_' + save_name + '.tiff'
-    with open(output_dir + file_name, "wb") as f:
-        f.write(response.content)
+    if response.status_code == 200:
+        file_name = 'Sentinel_' + save_name + '.tiff'
+        with open(output_dir + file_name, "wb") as f:
+            f.write(response.content)
 
 
 class Sentinel:
@@ -61,13 +62,23 @@ class Sentinel:
         self.time_from = time_from.strftime('%Y-%m-%dT%H:%M:%SZ')
         self.time_to = time_to.strftime('%Y-%m-%dT%H:%M:%SZ')
 
+    def print_raster_info(self):
+        print("Raster info:")
+        print("Bounds:", self.enmap_raster.bounds)
+        print("Width:", self.enmap_raster.width)
+        print("Height:", self.enmap_raster.height)
+        print("Crs:", self.enmap_raster.crs)
+        print("Transform:", self.enmap_raster.transform)
+        print("Count:", self.enmap_raster.count)
+        print("Indexes:", self.enmap_raster.indexes)
+
     def request(self):
         print("bbox:", self.bbox)
-        print("timerange:", self.time_from, self.time_to)
+        print("timerange:", self.time_from, " - ", self.time_to)
         return {
             "input": {
                 "bounds": {
-                    "properties": {"crs": "http://www.opengis.net/def/crs/EPSG/0/32633"},  # EnMAP uses EPSG:32633
+                    "properties": {"crs": "http://www.opengis.net/def/crs/EPSG/0/32633"},
                     "bbox": self.bbox,
                 },
                 "data": [
@@ -78,78 +89,89 @@ class Sentinel:
                                 "from": self.time_from,
                                 "to": self.time_to,
                             },
-                            "mosaickingOrder": "leastCC",  # select image from timerange with least cloud coverage
+                            "mosaickingOrder": "leastCC",  # select image from timerange with the least cloud coverage
                             # "maxCloudCoverage": 5,
                         },
                     }
                 ],
             },
-            # "output": {
-            #     "resx": 10,
-            #     "resy": 10,
-            # },
             "output": {
-                "height": 500,
-                "width": 500,
+                "resx": 10,
+                "resy": 10,
             },
+            # output cannot exceed 2500x2500 pixels which also limits the resolution
+            # (e.g. 25.000m x 25.000m land section for 10m/pixel resolution)
+            # "output": {
+            #     "height": 500,
+            #     "width": 500,
+            # },
             "evalscript": self.evalscript,
         }
 
 
-# https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Process/Examples/S2L2A.html
+# ProcessAPI examples https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Process/Examples/S2L2A.html
 # OpenAPI: https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/ApiReference.html#tag/process
+# further explanation: https://sentinelhub-py.readthedocs.io/en/latest/examples/process_request.html
 
 # bands: https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-2-msi/resolutions/spatial
+# SCL: https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-2-msi/processing-levels/level-2#:~:text=The%20Scene%20Classification%20(SCL)%20algorithm,vegetation%2C%20not%20vegetated%2C%20water%20and
+# CLM/CLP: https://docs.sentinel-hub.com/api/latest/user-guides/cloud-masks/
 EVALSCRIPT = """
 //VERSION=3
 function setup() {
   return {
-    input: ["B02", "B03", "B04", "B08", "SCL"], // bands to be used (select the ones we need)
-    output: { bands: 4 },
+    input: [{ 
+      bands: ["B02", "B03", "B04", "B08", "SCL"], // bands to be used + scene classification algorithm for masking clouds
+      units: "DN" // value = reflectance * 10000
+    }],
+    output: { 
+      bands: 4,
+      sampleType: "INT16" // output type
+    },
   }
 }
 
 // masks cloudy pixels
 function evaluatePixel(sample) {
   if ([8, 9, 10].includes(sample.SCL)) {
-    return [1, 0, 0]
+    return [1, 0, 0, 0] // cloud mask
   } else {
-    return [2.5 * sample.B04, 2.5 * sample.B03, 2.5 * sample.B02]
+    return [sample.B02, sample.B03, sample.B04, sample.B08]
   }
 }
 """
 
-EVALSCRIPT_DEFAULT = """
-//VERSION=3
-function setup() {
-  return {
-    input: ["B02", "B03", "B04", "SCL"], // bands to be used (select the ones we need)
-    output: { bands: 3 },
-  }
-}
 
-function evaluatePixel(sample) {
-  return [2.5 * sample.B04, 2.5 * sample.B03, 2.5 * sample.B02]
-}
-"""
+def get_time_from_enmap(enmap_path):
+    time_match = re.search('\d{4}\d{2}\d{2}T\d{6}Z', enmap_path)
+    try:
+        enmap_time = time_match.group()
+    except AttributeError:
+        print("No timestamp found. Please provide a valid EnMAP image path. Exiting...")
+        sys.exit(0)
+    return enmap_time
+
 
 DIR_PATH = '../../data/EnMAP/'
 OAUTH_SESSION = get_auth_token()
 OUTPUT_DIR = '../../data/Sentinel2/scraped/'
 
 # scrape sentinel images for a given directory containing EnMAP scenes
-for directory in os.walk(DIR_PATH):
-    if re.search("EnMAP/ENMAP01.*", directory[0]):
-        for filename in directory[2]:
-            if re.search(".*SPECTRAL_IMAGE.TIF$", filename):
-                filepath = directory[0] + '/' + filename
-                timeMatch = re.search('\d{4}\d{2}\d{2}T\d{6}Z', filename)
-                try:
-                    enmapTime = timeMatch.group()
-                    request_save_response(filepath, enmapTime, EVALSCRIPT, OUTPUT_DIR, filename)
-                except AttributeError:
-                    print("No timestamp found. Please provide a valid EnMAP image path. Exiting...")
-                    sys.exit(0)
+# for directory in os.walk(DIR_PATH):
+#     if re.search("EnMAP/ENMAP01.*", directory[0]):
+#         for filename in directory[2]:
+#             if re.search(".*SPECTRAL_IMAGE.TIF$", filename):
+#                 filepath = directory[0] + '/' + filename
+#                 time = get_time_from_enmap(filepath)
+#                 request_and_save_response(filepath, time, EVALSCRIPT, OUTPUT_DIR, filepath.split('/')[-1])
+
+test_file = '../../data/EnMAP/ENMAP01-____L2A-DT0000001280_20220627T104548Z_012_V010400_20231124T152718Z/EnMAP_cropped_spectral.tif'
+# test_file = '../../data/EnMAP/ENMAP01-____L2A-DT0000024917_20230625T105658Z_014_V010400_20231124T152737Z/ENMAP01-____L2A-DT0000024917_20230625T105658Z_014_V010400_20231124T152737Z-SPECTRAL_IMAGE.TIF'
+test_dir = '../../data/Sentinel2/scraped/tests/'
+time = get_time_from_enmap(test_file)
+# request_and_save_response(test_file, time, EVALSCRIPT, OUTPUT_DIR, test_file.split('/')[-1])
+request_and_save_response(test_file, time, EVALSCRIPT, OUTPUT_DIR, 'dn_int16')
 
 # TODO: evalscript, output resolution, timerange, fileformat (currently tiff, maybe envi better?)
 # TODO: validate found images
+# TODO: convert all coordinates to one CRS and insert this into scraping script!
