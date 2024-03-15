@@ -3,6 +3,8 @@ from pyproj import Proj
 import xml.etree.ElementTree as ETree
 import os, re
 
+from src.data.scrape_sentinel import get_time_from_enmap, request_and_save_response
+
 
 def get_bounding_box_from_xml(xml_path):
     """
@@ -69,14 +71,14 @@ def get_inscribed_rect_from_bbox(bbox, origin_crs, max_width=25000, max_height=2
     return [[ul[0], ur[1]], [lr[0], ur[1]], [lr[0], ll[1]], [ul[0], ll[1]], [ul[0], ur[1]]]
 
 
-def crop_raster(raster, shape, save=False, output_dir='', savename=''):
+def crop_raster(raster, shape, save=False, output_dir='', save_name=''):
     """
     Crops a raster to a given shape.
     :param raster:
     :param shape:
     :param save:
     :param output_dir:
-    :param savename:
+    :param save_name:
     :return:
     """
     out_img, out_transform = rasterio.mask.mask(raster, shapes=shape, crop=True)
@@ -89,8 +91,8 @@ def crop_raster(raster, shape, save=False, output_dir='', savename=''):
                      })
 
     if save:
-        print('saving to:', output_dir + savename + '.tif')
-        with rasterio.open(output_dir + savename + '.tif', "w", **out_meta) as dest:
+        print('saving to:', output_dir + save_name + '.tif')
+        with rasterio.open(output_dir + save_name + '.tif', "w", **out_meta) as dest:
             dest.write(out_img)
 
     return out_img, out_meta
@@ -111,19 +113,19 @@ def crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, output_dir):
     crop_shape = [{'type': 'Polygon',
                    'coordinates': [ir_bbox]}]
     timestamp = re.search('\d{4}\d{2}\d{2}T\d{6}Z', spectral_img_path)
-    savename = timestamp.group() + '_enmap_cropped'
+    save_name = timestamp.group() + '_enmap'
     origin_raster = rasterio.open(spectral_img_path)
-    crop_raster(origin_raster, crop_shape, save=True, output_dir=output_dir, savename=savename + '_spectral')
+    crop_raster(origin_raster, crop_shape, save=True, output_dir=output_dir, save_name=save_name + '_spectral')
     origin_cloud_raster = rasterio.open(cloud_mask_path)
-    crop_raster(origin_cloud_raster, crop_shape, save=True, output_dir=output_dir, savename=savename + '_cloud_mask')
+    crop_raster(origin_cloud_raster, crop_shape, save=True, output_dir=output_dir, save_name=save_name + '_cloud_mask')
 
 
 class PreprocessPipeline:
-    def __init__(self, enmap_dir_path, sentinel_dir_path):
+    def __init__(self, enmap_dir_path, output_dir_path):
         self.enmap_dir_path = enmap_dir_path
         self.enmap_subdir_suffix = 'ENMAP01.*'
-        self.sentinel_dir_path = sentinel_dir_path
-        pass
+        self.output_enmap_dir_path = output_dir_path + 'EnMAP/'
+        self.output_sentinel_dir_path = output_dir_path + 'Sentinel2/'
 
     def start_all_steps(self):
         self.crop_all()
@@ -151,29 +153,37 @@ class PreprocessPipeline:
                 i += 1
                 if metadata_path and spectral_img_path and cloud_mask_path:
                     print('Cropping image', i, 'of', no_enmap_dirs, '...')
-                    output_dir = self.sentinel_dir_path
+                    output_dir = self.output_enmap_dir_path
                     crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, output_dir)
                 else:
                     print('No metadata or spectral image or cloud mask found in', directory[0])
         print('Cropping done.')
 
     def scrape_all(self):
-        pass
+        print('Scraping Sentinel images... \n--------------------------')
+        for directory in os.walk(self.output_enmap_dir_path):
+            for filename in directory[2]:
+                if re.search(".*enmap_spectral.tif$", filename):
+                    spectral_img_path = directory[0] + filename
+                    time = get_time_from_enmap(spectral_img_path)
+                    request_and_save_response(spectral_img_path, time, output_dir=self.output_sentinel_dir_path,
+                                              save_name='sentinel')
 
     def cloud_mask_all(self):
         pass
 
     def wald_protocol(self):
         # ((maybe in model directory))
-        # scale
-        # combine cloud masks
+        # scale --> cloud_mask_all
+        # combine cloud masks --> cloud_mask_all
         # (band co registering?)
         # tile
         pass
 
 
 ENMAP_DIR_PATH = '../../data/EnMAP/'
-OUTPUT_DIR = '../../data/Sentinel2/registered/'
+OUTPUT_DIR = '../../data/model_input/'
 
 pipeline = PreprocessPipeline(ENMAP_DIR_PATH, OUTPUT_DIR)
-pipeline.crop_all()
+# pipeline.crop_all()
+pipeline.scrape_all()
