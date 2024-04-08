@@ -1,13 +1,10 @@
 import os
-import re
-import sys
 from datetime import timedelta
 import rasterio
 from dateutil.parser import parse
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 from dotenv import load_dotenv, find_dotenv
-import requests
 import io
 import tarfile
 
@@ -38,7 +35,7 @@ def unzip_response_files(response, output_dir, save_name):
     with tarfile.open(fileobj=tar_stream) as tar:
         for member in tar.getmembers():
             original_filename = os.path.basename(member.name)
-            new_filename = save_name + '_' + original_filename
+            new_filename = save_name + '_sentinel_' + original_filename
             tar.extract(member, path=output_dir, set_attrs=False)
             os.rename(os.path.join(output_dir, original_filename),
                       os.path.join(output_dir, new_filename))
@@ -59,6 +56,8 @@ def request_and_save_response(image_path, time, output_dir, save_name):
         print(response.content)
 
 
+OAUTH_SESSION = get_auth_token()
+
 # ProcessAPI examples https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Process/Examples/S2L2A.html
 # OpenAPI: https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/ApiReference.html#tag/process
 # further explanation: https://sentinelhub-py.readthedocs.io/en/latest/examples/process_request.html
@@ -76,7 +75,7 @@ function setup() {
     }],
     output: [
     { 
-      id: "spectral_image",
+      id: "spectral",
       bands: 4,
       sampleType: "INT16" // output type
     },{ 
@@ -94,7 +93,7 @@ function evaluatePixel(sample) {
       cloudmask = 1
   }
   return {
-    spectral_image: [sample.B02, sample.B03, sample.B04, sample.B08], 
+    spectral: [sample.B02, sample.B03, sample.B04, sample.B08], 
     cloud_mask: [cloudmask] // cloud mask
   }
 }
@@ -161,7 +160,7 @@ class Sentinel:
                 "resy": 10,
                 "responses": [
                     {
-                        "identifier": "spectral_image",
+                        "identifier": "spectral",
                         "format": {"type": "image/tiff"}
                     },
                     {
@@ -173,19 +172,5 @@ class Sentinel:
             "evalscript": self.evalscript,
         }
 
-
-def get_time_from_enmap(enmap_path):
-    time_match = re.search('\d{4}\d{2}\d{2}T\d{6}Z', enmap_path)
-    try:
-        enmap_time = time_match.group()
-    except AttributeError:
-        print("No timestamp found. Please provide a valid EnMAP image path. Exiting...")
-        sys.exit(0)
-    return enmap_time
-
-
-DIR_PATH = '../../data/EnMAP/'
-OAUTH_SESSION = get_auth_token()
-OUTPUT_DIR = '../../data/Sentinel2/scraped/'
 
 # TODO: (optional) validate found images
