@@ -164,6 +164,7 @@ class PreprocessPipeline:
         self.output_masks_path = output_dir_path + 'cloud_masks/'
         self.output_enmap_dir_path = output_dir_path + 'EnMAP/'
         self.output_sentinel_dir_path = output_dir_path + 'Sentinel2/'
+        self.masked_scenes_path = output_dir_path + 'masked_scenes/'
 
     def start_all_steps(self):
         self.crop_all()
@@ -207,7 +208,6 @@ class PreprocessPipeline:
                     request_and_save_response(spectral_img_path, time, output_dir=self.output_sentinel_dir_path,
                                               save_name=time)
 
-    # TODO: rename "sample" to "scale" (?)
     def cloud_mask_all(self):
         print('Upsampling and combining cloud masks... \n--------------------------')
         enmap_files = os.listdir(self.output_enmap_dir_path)
@@ -252,7 +252,7 @@ class PreprocessPipeline:
                                     '_downsampled.tif', self.output_masks_path)
                     merged_mask_downsampled = rasterio.open(
                         self.output_masks_path + timestamp + '_cloud_mask_combined_downsampled.tif')
-                    self.mask_raster(enmap_raster, merged_mask_downsampled, timestamp + '_enmap_masked')
+                    self.mask_raster(enmap_raster, merged_mask_downsampled.read(1), timestamp + '_enmap_masked')
 
                     print('Done!')
                     sentinel_cloud_masks.remove(sentinel_cloud_mask)
@@ -268,7 +268,7 @@ class PreprocessPipeline:
             raster_np[mask == 1] = 0
             raster_np_stack.append(raster_np)
 
-        with rasterio.open(self.output_masks_path + save_name + '.tif', 'w', **meta) as dst:
+        with rasterio.open(self.masked_scenes_path + save_name + '.tif', 'w', **meta) as dst:
             for band_no, raster_band in enumerate(raster_np_stack, 1):
                 dst.write(raster_band, band_no)
 
@@ -291,6 +291,8 @@ pipeline = PreprocessPipeline(ENMAP_DIR_PATH, OUTPUT_DIR)
 pipeline.crop_all()
 pipeline.scrape_all()
 pipeline.cloud_mask_all()
+
+# TODO: save logs for long runs in case of crashing (e.g. sentinel scraping)
 
 print("---Elapsed time: %s seconds ---" % (time.time() - start_time))
 print("---CPU time: %s seconds ---" % (time.process_time() - cpu_start))
