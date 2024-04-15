@@ -6,7 +6,7 @@ from rasterio.plot import show
 import rasterio.mask
 
 from src.data.helpers import get_bands_from_array, get_bands_from_raster, print_raster_info
-from src.data.preprocess import crop_raster
+from src.data.preprocess import crop_raster, get_bounding_box_from_xml, get_inscribed_rect_from_bbox
 from src.visualization.plot_raster import create_rgb_norm, plot_3_band_image
 
 
@@ -96,21 +96,31 @@ def plot_bands(path, bands, save=False, savename=''):
 # use_pyplot(save=False)
 
 IMG_PATH = '../../data/EnMAP/ENMAP01-____L2A-DT0000001280_20220627T104548Z_012_V010400_20231124T152718Z/ENMAP01-____L2A-DT0000001280_20220627T104548Z_012_V010400_20231124T152718Z-SPECTRAL_IMAGE.TIF'
+XML_PATH = '../../data/EnMAP/ENMAP01-____L2A-DT0000001280_20220627T104548Z_012_V010400_20231124T152718Z/ENMAP01-____L2A-DT0000001280_20220627T104548Z_012_V010400_20231124T152718Z-METADATA.XML'
+# IMG_PATH = '../../data/EnMAP/Example_Tyrol/dims_op_oc_oc-en_700949147_4/ENMAP.HSI.L2A/ENMAP-HSI-L2ADT0000001049_28-2022-06-12T10_57_35.160_schwipe-charter_700949145_722423345_2023-09-22T19_27_20/ENMAP01-____L2A-DT0000001049_20220612T105735Z_028_V010303_20230922T131826Z/ENMAP01-____L2A-DT0000001049_20220612T105735Z_028_V010303_20230922T131826Z-SPECTRAL_IMAGE.TIF'
 selected_bands = [50, 100, 150]
 # plot_bands(IMG_PATH, selected_bands, save=False, savename='ENMAP01-____L2A-DT0000001280_20220627T104548Z_012_V010400_20231124T152718Z-SPECTRAL_IMAGE')
 
 origin = rasterio.open(IMG_PATH)
-# print_raster_info(origin)
-band_array = get_bands_from_raster(origin, selected_bands)
-plot_3_band_image(band_array)
+print_raster_info(origin)
+print(origin.profile)
+# band_array = get_bands_from_raster(origin, selected_bands) # returns 3 stacked bands
+# plot_3_band_image(band_array)
 
-# coordinate system: y increasing from bottom to top; x increasing from left to right
-# [[x,y] upper left], [[x,y] upper right], [[x,y] lower right], [[x,y] lower left]
-coordinates = [[314577, 5689538], [319000, 5689538], [319000, 5685000], [314577, 5685000],
-               [314577, 5689538]]  # todo: find section from UFZ flightdata Auwald Süd
+bbox = get_bounding_box_from_xml(XML_PATH)
+ir_bbox = get_inscribed_rect_from_bbox(bbox)
+print(ir_bbox)
+
 crop_shape = [{'type': 'Polygon',
-               'coordinates': [coordinates]}]  # GeoJSON format
+               'coordinates': [ir_bbox]}]  # GeoJSON format
 
-# cropped = crop_raster(origin, crop_shape)
-# band_array_cropped = get_bands_from_array(cropped[0], selected_bands)
-# plot_3_band_image(band_array_cropped)
+OUTPUT_DIR = '../../data/EnMAP/ENMAP01-____L2A-DT0000001280_20220627T104548Z_012_V010400_20231124T152718Z/'
+# cropped = crop_raster(origin, crop_shape, save=True, output_dir=OUTPUT_DIR, savename='EnMAP_cropped_spectral')
+timestamp = re.search('\d{4}\d{2}\d{2}T\d{6}Z', IMG_PATH)
+savename = timestamp.group() + '_enmap_cropped_spectral'
+cropped = crop_raster(origin, crop_shape, save=False, output_dir=OUTPUT_DIR, savename=savename)
+band_array_cropped = get_bands_from_array(cropped[0], selected_bands)
+plot_3_band_image(band_array_cropped)
+
+new_origin = rasterio.open(OUTPUT_DIR + savename + '.tif')
+print(new_origin.profile)
