@@ -15,10 +15,10 @@ def print_raster_info(raster):
 
 
 def get_bands_from_raster(raster, bands):
-    # TODO: currently only for visualisation as it works with 3 given bands
+    # for visualisation purposes
     return raster.read(bands[0]), raster.read(bands[1]), raster.read(bands[2])
 
 
 def get_bands_from_array(array, bands):
-    # TODO: currently only for visualisation as it works with 3 given bands
+    # for visualisation purposes
     return array[bands[0], :, :], array[bands[1], :, :], array[bands[2], :, :]
