@@ -34,9 +34,9 @@ class DataGenerator(Sequence):
         return int(len(self.x_data_list) / self.batch_size)
 
     def __getitem__(self, idx):
-        # (batch_size, h, w, no_input_bands)
-        X = np.empty((self.batch_size, self.no_input_bands, *self.output_size))
-        Y = np.empty((self.batch_size, self.no_output_bands, *self.output_size))
+        # (batch_size, w, h, no_input_bands)
+        X = np.empty((self.batch_size, *self.output_size, self.no_input_bands))
+        Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands))
 
         # get the indices of the requested batch
         indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
@@ -50,7 +50,8 @@ class DataGenerator(Sequence):
             y_path = os.path.join(self.data_dir, 'y', self.x_data_list[data_index])
             y_img = np.load(y_path)
 
-            X[i,] = x_img
-            Y[i,] = y_img
+            # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
+            X[i,] = x_img.T
+            Y[i,] = y_img.T
 
         return X, Y
