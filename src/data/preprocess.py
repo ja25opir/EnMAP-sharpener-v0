@@ -6,6 +6,7 @@ import os, re, sys
 import numpy as np
 
 from src.data.scrape_sentinel import request_and_save_response
+from src.data.wald_protocol import start_wald_protocol
 
 
 def get_bounding_box_from_xml(xml_path):
@@ -157,6 +158,20 @@ def resample_raster(raster_name, raster, resample_size, save_name, output_dir):
         dest.write(out_img)
 
 
+def mask_raster(masked_scenes_path, raster, mask, save_name):
+    meta = raster.meta.copy()
+    raster_np_stack = []
+
+    for band in range(1, raster.count + 1):
+        raster_np = np.array(raster.read(band))
+        raster_np[mask == 1] = 0
+        raster_np_stack.append(raster_np)
+
+    with rasterio.open(masked_scenes_path + save_name + '.tif', 'w', **meta) as dst:
+        for band_no, raster_band in enumerate(raster_np_stack, 1):
+            dst.write(raster_band, band_no)
+
+
 class PreprocessPipeline:
     def __init__(self, enmap_dir_path, output_dir_path):
         self.enmap_dir_path = enmap_dir_path
@@ -165,11 +180,13 @@ class PreprocessPipeline:
         self.output_enmap_dir_path = output_dir_path + 'EnMAP/'
         self.output_sentinel_dir_path = output_dir_path + 'Sentinel2/'
         self.masked_scenes_path = output_dir_path + 'masked_scenes/'
+        self.model_input_path = output_dir_path + 'model_input/'
 
     def start_all_steps(self):
         self.crop_all()
         self.scrape_all()
         self.cloud_mask_all()
+        self.wald_protocol_all()
 
     def crop_all(self):
         print('Cropping EnMAP images... \n--------------------------')
@@ -203,9 +220,9 @@ class PreprocessPipeline:
             for filename in directory[2]:
                 if re.search(".*enmap_spectral.tif$", filename):
                     spectral_img_path = directory[0] + filename
-                    time = get_time_from_enmap(spectral_img_path)
-                    request_and_save_response(spectral_img_path, time, output_dir=self.output_sentinel_dir_path,
-                                              save_name=time)
+                    timestamp = get_time_from_enmap(spectral_img_path)
+                    request_and_save_response(spectral_img_path, timestamp, output_dir=self.output_sentinel_dir_path,
+                                              save_name=timestamp)
 
     def cloud_mask_all(self):
         print('Upsampling and combining cloud masks... \n--------------------------')
@@ -241,7 +258,7 @@ class PreprocessPipeline:
                     print('Masking Sentinel image...')
                     sentinel_raster = rasterio.open(
                         self.output_sentinel_dir_path + timestamp + '_sentinel_spectral.tif')
-                    self.mask_raster(sentinel_raster, merged_mask, timestamp + '_sentinel_masked')
+                    mask_raster(self.masked_scenes_path, sentinel_raster, merged_mask, timestamp + '_sentinel_masked')
 
                     # downscale mask --> mask enmap & save
                     print('Downsampling mask & masking EnMaP image...')
@@ -251,25 +268,31 @@ class PreprocessPipeline:
                                     '_downsampled.tif', self.output_masks_path)
                     merged_mask_downsampled = rasterio.open(
                         self.output_masks_path + timestamp + '_cloud_mask_combined_downsampled.tif')
-                    self.mask_raster(enmap_raster, merged_mask_downsampled.read(1), timestamp + '_enmap_masked')
+                    mask_raster(self.masked_scenes_path, enmap_raster, merged_mask_downsampled.read(1),
+                                timestamp + '_enmap_masked')
 
                     print('Done!')
                     sentinel_cloud_masks.remove(sentinel_cloud_mask)
                     break
             i += 1
 
-    def mask_raster(self, raster, mask, save_name):
-        meta = raster.meta.copy()
-        raster_np_stack = []
+    def wald_protocol_all(self):
+        print('Starting Wald protocol... \n--------------------------')
+        input_files = os.listdir(self.masked_scenes_path)
+        enmap_files = [x for x in input_files if re.search(".*enmap_masked.tif", x)]
+        sentinel_files = [x for x in input_files if re.search(".*sentinel_masked.tif", x)]
 
-        for band in range(1, raster.count + 1):
-            raster_np = np.array(raster.read(band))
-            raster_np[mask == 1] = 0
-            raster_np_stack.append(raster_np)
-
-        with rasterio.open(self.masked_scenes_path + save_name + '.tif', 'w', **meta) as dst:
-            for band_no, raster_band in enumerate(raster_np_stack, 1):
-                dst.write(raster_band, band_no)
+        i = 1
+        for enmap_scene in enmap_files:
+            print('Wald processing scene', i, 'of', len(enmap_files), '...')
+            timestamp = enmap_scene.split('_')[0]
+            for sentinel_scene in sentinel_files:
+                if re.search(timestamp, sentinel_scene):
+                    start_wald_protocol(self.masked_scenes_path, enmap_scene, sentinel_scene, timestamp,
+                                        self.model_input_path)
+                    sentinel_files.remove(sentinel_scene)
+                    break
+            i += 1
 
 
 ENMAP_DIR_PATH = '../../data/EnMAP/'
@@ -282,8 +305,9 @@ pipeline = PreprocessPipeline(ENMAP_DIR_PATH, OUTPUT_DIR)
 pipeline.crop_all()
 pipeline.scrape_all()
 pipeline.cloud_mask_all()
+pipeline.wald_protocol_all()
 
 # TODO: save logs for long runs in case of crashing (e.g. sentinel scraping)
 
-print("---Elapsed time: %s seconds ---" % (time.time() - start_time))
-print("---CPU time: %s seconds ---" % (time.process_time() - cpu_start))
+print("---PreprocessPipeline---Elapsed time: %.2fs seconds ---" % (time.time() - start_time))
+print("---PreprocessPipeline---CPU time: %.2fs seconds ---" % (time.process_time() - cpu_start))
