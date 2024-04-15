@@ -170,7 +170,6 @@ class PreprocessPipeline:
         self.crop_all()
         self.scrape_all()
         self.cloud_mask_all()
-        self.wald_protocol()
 
     def crop_all(self):
         print('Cropping EnMAP images... \n--------------------------')
@@ -271,14 +270,6 @@ class PreprocessPipeline:
         with rasterio.open(self.masked_scenes_path + save_name + '.tif', 'w', **meta) as dst:
             for band_no, raster_band in enumerate(raster_np_stack, 1):
                 dst.write(raster_band, band_no)
-
-    def wald_protocol(self):
-        # ((maybe in model directory))
-        # scale --> cloud_mask_all
-        # combine cloud masks --> cloud_mask_all
-        # (band co registering?)
-        # tile
-        pass
 
 
 ENMAP_DIR_PATH = '../../data/EnMAP/'
