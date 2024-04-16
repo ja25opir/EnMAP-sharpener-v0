@@ -4,8 +4,8 @@ import xml.etree.ElementTree as ETree
 import os, re, sys
 import numpy as np
 
-from scrape_sentinel import request_and_save_response
-from wald_protocol import start_wald_protocol
+from .scrape_sentinel import request_and_save_response
+from .wald_protocol import start_wald_protocol
 
 
 def get_bounding_box_from_xml(xml_path):
