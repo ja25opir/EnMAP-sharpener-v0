@@ -29,12 +29,6 @@ if __name__ == '__main__':
         pipeline.cloud_mask_all()
     elif 'wald' in args.stages:
         pipeline.wald_protocol_all()
-    elif args.stages == 'scrape':
-        pipeline.scrape_all()
-    elif args.stages == 'cloud_mask':
-        pipeline.cloud_mask_all()
-    elif args.stages == 'wald_protocol':
-        pipeline.wald_protocol_all()
 
     print("---PreprocessPipeline---Elapsed time: %.2fs seconds ---" % (time.time() - start_time))
     print("---PreprocessPipeline---CPU time: %.2fs seconds ---" % (time.process_time() - cpu_start))
