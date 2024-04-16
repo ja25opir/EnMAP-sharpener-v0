@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import stats
 
-from src.data.helpers import get_bands_from_raster, get_bands_from_array
+from src.visualization.helpers import get_bands_from_raster, get_bands_from_array
 
 
 def create_rgb_norm(rgb_bands):

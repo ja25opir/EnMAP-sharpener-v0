@@ -1,9 +1,8 @@
-import numpy as np
 import spectral
 import matplotlib.pyplot as plt
 import rasterio
 
-from src.data.helpers import print_raster_info, get_bands_from_raster
+from src.visualization.helpers import get_bands_from_raster
 from src.visualization.plot_raster import create_rgb_norm, plot_3_band_image
 
 

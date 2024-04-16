@@ -5,8 +5,8 @@ from matplotlib import pyplot as plt
 from rasterio.plot import show
 import rasterio.mask
 
-from src.data.helpers import get_bands_from_array, get_bands_from_raster, print_raster_info
-from src.data.preprocess import crop_raster, get_bounding_box_from_xml, get_inscribed_rect_from_bbox
+from src.visualization.helpers import get_bands_from_array, print_raster_info
+from src.data.preprocess_pipeline import crop_raster, get_bounding_box_from_xml, get_inscribed_rect_from_bbox
 from src.visualization.plot_raster import create_rgb_norm, plot_3_band_image
 
 
