@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import stats
 
-from src.data.helpers import get_bands_from_raster, get_bands_from_array
+from src.visualization.helpers import get_bands_from_raster, get_bands_from_array
 
 
 def create_rgb_norm(rgb_bands):
@@ -31,10 +31,8 @@ def create_band_zscore_rgb_norm(rgb_bands):
         (zscore[0] / max_val[0] * 255, zscore[1] / max_val[1] * 255, zscore[2] / max_val[2] * 255)).astype(np.uint8)
 
 
-def plot_3_band_zscore_image(raster, bands, title, cmap='viridis'):
-    rgb_bands = get_bands_from_raster(raster, bands)
-    # rgb_bands = get_bands_from_array(raster, bands)
-    # rgb_norm = create_zscore_rgb_norm((rgb_bands[0], rgb_bands[1], rgb_bands[2]))
+def plot_3_band_zscore_image(raster, bands, title, cmap='viridis', is_array=False):
+    rgb_bands = get_bands_from_array(raster, bands) if is_array else get_bands_from_raster(raster, bands)
     rgb_norm = create_band_zscore_rgb_norm((rgb_bands[0], rgb_bands[1], rgb_bands[2]))
     plt.title(title)
     plt.imshow(rgb_norm, cmap=cmap)

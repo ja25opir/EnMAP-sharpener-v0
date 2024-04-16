@@ -1,10 +1,8 @@
 import rasterio
-from rasterio.merge import merge
 from matplotlib import pyplot as plt
-import numpy as np
 import os, re
 
-from src.data.helpers import get_bands_from_raster
+from src.visualization.helpers import get_bands_from_raster
 from src.visualization.plot_raster import create_rgb_norm
 
 

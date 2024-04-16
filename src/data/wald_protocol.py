@@ -83,33 +83,15 @@ def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_d
     sentinel_downscaled = resample_raster_in_memory(sentinel_raster,
                                                     (int(sentinel_raster.height / 3), int(sentinel_raster.width / 3)))
     enmap_rescaled = resample_raster_in_memory(enmap_downscaled, sentinel_downscaled.shape)
-    print("Resampling took", time.time() - start_time, "seconds")
+    print("Resampling time: %.4fs" % (time.time() - start_time))
 
     print('Stacking resampled EnMAP and downsampled Sentinel rasters...')
     start_time = time.time()
     x_image = stack_rasters(enmap_rescaled, sentinel_downscaled)
-    print("Stacking took", time.time() - start_time, "seconds")
+    print("Stacking time: %.4fs" % (time.time() - start_time))
 
     print('Tiling and saving X and Y image...')
     start_time = time.time()
     tile_raster(x_image, 100, output_dir_path + 'x/', save_name, overlap=0)
     tile_raster(enmap_raster, 100, output_dir_path + 'y/', save_name, overlap=0)
-    print("Tiling took", time.time() - start_time, "seconds")
-
-
-INPUT_PATH = '../../data/preprocessing/masked_scenes/'
-MODEL_INPUT_PATH = '../../data/preprocessing/model_input/'
-input_files = os.listdir(INPUT_PATH)
-
-enmap_files = [x for x in input_files if re.search(".*enmap_masked.tif", x)]
-sentinel_files = [x for x in input_files if re.search(".*sentinel_masked.tif", x)]
-
-for enmap_scene in enmap_files:
-    timestamp = enmap_scene.split('_')[0]
-    for sentinel_scene in sentinel_files:
-        if re.search(timestamp, sentinel_scene):
-            start_wald_protocol(INPUT_PATH, enmap_scene, sentinel_scene, timestamp, MODEL_INPUT_PATH)
-            sentinel_files.remove(sentinel_scene)
-            break
-
-# todo: move this file to /preprocessing
+    print("Tiling time: %.4fs" % (time.time() - start_time))

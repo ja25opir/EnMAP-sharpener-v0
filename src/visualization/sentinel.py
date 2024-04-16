@@ -1,8 +1,5 @@
-import os
-
 import rasterio
-from matplotlib import pyplot as plt
-from src.data.helpers import print_raster_info, get_bands_from_raster
+from src.visualization.helpers import print_raster_info, get_bands_from_raster
 from src.visualization.plot_raster import plot_3_band_image
 
 # DIR_PATH = "../../data/Sentinel2/S2A_MSIL2A_20230811T101031_N0509_R022_T33UUS_20230811T161756.SAFE/GRANULE/L2A_T33UUS_A042490_20230811T101028/IMG_DATA/R10m/"
