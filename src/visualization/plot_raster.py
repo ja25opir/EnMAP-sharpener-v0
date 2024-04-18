@@ -39,7 +39,8 @@ def plot_3_band_zscore_image(raster, bands, title, cmap='viridis', is_array=Fals
     plt.show()
 
 
-def plot_3_band_image(bands):
+def plot_3_band_image(bands, title='', cmap='viridis'):
     rgb_norm = create_rgb_norm((bands[0], bands[1], bands[2]))
-    plt.imshow(rgb_norm, cmap='viridis')
+    plt.title(title)
+    plt.imshow(rgb_norm, cmap=cmap)
     plt.show()
