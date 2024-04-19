@@ -1,56 +1,88 @@
-import tensorflow as tf
+import os
+
 from tensorflow.keras import layers, models
 from matplotlib import pyplot as plt
 
-from src.model.load_data import DataGenerator
+from .load_data import DataGenerator
 
-tile_size = 100
-no_input_bands = 224 + 4
-no_output_bands = 224
-kernel_size = (9, 9)
-kernel_size_internal = (5, 5)
-# input_shape = tf.keras.Input(shape=(tile_size, tile_size, input_bands))
 
 # input shape: https://stackoverflow.com/questions/60157742/convolutional-neural-network-cnn-input-shape
 # SRCNN: https://github.com/Lornatang/SRCNN-PyTorch/blob/main/model.py 64 - 32 - 1 (no. bands)
 # SRCNN: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=7115171
 # Sentinel CNN: https://github.com/jensleitloff/CNN-Sentinel/blob/master/py/02_train_rgb_finetuning.py
 
-# padding = same (output size = input size) --> rethink this
-# activation function relu, relu, linear (Masi) --> rethink this
-# layers described in Masi p.4 (2.2) 64 - 32 - 3 (no. bands) kernels: 9x9, 1x1 (3x3), 5x5
-model = models.Sequential()
-model.add(layers.Conv2D(512, kernel_size,
-                        activation='relu',
-                        input_shape=(tile_size, tile_size, no_input_bands),
-                        padding='same'))
-model.add(layers.Conv2D(256, kernel_size_internal, activation='relu', padding='same'))
-model.add(layers.Conv2D(no_output_bands, kernel_size_internal, activation='linear', padding='same'))
 
-model.summary()
+class Model:
+    def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size, kernel_size_list,
+                 loss_function):
+        self.train_data_dir = train_data_dir
+        self.tile_size = tile_size
+        self.no_input_bands = no_input_bands
+        self.no_output_bands = no_output_bands
+        self.batch_size = batch_size
+        self.kernel_size_list = kernel_size_list
+        self.loss_function = loss_function
+        self.train_files = None
+        self.test_files = None
+        self.model = self.define_model()
+        self.train_test_split()
 
-loss = 'mean_squared_error'  # todo
+    def define_model(self):
+        # padding = same (output size = input size) --> rethink this
+        # activation function relu, relu, linear (Masi) --> rethink this
+        # layers described in Masi p.4 (2.2) 64 - 32 - 3 (no. bands) kernels: 9x9, 1x1 (3x3), 5x5
+        model = models.Sequential()
+        model.add(layers.Conv2D(512,
+                                self.kernel_size_list[0],
+                                activation='relu',
+                                input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
+                                padding='same'))
+        model.add(layers.Conv2D(256,
+                                self.kernel_size_list[1],
+                                activation='relu',
+                                padding='same'))
+        model.add(layers.Conv2D(self.no_output_bands,
+                                self.kernel_size_list[2],
+                                activation='linear',
+                                padding='same'))
+        model.summary()
+        return model
 
-TRAIN_DATA_DIR = '../../data/preprocessing/model_input/'
-BATCH_SIZE = 32  # (Masi: 128)
+    def train_test_split(self):
+        all_files = os.listdir(self.train_data_dir + 'x/')
+        # todo: shuffle?
+        self.train_files = all_files[:int(len(all_files) * 0.8)]
+        self.test_files = all_files[int(len(all_files) * 0.8):]
+        print('Train data size:', len(self.train_files))
+        print('Test data size:', len(self.test_files))
 
-train_generator = DataGenerator(TRAIN_DATA_DIR,
-                                batch_size=BATCH_SIZE,
-                                output_size=(tile_size, tile_size),
-                                no_input_bands=no_input_bands,
-                                no_output_bands=no_output_bands,
-                                shuffle=False)
+    def train_model(self):
+        train_generator = DataGenerator(self.train_data_dir,
+                                        data_list=self.train_files,
+                                        batch_size=self.batch_size,
+                                        output_size=(self.tile_size, self.tile_size),
+                                        no_input_bands=self.no_input_bands,
+                                        no_output_bands=self.no_output_bands,
+                                        shuffle=False)
 
-# todo
-# validation_generator = DataGenerator(dir_missing,
-#                                      batch_size=32,
-#                                      output_size=(tile_size, tile_size),
-#                                      no_input_bands=no_input_bands,
-#                                      no_output_bands=no_output_bands,
-#                                      shuffle=False)
+        test_generator = DataGenerator(self.train_data_dir,
+                                       data_list=self.test_files,
+                                       batch_size=self.batch_size,
+                                       output_size=(self.tile_size, self.tile_size),
+                                       no_input_bands=self.no_input_bands,
+                                       no_output_bands=self.no_output_bands,
+                                       shuffle=False)
 
-model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
+        self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'])
 
-history = model.fit(train_generator, epochs=10, verbose=1)
-plt.plot(history.history['accuracy'])
-plt.show()
+        history = self.model.fit(train_generator, validation_data=test_generator, epochs=10, verbose=1)
+
+        plt.plot(history.history['accuracy'])
+        plt.title('model accuracy')
+        # plt.show()
+        plt.savefig('../../output/figures/first_model_accuracy.png')
+        plt.plot(history.history['loss'])
+        plt.title('model loss')
+        plt.savefig('../../output/figures/first_model_loss.png')
+
+        self.model.save('../../output/models/first_model.keras')
