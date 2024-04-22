@@ -11,5 +11,36 @@ def limit_logical_cpus(logical_cpus):
 def limit_memory_usage(max_memory_limit_gb):
     """Set process memory limit to max_memory_limit_gb GB"""
     max_memory_limit_bytes = max_memory_limit_gb * 1024 * 1024 * 1024  # GB to bytes
-    resource.setrlimit(resource.RLIMIT_AS, (max_memory_limit_bytes, max_memory_limit_bytes)) # soft and hard limit
+    resource.setrlimit(resource.RLIMIT_AS, (max_memory_limit_bytes, max_memory_limit_bytes))  # soft and hard limit
     print('Using following memory limit: ', resource.getrlimit(resource.RLIMIT_AS)[1] / 1024 / 1024 / 1024, 'GB')
+
+
+def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
+    """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on the first GPU"""
+    import tensorflow as tf
+    gpus = tf.config.list_physical_devices('GPU')
+
+    for gpu in gpu_list:
+        try:
+            tf.config.set_logical_device_configuration(
+                gpus[gpu],
+                [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
+            print('Using GPU', gpu, 'with memory limit of', max_memory_limit_gb, 'GB')
+        except RuntimeError as e:
+            # Virtual devices must be set before GPUs have been initialized
+            print(e)
+
+
+def flexible_tf_gpu_memory_growth():
+    import tensorflow as tf
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            # Currently, memory growth needs to be the same across GPUs
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            # Memory growth must be set before GPUs have been initialized
+            print(e)
