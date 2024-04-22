@@ -14,7 +14,7 @@ from .load_data import DataGenerator
 
 class Model:
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size, kernel_size_list,
-                 loss_function):
+                 loss_function, output_dir):
         self.train_data_dir = train_data_dir
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
@@ -22,6 +22,7 @@ class Model:
         self.batch_size = batch_size
         self.kernel_size_list = kernel_size_list
         self.loss_function = loss_function
+        self.output_dir = output_dir
         self.train_files = None
         self.test_files = None
         self.model = self.define_model()
@@ -80,9 +81,9 @@ class Model:
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
         # plt.show()
-        plt.savefig('../../output/figures/first_model_accuracy.png')
+        plt.savefig(self.output_dir + 'figures/first_model_accuracy.png')
         plt.plot(history.history['loss'])
         plt.title('model loss')
-        plt.savefig('../../output/figures/first_model_loss.png')
+        plt.savefig(self.output_dir + 'figures/first_model_loss.png')
 
-        self.model.save('../../output/models/first_model.keras')
+        self.model.save(self.output_dir + 'models/first_model.keras')

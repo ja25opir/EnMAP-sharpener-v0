@@ -10,6 +10,7 @@ NO_OUTPUT_BANDS = 224
 KERNEL_SIZES = [(9, 9), (5, 5), (5, 5)]
 
 TRAIN_DATA_DIR = os.getcwd() + '/data/preprocessing/model_input/'
+OUTPUT_DIR = os.getcwd() + '/output/'
 LOSS_FUNCTION = 'mean_squared_error'  # todo
 BATCH_SIZE = 32  # (Masi: 128)
 
@@ -27,8 +28,8 @@ if __name__ == '__main__':
     if os.path.exists(TRAIN_DATA_DIR + 'y/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'y/.gitkeep')
 
-    # limit_tf_gpu_usage(args.gpus, args.mem_limit)
-    flexible_tf_gpu_memory_growth()
+    limit_tf_gpu_usage(args.gpus, args.mem_limit)
+    # flexible_tf_gpu_memory_growth()
 
     cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
                       LOSS_FUNCTION)
