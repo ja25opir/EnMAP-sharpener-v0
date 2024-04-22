@@ -1,5 +1,5 @@
-from time import sleep
 import os, resource
+import tensorflow as tf
 
 
 def limit_logical_cpus(logical_cpus):
@@ -17,7 +17,6 @@ def limit_memory_usage(max_memory_limit_gb):
 
 def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
     """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on the first GPU"""
-    import tensorflow as tf
     gpus = tf.config.list_physical_devices('GPU')
 
     for gpu in gpu_list:
@@ -32,15 +31,5 @@ def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
 
 
 def flexible_tf_gpu_memory_growth():
-    import tensorflow as tf
     gpus = tf.config.experimental.list_physical_devices('GPU')
-    if gpus:
-        try:
-            # Currently, memory growth needs to be the same across GPUs
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-        except RuntimeError as e:
-            # Memory growth must be set before GPUs have been initialized
-            print(e)
+    tf.config.experimental.set_memory_growth(gpus[0], True)
