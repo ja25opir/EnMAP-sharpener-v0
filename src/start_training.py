@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # flexible_tf_gpu_memory_growth()
 
     cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
-                      LOSS_FUNCTION)
+                      LOSS_FUNCTION, OUTPUT_DIR)
 
     print('Starting training...')
     cnn_model.train_model()
