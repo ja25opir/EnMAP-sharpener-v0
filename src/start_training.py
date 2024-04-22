@@ -1,5 +1,8 @@
-from model.model import Model
+import argparse
 import os
+from model.model import Model
+
+from config.resource_limiter import limit_tf_gpu_usage
 
 TILE_SIZE = 100
 NO_INPUT_BANDS = 224 + 4
@@ -11,12 +14,20 @@ LOSS_FUNCTION = 'mean_squared_error'  # todo
 BATCH_SIZE = 32  # (Masi: 128)
 
 if __name__ == '__main__':
-    # todo: move to preprocess_pipeline
+    parser = argparse.ArgumentParser(description='Start model training.')
+    parser.add_argument('--gpus', nargs='+', type=int, default=[0],
+                        help='Assigned GPUs for the pipeline')
+    parser.add_argument('--mem-limit', type=int, default=10, help='GPU memory limit training in GB (per GPU)')
+
+    args = parser.parse_args()
+
+    # todo: move to preprocess_pipeline or remove
     if os.path.exists(TRAIN_DATA_DIR + 'x/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'x/.gitkeep')
     if os.path.exists(TRAIN_DATA_DIR + 'y/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'y/.gitkeep')
 
+    limit_tf_gpu_usage(args.gpus, args.mem_limit)
 
     cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
                       LOSS_FUNCTION)
