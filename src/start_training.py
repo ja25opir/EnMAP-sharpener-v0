@@ -2,7 +2,7 @@ import argparse
 import os
 from model.model import Model
 
-from config.resource_limiter import limit_tf_gpu_usage
+from config.resource_limiter import limit_tf_gpu_usage, flexible_tf_gpu_memory_growth
 
 TILE_SIZE = 100
 NO_INPUT_BANDS = 224 + 4
@@ -27,7 +27,8 @@ if __name__ == '__main__':
     if os.path.exists(TRAIN_DATA_DIR + 'y/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'y/.gitkeep')
 
-    limit_tf_gpu_usage(args.gpus, args.mem_limit)
+    # limit_tf_gpu_usage(args.gpus, args.mem_limit)
+    flexible_tf_gpu_memory_growth()
 
     cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
                       LOSS_FUNCTION)
