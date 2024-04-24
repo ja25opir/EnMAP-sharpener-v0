@@ -60,9 +60,10 @@ class Model:
         #                         padding='same'))
         model.add(layers.Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
-                                activation='linear',
+                                activation='relu',
                                 padding='same'))
 
+        # todo: this already seems to be set by default
         initializer = initializers.GlorotUniform()
         for layer in model.layers:
             layer.kernel_initializer = initializer
