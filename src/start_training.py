@@ -7,12 +7,13 @@ from config.resource_limiter import limit_tf_gpu_usage, flexible_tf_gpu_memory_g
 TILE_SIZE = 100
 NO_INPUT_BANDS = 224 + 4
 NO_OUTPUT_BANDS = 224
-KERNEL_SIZES = [(9, 9), (5, 5), (5, 5)]
+KERNEL_SIZES = [(9, 9), (3, 3), (5, 5)]
 
 TRAIN_DATA_DIR = os.getcwd() + '/data/preprocessing/model_input/'
 OUTPUT_DIR = os.getcwd() + '/output/'
 LOSS_FUNCTION = 'mean_squared_error'  # todo
 BATCH_SIZE = 32  # (Masi: 128)
+TRAIN_EPOCHS = 10
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start model training.')
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     # flexible_tf_gpu_memory_growth()
 
     cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
-                      LOSS_FUNCTION, OUTPUT_DIR)
+                      LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
 
     print('Starting training...')
     cnn_model.train_model()

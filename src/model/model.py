@@ -14,7 +14,7 @@ from .load_data import DataGenerator
 
 class Model:
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size, kernel_size_list,
-                 loss_function, output_dir):
+                 loss_function, train_epochs, output_dir):
         self.train_data_dir = train_data_dir
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
@@ -22,6 +22,7 @@ class Model:
         self.batch_size = batch_size
         self.kernel_size_list = kernel_size_list
         self.loss_function = loss_function
+        self.train_epochs = train_epochs
         self.output_dir = output_dir
         self.train_files = None
         self.test_files = None
@@ -35,7 +36,7 @@ class Model:
         # padding: https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
         # stride: https://tcnguyen.github.io/neuralnetworks/cnn_tensorflow.html
         model = models.Sequential()
-        model.add(layers.Conv2D(2048,
+        model.add(layers.Conv2D(512,
                                 self.kernel_size_list[0],
                                 activation='relu',
                                 input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
@@ -82,7 +83,7 @@ class Model:
 
         self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'])
 
-        history = self.model.fit(train_generator, validation_data=test_generator, epochs=20, verbose=1)
+        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
 
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
