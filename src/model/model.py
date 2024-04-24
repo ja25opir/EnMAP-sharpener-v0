@@ -31,6 +31,8 @@ class Model:
         # padding = same (output size = input size) --> rethink this
         # activation function relu, relu, linear (Masi) --> rethink this
         # layers described in Masi p.4 (2.2) 64 - 32 - 3 (no. bands) kernels: 9x9, 1x1 (3x3), 5x5
+        # padding: https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
+        # stride: https://tcnguyen.github.io/neuralnetworks/cnn_tensorflow.html
         model = models.Sequential()
         model.add(layers.Conv2D(512,
                                 self.kernel_size_list[0],
@@ -75,7 +77,7 @@ class Model:
 
         self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'])
 
-        history = self.model.fit(train_generator, validation_data=test_generator, epochs=10, verbose=1)
+        history = self.model.fit(train_generator, validation_data=test_generator, epochs=20, verbose=1)
 
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
