@@ -61,6 +61,11 @@ class Model:
                                 self.kernel_size_list[2],
                                 activation='linear',
                                 padding='same'))
+
+        initializer = tf.keras.initializers.GlorotUniform()
+        for layer in model.layers:
+            layer.kernel_initializer = initializer
+
         model.summary()
         return model
 
