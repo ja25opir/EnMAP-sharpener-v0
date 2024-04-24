@@ -36,27 +36,32 @@ class Model:
         # padding: https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
         # stride: https://tcnguyen.github.io/neuralnetworks/cnn_tensorflow.html
         model = models.Sequential()
-        model.add(layers.Conv2D(512,
+        model.add(layers.Conv2D(228,
                                 self.kernel_size_list[0],
                                 activation='relu',
                                 input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
                                 padding='same'))
-        model.add(layers.Conv2D(1024,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(1024,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(512,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(256,
-                                self.kernel_size_list[2],
-                                activation='relu',
-                                padding='same'))
+        # model.add(layers.Conv2D(224,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
+        #                         padding='same'))
+        # model.add(layers.Conv2D(1024,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(1024,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(512,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(256,
+        #                         self.kernel_size_list[2],
+        #                         activation='relu',
+        #                         padding='same'))
         model.add(layers.Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
                                 activation='linear',
