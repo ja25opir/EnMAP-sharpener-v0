@@ -76,7 +76,7 @@ class Model:
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle?
         random.shuffle(all_files)
-        self.train_files = all_files[:int(len(all_files) * 0.9)]
+        self.train_files = all_files[:int(len(all_files) * 1)]
         self.test_files = all_files[int(len(all_files) * 0.1):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
@@ -100,7 +100,7 @@ class Model:
 
         self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'])
 
-        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        history = self.model.fit(train_generator, epochs=self.train_epochs, verbose=1)
 
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
