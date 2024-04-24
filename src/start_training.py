@@ -13,7 +13,7 @@ TRAIN_DATA_DIR = os.getcwd() + '/data/preprocessing/model_input/'
 OUTPUT_DIR = os.getcwd() + '/output/'
 LOSS_FUNCTION = 'mean_squared_error'  # todo
 BATCH_SIZE = 32  # (Masi: 128)
-TRAIN_EPOCHS = 10
+TRAIN_EPOCHS = 15
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start model training.')

@@ -41,15 +41,10 @@ class Model:
                                 activation='relu',
                                 input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
                                 padding='same'))
-        # model.add(layers.Conv2D(224,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
-        #                         padding='same'))
-        # model.add(layers.Conv2D(1024,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
+        model.add(layers.Conv2D(1024,
+                                self.kernel_size_list[1],
+                                activation='relu',
+                                padding='same'))
         # model.add(layers.Conv2D(1024,
         #                         self.kernel_size_list[1],
         #                         activation='relu',
