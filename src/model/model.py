@@ -1,4 +1,4 @@
-import os
+import os, random
 
 from tensorflow.keras import layers, models, initializers
 from matplotlib import pyplot as plt
@@ -58,6 +58,7 @@ class Model:
         #                         self.kernel_size_list[2],
         #                         activation='relu',
         #                         padding='same'))
+        # relu in last layer significantly increased accuracy but worsened loss (stuck after one epoch)
         model.add(layers.Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
                                 activation='relu',
@@ -74,8 +75,9 @@ class Model:
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle?
-        self.train_files = all_files[:int(len(all_files) * 0.9)]
-        self.test_files = all_files[int(len(all_files) * 0.1):]
+        random.shuffle(all_files)
+        self.train_files = all_files[:int(len(all_files) * 0.95)]
+        self.test_files = all_files[int(len(all_files) * 0.05):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
