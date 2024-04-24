@@ -36,7 +36,7 @@ class Model:
         # padding: https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
         # stride: https://tcnguyen.github.io/neuralnetworks/cnn_tensorflow.html
         model = models.Sequential()
-        model.add(layers.Conv2D(228,
+        model.add(layers.Conv2D(512,
                                 self.kernel_size_list[0],
                                 activation='relu',
                                 input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
@@ -111,4 +111,5 @@ class Model:
         plt.title('model loss')
         plt.savefig(self.output_dir + 'figures/first_model_loss.png')
 
+        print('Saving model to:', self.output_dir + 'models/first_model.keras')
         self.model.save(self.output_dir + 'models/first_model.keras')
