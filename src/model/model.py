@@ -59,9 +59,10 @@ class Model:
         #                         activation='relu',
         #                         padding='same'))
         # relu in last layer significantly increased accuracy but worsened loss (stuck after one epoch)
+        #  --> predictio with this model is all 0 this is why the accuracy is 1/3 (many 0s in input data)
         model.add(layers.Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
-                                activation='relu',
+                                activation='linear',
                                 padding='same'))
 
         # todo: this already seems to be set by default
@@ -76,8 +77,8 @@ class Model:
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle?
         random.shuffle(all_files)
-        self.train_files = all_files[:int(len(all_files) * 1)]
-        self.test_files = all_files[int(len(all_files) * 0.1):]
+        self.train_files = all_files[:int(len(all_files) * 0.8)]
+        self.test_files = all_files[int(len(all_files) * 0.2):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
@@ -100,7 +101,7 @@ class Model:
 
         self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'])
 
-        history = self.model.fit(train_generator, epochs=self.train_epochs, verbose=1)
+        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
 
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')

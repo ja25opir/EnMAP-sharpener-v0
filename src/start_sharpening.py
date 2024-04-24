@@ -19,5 +19,7 @@ print(model.summary())
 
 prediction = model.predict(X_test)
 
+predicted_img = prediction[0].T
+
 bands = [50, 100, 150]
-plot_3_band_image(prediction[0].T, title='Prediction', cmap='viridis')
+plot_3_band_image(predicted_img, title='Prediction', cmap='viridis')
