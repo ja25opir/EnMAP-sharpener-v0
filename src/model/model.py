@@ -1,6 +1,6 @@
 import os
 
-from tensorflow.keras import layers, models
+from tensorflow.keras import layers, models, initializers
 from matplotlib import pyplot as plt
 
 from .load_data import DataGenerator
@@ -62,7 +62,7 @@ class Model:
                                 activation='linear',
                                 padding='same'))
 
-        initializer = tf.keras.initializers.GlorotUniform()
+        initializer = initializers.GlorotUniform()
         for layer in model.layers:
             layer.kernel_initializer = initializer
 
