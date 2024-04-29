@@ -60,7 +60,8 @@ class EnMAP:
     def filter_item_list(self, session, item_feature_list, max_cloud_cover, number_all_scenes):
         for item in item_feature_list:
             print('Downloading item', self.checked_scenes + 1, 'of', number_all_scenes, '...')
-            if item['properties']['eo:cloud_cover'] < max_cloud_cover and item['properties'][
+            cloud_cover = int(item['properties']['eo:cloud_cover']) + int(item['properties']['enmap:cirrus_cover'])
+            if cloud_cover < max_cloud_cover and item['properties'][
                 'enmap:sceneAOT'] != '-999':
                 metadata_href = item['assets']['metadata']['href']
                 scene_dir = self.enmap_dir + metadata_href.split('/')[-1].split('-META')[0] + '/'
