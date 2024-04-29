@@ -5,7 +5,7 @@ from config.resource_limiter import limit_logical_cpus, limit_memory_usage
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start scraping EnMAP scenes from geoservice.dlr.de')
-    parser.add_argument('--enmap-dir', type=str, default='/data/EnMAP_scrape/',
+    parser.add_argument('--enmap-dir', type=str, default='/data/EnMAP/',
                         help='Path to the directory where the EnMAP data will be saved')
     parser.add_argument('--max-cloud-cover', type=int, default=70, help='Maximum cloud and cirrus cover in percentage')
     parser.add_argument('--cpus', nargs='+', type=int, default=[0, 1, 2, 3],
