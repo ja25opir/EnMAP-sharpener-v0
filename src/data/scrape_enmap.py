@@ -30,7 +30,6 @@ def download_file(session, url, save_dir, file_format='tif'):
     save_name = url.split('/')[-1].split('.')[0].strip('_COG')
     with open(save_dir + save_name + '.' + file_format, 'wb') as f:
         f.write(tif_bytes)
-    print('Done!')
 
 
 def get_item_list(session, url):
@@ -72,6 +71,7 @@ class EnMAP:
                 quality_cloud_href = item['assets']['quality_cloud']['href']
                 download_file(session, quality_cloud_href, scene_dir)
                 self.downloaded_scenes += 1
+                print('Done!')
             else:
                 print('Cloud cover too high or broken file detected! Skipping this scene.')
             self.checked_scenes += 1
