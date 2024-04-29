@@ -7,6 +7,7 @@ def download_file(session, url, save_dir, file_format='tif'):
     save_name = url.split('/')[-1].split('.')[0].strip('_COG')
     if response.status_code != 200:
         print('Error downloading file. Status code:', response.status_code, '\n Filename:', save_name)
+        sys.exit()
     chunk_size = 1024 * 1024 * 10  # 10 MB
     with open(save_dir + save_name + '.' + file_format, 'wb') as f:
         for chunk in response.iter_content(chunk_size=chunk_size):
