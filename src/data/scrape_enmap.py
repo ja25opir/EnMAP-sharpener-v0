@@ -36,7 +36,7 @@ class EnMAP:
         self.max_cloud_cover = max_cloud_cover
         self.start_index = start_index
         self.session_token = session_token
-        self.auth_session = set_auth(self)
+        self.auth_session = self.set_auth()
         self.default_index_url = 'https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A/items'
         self.downloaded_scenes = 0
         self.checked_scenes = 0
