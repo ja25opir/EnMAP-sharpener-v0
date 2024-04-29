@@ -4,10 +4,9 @@ import requests
 
 def download_file(session, url, save_dir, file_format='tif'):
     response = session.get(url, stream=True)
-    if response.status_code != 200:
-        print('Error downloading file. Status code:', response.status_code)
-        sys.exit()
     save_name = url.split('/')[-1].split('.')[0].strip('_COG')
+    if response.status_code != 200:
+        print('Error downloading file. Status code:', response.status_code, '\n Filename:', save_name)
     chunk_size = 1024 * 1024 * 10  # 10 MB
     with open(save_dir + save_name + '.' + file_format, 'wb') as f:
         for chunk in response.iter_content(chunk_size=chunk_size):
@@ -64,20 +63,21 @@ class EnMAP:
 
     def filter_item_list(self, session, item_feature_list, max_cloud_cover, number_all_scenes):
         for item in item_feature_list:
-            print('Downloading item', self.checked_scenes + 1, 'of', number_all_scenes, '...')
+            print('Downloading item', self.checked_scenes + 1 + int(self.start_index), 'of', number_all_scenes, '...')
             cloud_cover = int(item['properties']['eo:cloud_cover']) + int(item['properties']['enmap:cirrus_cover'])
             if cloud_cover < max_cloud_cover and item['properties'][
                 'enmap:sceneAOT'] != '-999':
                 metadata_href = item['assets']['metadata']['href']
                 scene_dir = self.enmap_dir + metadata_href.split('/')[-1].split('-META')[0] + '/'
                 os.mkdir(scene_dir)
-                download_file(session, metadata_href, scene_dir, 'xml')
                 spectral_image_href = item['assets']['image']['href']
                 start_time = time.time()
                 download_file(session, spectral_image_href, scene_dir)
                 if (time.time() - start_time) < 3:
                     print('Session token expired or invalid. Please provide a new one.')
+                    print('Failed item:', scene_dir)
                     sys.exit()
+                download_file(session, metadata_href, scene_dir, 'xml')
                 quality_cloud_href = item['assets']['quality_cloud']['href']
                 download_file(session, quality_cloud_href, scene_dir)
                 self.downloaded_scenes += 1
