@@ -69,6 +69,7 @@ class EnMAP:
     def filter_item_list(self, session, item_feature_list, max_cloud_cover, number_all_scenes):
         for item in item_feature_list:
             print('Downloading item', self.checked_scenes + 1 + int(self.start_index), 'of', number_all_scenes, '...')
+            self.checked_scenes += 1
             cloud_cover = int(item['properties']['eo:cloud_cover']) + int(item['properties']['enmap:cirrus_cover'])
             if cloud_cover < max_cloud_cover and item['properties'][
                 'enmap:sceneAOT'] != '-999':
@@ -105,7 +106,6 @@ class EnMAP:
                 print('Done!')
             else:
                 print('Cloud cover too high or broken file detected! Skipping this scene.')
-            self.checked_scenes += 1
 
     def scrape_all_scenes(self):
         next_link = self.default_index_url
