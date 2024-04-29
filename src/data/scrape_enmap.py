@@ -1,4 +1,4 @@
-import sys, os, json
+import sys, os, json, time
 import requests
 
 
@@ -71,7 +71,11 @@ class EnMAP:
                 os.mkdir(scene_dir)
                 download_file(session, metadata_href, scene_dir, 'xml')
                 spectral_image_href = item['assets']['image']['href']
+                start_time = time.time()
                 download_file(session, spectral_image_href, scene_dir)
+                if (time.time() - start_time) < 3:
+                    print('Session token expired or invalid. Please provide a new one.')
+                    sys.exit()
                 quality_cloud_href = item['assets']['quality_cloud']['href']
                 download_file(session, quality_cloud_href, scene_dir)
                 self.downloaded_scenes += 1
