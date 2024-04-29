@@ -3,14 +3,16 @@ import requests
 
 
 def download_file(session, url, save_dir, file_format='tif'):
-    response = session.get(url)
+    response = session.get(url, stream=True)
     if response.status_code != 200:
         print('Error downloading file. Status code:', response.status_code)
         sys.exit()
-    tif_bytes = response.content
     save_name = url.split('/')[-1].split('.')[0].strip('_COG')
+    chunk_size = 1024 * 1024 * 10  # 10 MB
     with open(save_dir + save_name + '.' + file_format, 'wb') as f:
-        f.write(tif_bytes)
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                f.write(chunk)
 
 
 def get_item_list(session, url, start_index=None):
