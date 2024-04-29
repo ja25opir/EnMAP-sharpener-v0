@@ -1,18 +1,22 @@
-import sys, os, json, time
+import sys, os, json, time, shutil
 import requests
 
 
 def download_file(session, url, save_dir, file_format='tif'):
     response = session.get(url, stream=True)
     save_name = url.split('/')[-1].split('.')[0].strip('_COG')
-    if response.status_code != 200:
+    if response.status_code == 200:
+        chunk_size = 1024 * 1024 * 10  # 10 MB
+        with open(save_dir + save_name + '.' + file_format, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    f.write(chunk)
+        return response.status_code
+    elif response.status_code == 404:
+        return response.status_code
+    else:
         print('Error downloading file. Status code:', response.status_code, '\n Filename:', save_name)
         sys.exit()
-    chunk_size = 1024 * 1024 * 10  # 10 MB
-    with open(save_dir + save_name + '.' + file_format, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=chunk_size):
-            if chunk:
-                f.write(chunk)
 
 
 def get_item_list(session, url, start_index=None):
@@ -73,14 +77,30 @@ class EnMAP:
                 os.mkdir(scene_dir)
                 spectral_image_href = item['assets']['image']['href']
                 start_time = time.time()
-                download_file(session, spectral_image_href, scene_dir)
+
+                # download spectral image, skip on 404, exit if token is invalid
+                status = download_file(session, spectral_image_href, scene_dir)
+                if status == 404:
+                    print('404 file not found. Skipping this scene.')
+                    shutil.rmtree(scene_dir)
+                    continue
                 if (time.time() - start_time) < 3:
                     print('Session token expired or invalid. Please provide a new one.')
                     print('Failed item:', scene_dir)
                     sys.exit()
-                download_file(session, metadata_href, scene_dir, 'xml')
+                # download metadata, skip on 404
+                status = download_file(session, metadata_href, scene_dir, 'xml')
+                if status == 404:
+                    print('404 file not found. Skipping this scene.')
+                    shutil.rmtree(scene_dir)
+                    continue
                 quality_cloud_href = item['assets']['quality_cloud']['href']
-                download_file(session, quality_cloud_href, scene_dir)
+                # download quality cloud, skip on 404
+                status = download_file(session, quality_cloud_href, scene_dir)
+                if status == 404:
+                    print('404 file not found. Skipping this scene.')
+                    shutil.rmtree(scene_dir)
+                    continue
                 self.downloaded_scenes += 1
                 print('Done!')
             else:
