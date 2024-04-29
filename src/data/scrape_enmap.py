@@ -2,25 +2,6 @@ import sys, os, json
 import requests
 
 
-def set_auth():
-    # load_dotenv(dotenv_path=find_dotenv())
-    # username = os.getenv('GEOSERVICE_DLR_USERNAME')
-    # password = os.getenv('GEOSERVICE_DLR_PASSWORD')
-    # form_data = {
-    #     'username': username,
-    #     'password': password,
-    # }
-    session = requests.session()
-    headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'Cookie': 'session=L3mmnpnZpKJJW1Fi-AUEnw|1714398269|pDyGRtONhyDb9OD29VyP4-s1dkfSRFbe3whBwshAB7EcTD61yrtZxVHScxuXqzfmvtVjiANspdYByZZrgEPdlbOQRyzIqgbH9jQXm69ysiMurUDieMFG99F63jCZNpx7tUKqKpQKwx2QnHgPwWoVyIS7fbPkWhjMW9zT0GaAu99qgtr0KfeRoo_32w8mXyaweYG7EnrMIjdtKt8RQjD5QhkbVwN9-RtFAkCmrxoKGT4|iYSaU0o-uh03FCQfygrqJaUTWv0',
-        'Host': 'download.geoservice.dlr.de',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0'
-    }
-    session.headers.update(headers)
-    return session
-
-
 def download_file(session, url, save_dir, file_format='tif'):
     response = session.get(url)
     if response.status_code != 200:
@@ -32,10 +13,11 @@ def download_file(session, url, save_dir, file_format='tif'):
         f.write(tif_bytes)
 
 
-def get_item_list(session, url):
+def get_item_list(session, url, start_index=None):
     parameter = {
         'f': 'json',
-        'limit': 20
+        'limit': 20,
+        'startIndex': start_index,
     }
     enmap_collection_response = session.get(url, params=parameter)
     print(enmap_collection_response.url)
@@ -49,13 +31,34 @@ def get_item_list(session, url):
 
 
 class EnMAP:
-    def __init__(self, enmap_dir, max_cloud_cover):
+    def __init__(self, enmap_dir, max_cloud_cover, start_index, session_token):
         self.enmap_dir = enmap_dir
         self.max_cloud_cover = max_cloud_cover
-        self.auth_session = set_auth()
+        self.start_index = start_index
+        self.session_token = session_token
+        self.auth_session = set_auth(self)
         self.default_index_url = 'https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A/items'
         self.downloaded_scenes = 0
         self.checked_scenes = 0
+
+    def set_auth(self):
+        # load_dotenv(dotenv_path=find_dotenv())
+        # username = os.getenv('GEOSERVICE_DLR_USERNAME')
+        # password = os.getenv('GEOSERVICE_DLR_PASSWORD')
+        # form_data = {
+        #     'username': username,
+        #     'password': password,
+        # }
+        cookie = 'session=' + self.session_token
+        session = requests.session()
+        headers = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Cookie': cookie,
+            'Host': 'download.geoservice.dlr.de',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0'
+        }
+        session.headers.update(headers)
+        return session
 
     def filter_item_list(self, session, item_feature_list, max_cloud_cover, number_all_scenes):
         for item in item_feature_list:
@@ -80,7 +83,9 @@ class EnMAP:
     def scrape_all_scenes(self):
         next_link = self.default_index_url
         while next_link != '':
-            item_list = get_item_list(self.auth_session, next_link)
+
+            item_list = get_item_list(self.auth_session, next_link, self.start_index)
+            self.start_index = None
             scenes = item_list['features']
             self.filter_item_list(self.auth_session, scenes, self.max_cloud_cover, item_list['numberMatched'])
             for link in item_list['links']:

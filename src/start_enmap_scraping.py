@@ -8,6 +8,8 @@ if __name__ == '__main__':
     parser.add_argument('--enmap-dir', type=str, default='/data/EnMAP/',
                         help='Path to the directory where the EnMAP data will be saved')
     parser.add_argument('--max-cloud-cover', type=int, default=70, help='Maximum cloud and cirrus cover in percentage')
+    parser.add_argument('--start-index', type=str, default='', help='Index of first scene to download')
+    parser.add_argument('--session-token', type=str, default='', help='Session token for DLR authentication')
     parser.add_argument('--cpus', nargs='+', type=int, default=[0, 1, 2, 3],
                         help='Assigned logical CPUs for the pipeline')
     parser.add_argument('--mem-limit', type=int, default=1, help='Memory limit for the pipeline in GB')
@@ -21,7 +23,7 @@ if __name__ == '__main__':
     cpu_start = time.process_time()
 
     enmap_dir_path = os.getcwd() + args.enmap_dir
-    enmap = EnMAP(enmap_dir_path, args.max_cloud_cover)
+    enmap = EnMAP(enmap_dir_path, args.max_cloud_cover, args.start_index, args.session_token)
     enmap.scrape_all_scenes()
 
     print("---EnMAPScraping---Elapsed time: %.2fs seconds ---" % (time.time() - start_time))
