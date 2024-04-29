@@ -88,10 +88,9 @@ class EnMAP:
 
     def scrape_all_scenes(self):
         next_link = self.default_index_url
+        start_idx = self.start_index
         while next_link != '':
-
-            item_list = get_item_list(self.auth_session, next_link, self.start_index)
-            self.start_index = None
+            item_list = get_item_list(self.auth_session, next_link, start_idx)
             scenes = item_list['features']
             self.filter_item_list(self.auth_session, scenes, self.max_cloud_cover, item_list['numberMatched'])
             for link in item_list['links']:
