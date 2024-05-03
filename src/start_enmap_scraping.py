@@ -8,7 +8,7 @@ if __name__ == '__main__':
     parser.add_argument('--enmap-dir', type=str, default='/data/EnMAP/',
                         help='Path to the directory where the EnMAP data will be saved')
     parser.add_argument('--max-cloud-cover', type=int, default=70, help='Maximum cloud and cirrus cover in percentage')
-    parser.add_argument('--start-index', type=str, default='', help='Index of first scene to download')
+    parser.add_argument('--start-index', type=str, default='0', help='Index of first scene to download')
     parser.add_argument('--max-scenes', type=int, default=1000, help='Maximum number of scenes to download')
     parser.add_argument('--session-token', type=str, default='', help='Session token for DLR authentication')
     parser.add_argument('--cpus', nargs='+', type=int, default=[0, 1, 2, 3],
