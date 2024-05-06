@@ -222,6 +222,7 @@ class PreprocessPipeline:
                         spectral_img_path = directory[0] + '/' + filename
                     if re.search(".*QL_QUALITY_CLOUD.TIF$", filename):
                         cloud_mask_path = directory[0] + '/' + filename
+                    print(filename)
                 i += 1
                 if metadata_path and spectral_img_path and cloud_mask_path:
                     print('Cropping image', i, 'of', no_enmap_dirs, '...')
