@@ -7,7 +7,7 @@ if __name__ == '__main__':
     parser.add_argument('--enmap-dir', type=str, default='/data/EnMAP/', help='Path to the directory with EnMAP data')
     parser.add_argument('--output-dir', type=str, default='/data/preprocessing/',
                         help='Path to the directory where the output data will be saved')
-    parser.add_argument('--stages', nargs='+', default='[all]', help='Stages to run (all, crop, scrape, mask, wald')
+    parser.add_argument('--stages', nargs='+', default='[all]', help='Stages to run (all, crop, scrape, mask, wald)')
     parser.add_argument('--cpus', nargs='+', type=int, default=[0, 1, 2, 3], help='Assigned logical CPUs for the pipeline')
     parser.add_argument('--mem-limit', type=int, default=10, help='Memory limit for the pipeline in GB')
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     elif 'crop' in args.stages:
         pipeline.crop_all()
     elif 'scrape' in args.stages:
-        pipeline.scrape_all()
+        pipeline.scrape_all() # todo: save list with 400s? + catch token expired error
     elif 'mask' in args.stages:
         pipeline.cloud_mask_all()
     elif 'clean' in args.stages:
