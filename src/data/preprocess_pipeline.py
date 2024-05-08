@@ -236,12 +236,21 @@ class PreprocessPipeline:
     def scrape_all(self):
         print('Scraping Sentinel images... \n--------------------------')
         oauth_session = SentinelSession().oauth_session
+        # load existing sentinel files
+        sentinel_files = os.listdir(self.output_sentinel_dir_path)
         for directory in os.walk(self.output_enmap_dir_path):
             for filename in directory[2]:
                 if re.search(".*enmap_spectral.tif$", filename):
                     spectral_img_path = directory[0] + filename
                     timestamp = get_time_from_enmap(spectral_img_path)
-                    request_and_save_response(oauth_session, spectral_img_path, timestamp, output_dir=self.output_sentinel_dir_path,
+
+                    # check if scene was already scraped
+                    if any(re.search(timestamp, x) for x in sentinel_files):
+                        print('Sentinel image already scraped. Skipping...')
+                        continue
+
+                    request_and_save_response(oauth_session, spectral_img_path, timestamp,
+                                              output_dir=self.output_sentinel_dir_path,
                                               save_name=timestamp)
 
     def cloud_mask_all(self):
