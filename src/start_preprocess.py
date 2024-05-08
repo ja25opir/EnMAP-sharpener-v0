@@ -28,7 +28,9 @@ if __name__ == '__main__':
     elif 'crop' in args.stages:
         pipeline.crop_all()
     elif 'scrape' in args.stages:
-        pipeline.scrape_all() # todo: save list with 400s? + catch token expired error
+        pipeline.scrape_all()
+    elif 'check' in args.stages:
+        pipeline.check_and_harmonize_scene_directories()
     elif 'mask' in args.stages:
         pipeline.cloud_mask_all()
     elif 'clean' in args.stages:
