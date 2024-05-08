@@ -2,31 +2,11 @@ import os
 from datetime import timedelta
 import rasterio
 from dateutil.parser import parse
-from oauthlib.oauth2 import BackendApplicationClient
+from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
 from requests_oauthlib import OAuth2Session
 from dotenv import load_dotenv, find_dotenv
 import io
 import tarfile
-
-
-def get_auth_token():
-    load_dotenv(dotenv_path=find_dotenv())
-
-    # https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Overview/Authentication.html#python
-    CLIENT_ID = os.getenv('COPERNICUS_CLIENT_ID')
-    CLIENT_SECRET = os.getenv('COPERNICUS_CLIENT_SECRET')
-
-    # create a session
-    client = BackendApplicationClient(client_id=CLIENT_ID)
-    oauth = OAuth2Session(client=client)
-
-    # get token for the session
-    # all requests using this session will have an access token automatically added
-    oauth.fetch_token(
-        token_url='https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token',
-        client_secret=CLIENT_SECRET, include_client_id=True)
-
-    return oauth
 
 
 def unzip_response_files(response, output_dir, save_name):
@@ -41,13 +21,27 @@ def unzip_response_files(response, output_dir, save_name):
                       os.path.join(output_dir, new_filename))
 
 
-def request_and_save_response(image_path, time, output_dir, save_name):
+def authorize_on_expiration(func):
+    def wrapper(session, *args, **kwargs):
+        try:
+            return func(session, *args, **kwargs)
+        except TokenExpiredError as e:
+            print('Error:', e)
+            print('Reauthorizing...')
+            new_session = SentinelSession().oauth_session
+            return func(new_session, *args, **kwargs)
+
+    return wrapper
+
+
+@authorize_on_expiration
+def request_and_save_response(oauth_session, image_path, time, output_dir, save_name):
     print("Requesting Sentinel image for EnMAP scene: ", save_name + '...')
     sentinel = Sentinel(image_path, time)
     url = "https://sh.dataspace.copernicus.eu/api/v1/process"
     # request options: https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/S2L1C.html
     # response = OAUTH_SESSION.post(url, json=sentinel.request(), headers={"Accept": "image/tiff"})
-    response = OAUTH_SESSION.post(url, json=sentinel.request(), headers={"Accept": "application/tar"})
+    response = oauth_session.post(url, json=sentinel.request(), headers={"Accept": "application/tar"})
 
     print('Response status:', response.status_code)
     if response.status_code == 200:
@@ -56,7 +50,27 @@ def request_and_save_response(image_path, time, output_dir, save_name):
         print(response.content)
 
 
-OAUTH_SESSION = get_auth_token()
+class SentinelSession:
+    def __init__(self):
+        load_dotenv(dotenv_path=find_dotenv())
+        self.client_id = os.getenv('COPERNICUS_CLIENT_ID')
+        self.client_secret = os.getenv('COPERNICUS_CLIENT_SECRET')
+        self.oauth_session = self.get_auth_token()
+
+    def get_auth_token(self):
+        # https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Overview/Authentication.html#python
+        # create a session
+        client = BackendApplicationClient(client_id=self.client_id)
+        oauth = OAuth2Session(client=client)
+
+        # get token for the session
+        # all requests using this session will have an access token automatically added
+        oauth.fetch_token(
+            token_url='https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token',
+            client_secret=self.client_secret, include_client_id=True)
+
+        return oauth
+
 
 # ProcessAPI examples https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Process/Examples/S2L2A.html
 # OpenAPI: https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/ApiReference.html#tag/process
@@ -171,6 +185,5 @@ class Sentinel:
             },
             "evalscript": self.evalscript,
         }
-
 
 # TODO: (optional) validate found images

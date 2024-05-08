@@ -1,12 +1,14 @@
 import shutil
 
+import shutil
+
 import rasterio.mask
 from pyproj import Proj
 import xml.etree.ElementTree as ETree
 import os, re, sys
 import numpy as np
 
-from .scrape_sentinel import request_and_save_response
+from .scrape_sentinel import request_and_save_response, SentinelSession
 from .wald_protocol import start_wald_protocol
 
 
@@ -201,6 +203,7 @@ class PreprocessPipeline:
     def start_all_steps(self):
         self.crop_all()
         self.scrape_all()
+        self.check_and_harmonize_scene_directories()
         self.cloud_mask_all()
         # self.clean_up()
         self.wald_protocol_all()
@@ -233,13 +236,61 @@ class PreprocessPipeline:
 
     def scrape_all(self):
         print('Scraping Sentinel images... \n--------------------------')
+        oauth_session = SentinelSession().oauth_session
+        # load existing sentinel files
+        sentinel_files = os.listdir(self.output_sentinel_dir_path)
         for directory in os.walk(self.output_enmap_dir_path):
             for filename in directory[2]:
                 if re.search(".*enmap_spectral.tif$", filename):
                     spectral_img_path = directory[0] + filename
                     timestamp = get_time_from_enmap(spectral_img_path)
-                    request_and_save_response(spectral_img_path, timestamp, output_dir=self.output_sentinel_dir_path,
+
+                    # check if scene was already scraped
+                    if any(re.search(timestamp, x) for x in sentinel_files):
+                        print('Sentinel image already scraped. Skipping...')
+                        continue
+
+                    request_and_save_response(oauth_session, spectral_img_path, timestamp,
+                                              output_dir=self.output_sentinel_dir_path,
                                               save_name=timestamp)
+
+    def check_and_harmonize_scene_directories(self):
+        enmap_files = os.listdir(self.output_enmap_dir_path)
+        sentinel_files = os.listdir(self.output_sentinel_dir_path)
+        enmap_timestamps = set([re.search('\d{4}\d{2}\d{2}T\d{6}Z', x).group() for x in enmap_files])
+
+        # check if all enmap scenes have a spectral.tif and a cloud_mask.tif otherwise remove all scene files
+        for enmap_timestamp in enmap_timestamps:
+            enmap_scene_files = [x for x in enmap_files if re.search(enmap_timestamp, x)]
+            spectral = any(re.search(".*spectral.tif", x) for x in enmap_scene_files)
+            cloud_mask = any(re.search(".*cloud_mask.tif", x) for x in enmap_scene_files)
+            if not spectral or not cloud_mask:
+                print('Scene', enmap_timestamp, 'is missing spectral or cloud mask file. Deleting...')
+                for enmap_scene_file in enmap_scene_files:
+                    os.remove(self.output_enmap_dir_path + enmap_scene_file)
+
+        # check if all enmap scenes have a corresponding sentinel scene otherwise remove them
+        sentinel_timestamps = set([re.search('\d{4}\d{2}\d{2}T\d{6}Z', x).group() for x in sentinel_files])
+        missing_sentinel_timestamps = [x for x in enmap_timestamps if x not in sentinel_timestamps]
+        for missing_sentinel_timestamp in missing_sentinel_timestamps:
+            print(missing_sentinel_timestamp)
+            for enmap_scene_file in enmap_files:
+                if re.search(missing_sentinel_timestamp, enmap_scene_file):
+                    print('Scene', missing_sentinel_timestamp, 'is missing a corresponding Sentinel scene. Deleting...')
+                    os.remove(self.output_enmap_dir_path + enmap_scene_file)
+
+        # check if all sentinel scenes have a spectral.tif and a cloud_mask.tif otherwise remove all sentinel + enmap scene files
+        for sentinel_timestamp in sentinel_timestamps:
+            sentinel_scene_files = [x for x in sentinel_files if re.search(sentinel_timestamp, x)]
+            spectral = any(re.search(".*spectral.tif", x) for x in sentinel_scene_files)
+            cloud_mask = any(re.search(".*cloud_mask.tif", x) for x in sentinel_scene_files)
+            if not spectral or not cloud_mask:
+                print('Scene', sentinel_timestamp, 'is missing spectral or cloud mask file. Deleting...')
+                for sentinel_scene_file in sentinel_scene_files:
+                    os.remove(self.output_sentinel_dir_path + sentinel_scene_file)
+                for enmap_scene_file in enmap_files:
+                    if re.search(sentinel_timestamp, enmap_scene_file):
+                        os.remove(self.output_enmap_dir_path + enmap_scene_file)
 
     def cloud_mask_all(self):
         print('Upsampling and combining cloud masks... \n--------------------------')
