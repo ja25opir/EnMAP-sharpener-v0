@@ -3,8 +3,8 @@ from scipy import stats
 from pandas import DataFrame
 # from matplotlib import pyplot as plt
 
-# sentinel_dir = os.getcwd() + '/data/preprocessing/Sentinel2/'
-sentinel_dir = '../data/preprocessing/Sentinel2/'
+sentinel_dir = os.getcwd() + '/data/preprocessing/Sentinel2/'
+# sentinel_dir = '../data/preprocessing/Sentinel2/'
 file_list = os.listdir(sentinel_dir)
 size_list = []
 for file in file_list:
