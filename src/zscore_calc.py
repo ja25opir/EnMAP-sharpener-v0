@@ -19,7 +19,7 @@ df['zscore'] = stats.zscore(df['size'])
 print(df)
 
 # remove rows with zscore < 0, save as outlier df
-outlier = df[df['zscore'] < 0]
+outlier = df[df['zscore'] < -3]
 print(outlier)
 print('number of outliers:', len(outlier))
 
