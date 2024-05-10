@@ -11,11 +11,12 @@ for file in file_list:
 
 df = DataFrame({'file': [x[0] for x in size_list], 'size': [x[1] for x in size_list]})
 
-# remove cloud masks from df
-df = df[df['file'].str.contains('_cloud_mask.tif')]
+# only keep spectral files in df
+df = df[df['file'].str.contains('_spectral.tif')]
 
 # calc zscore and add as new column
 df['zscore'] = stats.zscore(df['size'])
+print(df)
 
 # remove rows with zscore < 0, save as outlier df
 outlier = df[df['zscore'] < 0]
