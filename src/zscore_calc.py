@@ -1,7 +1,5 @@
 import os
 from scipy import stats
-from matplotlib import pyplot as plt
-
 
 sentinel_dir = os.getcwd() + '/data/preprocessing/Sentinel2/'
 file_list = os.listdir(sentinel_dir)
