@@ -1,7 +1,7 @@
 import os
 from scipy import stats
 from pandas import DataFrame
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 # sentinel_dir = os.getcwd() + '/data/preprocessing/Sentinel2/'
 sentinel_dir = '../data/preprocessing/Sentinel2/'
@@ -17,11 +17,13 @@ df = DataFrame({'file': [x[0] for x in size_list], 'size': [x[1] for x in size_l
 # maybe use quantiles to filter out outliers instead of zscore:
 # https://de.wikipedia.org/wiki/Empirisches_Quantil
 size_df = df['size'] / 1024 / 1024  # convert to MB
-# set axis title
-plt.xlabel('File size in MB')
-plt.ylabel('Number of files')
-plt.hist(size_df, bins=100, density=False, alpha=0.75, color='b')
-plt.savefig(os.getcwd() + '/output/file_size_histogram.png')
+# save df
+df.to_pickle(os.getcwd() + '/output/file_size_df.pkl')
+
+# plt.xlabel('File size in MB')
+# plt.ylabel('Number of files')
+# plt.hist(size_df, bins=100, density=False, alpha=0.75, color='b')
+# plt.savefig(os.getcwd() + '/output/file_size_histogram.png')
 # plt.show()
 
 # only keep spectral files in df
