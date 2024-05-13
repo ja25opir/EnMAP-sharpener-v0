@@ -16,7 +16,7 @@ def get_size_df(path):
     df = df[df['file'].str.contains('_spectral.tif')]
 
     # save df
-    # df.to_pickle(os.getcwd() + '/output/file_size_df.pkl')
+    df.to_pickle(os.getcwd() + '/output/file_size_df.pkl')
     return df
 
 def get_outlier(df, quantile):
