@@ -19,22 +19,28 @@ def get_size_df(path):
     df.to_pickle(os.getcwd() + '/../../output/file_size_df.pkl')
     return df
 
-def get_outlier(df, quantile):
+def get_outliers(df, quantile):
     quantile_size = df['size'].quantile(quantile)
     return df[df['size'] < quantile_size]
 
+def copy_outliers(target_dir, corresponding_dir, output_dir):
+    size_df = get_size_df(target_dir)
+    outlier_df = get_outliers(size_df, 0.05)
+    for index, row in outlier_df.iterrows():
+        shutil.copyfile(target_dir + row['file'], output_dir + row['file'])
+        timestamp = row['file'].split('_')[0]
+        corresponding_file = timestamp + '_enmap_spectral.tif'
+        shutil.copyfile(corresponding_dir + corresponding_file, output_dir + corresponding_file)
+
+
+
 sentinel_dir = os.getcwd() + '/../../data/preprocessing/Sentinel2/'
-# sentinel_dir = '/data/preprocessing/Sentinel2/'
 enmap_dir = os.getcwd() + '/../../data/preprocessing/EnMAP/'
 outlier_dir = os.getcwd() + '/../../data/preprocessing/Sentinel2_outlier/'
 
-size_df = get_size_df(sentinel_dir)
-outlier_df = get_outlier(size_df, 0.05)
-
-for index, row in outlier_df.iterrows():
-    shutil.copyfile(sentinel_dir + row['file'], outlier_dir + row['file'])
-    timestamp = row['file'].split('_')[0]
-    enmap_file = timestamp + '_enmap_spectral.tif'
-    shutil.copyfile(enmap_dir + enmap_file, outlier_dir + enmap_file)
+# find sentinel outliers
+# copy_outliers(sentinel_dir, enmap_dir, outlier_dir)
+# find enmap outliers
+copy_outliers(enmap_dir, sentinel_dir, outlier_dir)
 
 
