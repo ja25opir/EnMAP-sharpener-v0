@@ -53,17 +53,19 @@ def plot_corresponding_scenes(s_dir, e_dir, output_dir):
         y_max = max(s_y_max, e_y_max)
         axis[1][0].set_ylim(0, y_max)
         axis[1][0].hist(s_his_data, bins=100, alpha=0.75, color='b')
+        axis[1][0].tick_params(labelsize=9)
         axis[1][1].set_ylim(0, y_max)
         axis[1][1].hist(e_his_data, bins=100, alpha=0.75, color='b')
+        axis[1][1].tick_params(labelsize=9)
 
         figure.tight_layout()
         plt.savefig(output_dir + timestamp + '.png')
         plt.show()
 
 
-size_df = pd.read_pickle(os.getcwd() + '/../../output/figures/broken_files/Sentinel/file_size_df.pkl')
-size_df = size_df[size_df['file'].str.contains('_spectral.tif')]
-plot_size_histogram(size_df, 0.05)
+# size_df = pd.read_pickle(os.getcwd() + '/../../output/figures/broken_files/Sentinel/file_size_df.pkl')
+# size_df = size_df[size_df['file'].str.contains('_spectral.tif')]
+# plot_size_histogram(size_df, 0.05)
 
 sentinel_dir = os.getcwd() + '/../../data/preprocessing/Sentinel2_outlier/sentinel/'
 enmap_dir = os.getcwd() + '/../../data/preprocessing/Sentinel2_outlier/enmap/'
