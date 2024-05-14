@@ -30,34 +30,43 @@ def plot_corresponding_scenes(s_dir, e_dir, output_dir):
     s_file_list = os.listdir(s_dir)
     e_file_list = os.listdir(e_dir)
     for s_file in s_file_list:
-        _figure, axis = plt.subplots(1, 2, figsize=(10, 5))
+        figure, axis = plt.subplots(2, 2, figsize=(10, 8),
+                                    gridspec_kw={'width_ratios': [1, 1], 'height_ratios': [1, 1]})
         timestamp = s_file.split('_')[0]
         e_file = [x for x in e_file_list if timestamp in x][0]
         s_raster = rasterio.open(s_dir + s_file)
-        rgb_norm = create_rgb_norm((s_raster.read(s_bands[0]), s_raster.read(s_bands[1]), s_raster.read(s_bands[2])))
-        axis[0].imshow(rgb_norm, cmap='viridis')
-        axis[0].set_title(s_file)
         e_raster = rasterio.open(e_dir + e_file)
+        rgb_norm = create_rgb_norm((s_raster.read(s_bands[0]), s_raster.read(s_bands[1]), s_raster.read(s_bands[2])))
+
+        # plot rgb images
+        axis[0][0].imshow(rgb_norm, cmap='viridis')
+        axis[0][0].set_title(s_file, pad=20)
         rgb_norm = create_rgb_norm((e_raster.read(e_bands[0]), e_raster.read(e_bands[1]), e_raster.read(e_bands[2])))
-        axis[1].imshow(rgb_norm, cmap='viridis')
-        axis[1].set_title(e_file)
+        axis[0][1].imshow(rgb_norm, cmap='viridis')
+        axis[0][1].set_title(e_file, pad=20)
+
+        # plot histograms
+        s_his_data = s_raster.read().flatten()
+        s_y_max = np.histogram(s_his_data, bins=100)[0].max()
+        e_his_data = e_raster.read().flatten()
+        e_y_max = np.histogram(e_his_data, bins=100)[0].max()
+        y_max = max(s_y_max, e_y_max)
+        axis[1][0].set_ylim(0, y_max)
+        axis[1][0].hist(s_his_data, bins=100, alpha=0.75, color='b')
+        axis[1][1].set_ylim(0, y_max)
+        axis[1][1].hist(e_his_data, bins=100, alpha=0.75, color='b')
+
+        figure.tight_layout()
         plt.savefig(output_dir + timestamp + '.png')
         plt.show()
 
 
-# size_df = pd.read_pickle(os.getcwd() + '/../../output/figures/broken_files/Sentinel/file_size_df.pkl')
-# size_df = size_df[size_df['file'].str.contains('_spectral.tif')]
-# plot_size_histogram(size_df, 0.05)
+size_df = pd.read_pickle(os.getcwd() + '/../../output/figures/broken_files/Sentinel/file_size_df.pkl')
+size_df = size_df[size_df['file'].str.contains('_spectral.tif')]
+plot_size_histogram(size_df, 0.05)
 
 sentinel_dir = os.getcwd() + '/../../data/preprocessing/Sentinel2_outlier/sentinel/'
 enmap_dir = os.getcwd() + '/../../data/preprocessing/Sentinel2_outlier/enmap/'
 save_dir = os.getcwd() + '/../../output/figures/broken_files/Sentinel/'
 
 plot_corresponding_scenes(sentinel_dir, enmap_dir, output_dir=save_dir)
-
-# scene_path = enmap_dir + '20240423T071734Z_enmap_spectral.tif'
-# # scene_path = enmap_dir + '20240421T013735Z_enmap_spectral.tif'
-# raster = rasterio.open(scene_path)
-# his_data = raster.read().flatten()
-# plt.hist(his_data, bins=100, alpha=0.75, color='b')
-# plt.show()
