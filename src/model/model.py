@@ -32,8 +32,11 @@ class Model:
         # padding = same (output size = input size) --> rethink this
         # activation function relu, relu, linear (Masi) --> rethink this
         # layers described in Masi p.4 (2.2) 64 - 32 - 3 (no. bands) kernels: 9x9, 1x1 (3x3), 5x5
+        # todo: add padding to tiles (overlap in windows to avoid edge effects caused by zero padding)
         # padding: https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
         # stride: https://tcnguyen.github.io/neuralnetworks/cnn_tensorflow.html
+        # padding: https://hidayatullahhaider.medium.com/a-simple-definition-of-overlap-term-in-cnn-f331f6ef3031
+        # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
         model = models.Sequential()
         model.add(layers.Conv2D(2048,
                                 self.kernel_size_list[0],
