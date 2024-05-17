@@ -79,8 +79,8 @@ class Model:
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle? -> in DataGenerator
-        self.train_files = all_files[:int(len(all_files) * 0.3)] # todo: WIP
-        self.test_files = all_files[int(len(all_files) * 0.9):]
+        self.train_files = all_files[:int(len(all_files) * 0.8)] # todo: WIP
+        self.test_files = all_files[int(len(all_files) * 0.8):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
