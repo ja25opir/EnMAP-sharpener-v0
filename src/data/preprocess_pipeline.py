@@ -1,10 +1,14 @@
+import shutil
+
+import shutil
+
 import rasterio.mask
 from pyproj import Proj
 import xml.etree.ElementTree as ETree
 import os, re, sys
 import numpy as np
 
-from .scrape_sentinel import request_and_save_response
+from .scrape_sentinel import request_and_save_response, SentinelSession
 from .wald_protocol import start_wald_protocol
 
 
@@ -157,12 +161,25 @@ def resample_raster(raster_name, raster, resample_size, save_name, output_dir):
         dest.write(out_img)
 
 
-def mask_raster(masked_scenes_path, raster, mask, save_name):
+def mask_raster(masked_scenes_path, raster, mask, save_name, value_range=None):
+    """
+    Converts all values of a raster to 0 where a given mask is 1.
+    Also clips the value range of the raster into [0, 10000].
+    :param value_range:
+    :param masked_scenes_path:
+    :param raster:
+    :param mask:
+    :param save_name:
+    :return:
+    """
+    if value_range is None:
+        value_range = [0, 10000]
     meta = raster.meta.copy()
     raster_np_stack = []
 
     for band in range(1, raster.count + 1):
-        raster_np = np.array(raster.read(band))
+        raster_np = np.array(raster.read(band), dtype=np.uint16)
+        raster_np = np.clip(raster_np, value_range[0], value_range[1])  # todo: check if this works as intended
         raster_np[mask == 1] = 0
         raster_np_stack.append(raster_np)
 
@@ -180,12 +197,15 @@ class PreprocessPipeline:
         self.output_sentinel_dir_path = output_dir_path + 'Sentinel2/'
         self.masked_scenes_path = output_dir_path + 'masked_scenes/'
         self.model_input_path = output_dir_path + 'model_input/'
+        self.value_range = [0, 10000]
         print('PreprocessPipeline initialized.')
 
     def start_all_steps(self):
         self.crop_all()
         self.scrape_all()
+        self.check_and_harmonize_scene_directories()
         self.cloud_mask_all()
+        # self.clean_up()
         self.wald_protocol_all()
 
     def crop_all(self):
@@ -199,11 +219,11 @@ class PreprocessPipeline:
                 spectral_img_path = ''
                 cloud_mask_path = ''
                 for filename in directory[2]:
-                    if re.search(".*METADATA.XML$", filename):
+                    if re.search(".*METADATA.xml$", filename):
                         metadata_path = directory[0] + '/' + filename
-                    if re.search(".*SPECTRAL_IMAGE.TIF$", filename):
+                    if re.search(".*SPECTRAL_IMAGE.tif$", filename):
                         spectral_img_path = directory[0] + '/' + filename
-                    if re.search(".*QL_QUALITY_CLOUD.TIF$", filename):
+                    if re.search(".*QL_QUALITY_CLOUD.tif$", filename):
                         cloud_mask_path = directory[0] + '/' + filename
                 i += 1
                 if metadata_path and spectral_img_path and cloud_mask_path:
@@ -216,13 +236,61 @@ class PreprocessPipeline:
 
     def scrape_all(self):
         print('Scraping Sentinel images... \n--------------------------')
+        oauth_session = SentinelSession().oauth_session
+        # load existing sentinel files
+        sentinel_files = os.listdir(self.output_sentinel_dir_path)
         for directory in os.walk(self.output_enmap_dir_path):
             for filename in directory[2]:
                 if re.search(".*enmap_spectral.tif$", filename):
                     spectral_img_path = directory[0] + filename
                     timestamp = get_time_from_enmap(spectral_img_path)
-                    request_and_save_response(spectral_img_path, timestamp, output_dir=self.output_sentinel_dir_path,
+
+                    # check if scene was already scraped
+                    if any(re.search(timestamp, x) for x in sentinel_files):
+                        print('Sentinel image already scraped. Skipping...')
+                        continue
+
+                    request_and_save_response(oauth_session, spectral_img_path, timestamp,
+                                              output_dir=self.output_sentinel_dir_path,
                                               save_name=timestamp)
+
+    def check_and_harmonize_scene_directories(self):
+        enmap_files = os.listdir(self.output_enmap_dir_path)
+        sentinel_files = os.listdir(self.output_sentinel_dir_path)
+        enmap_timestamps = set([re.search('\d{4}\d{2}\d{2}T\d{6}Z', x).group() for x in enmap_files])
+
+        # check if all enmap scenes have a spectral.tif and a cloud_mask.tif otherwise remove all scene files
+        for enmap_timestamp in enmap_timestamps:
+            enmap_scene_files = [x for x in enmap_files if re.search(enmap_timestamp, x)]
+            spectral = any(re.search(".*spectral.tif", x) for x in enmap_scene_files)
+            cloud_mask = any(re.search(".*cloud_mask.tif", x) for x in enmap_scene_files)
+            if not spectral or not cloud_mask:
+                print('Scene', enmap_timestamp, 'is missing spectral or cloud mask file. Deleting...')
+                for enmap_scene_file in enmap_scene_files:
+                    os.remove(self.output_enmap_dir_path + enmap_scene_file)
+
+        # check if all enmap scenes have a corresponding sentinel scene otherwise remove them
+        sentinel_timestamps = set([re.search('\d{4}\d{2}\d{2}T\d{6}Z', x).group() for x in sentinel_files])
+        missing_sentinel_timestamps = [x for x in enmap_timestamps if x not in sentinel_timestamps]
+        for missing_sentinel_timestamp in missing_sentinel_timestamps:
+            print(missing_sentinel_timestamp)
+            for enmap_scene_file in enmap_files:
+                if re.search(missing_sentinel_timestamp, enmap_scene_file):
+                    print('Scene', missing_sentinel_timestamp, 'is missing a corresponding Sentinel scene. Deleting...')
+                    os.remove(self.output_enmap_dir_path + enmap_scene_file)
+
+        # check if all sentinel scenes have a spectral.tif and a cloud_mask.tif otherwise remove all sentinel + enmap scene files
+        for sentinel_timestamp in sentinel_timestamps:
+            sentinel_scene_files = [x for x in sentinel_files if re.search(sentinel_timestamp, x)]
+            spectral = any(re.search(".*spectral.tif", x) for x in sentinel_scene_files)
+            cloud_mask = any(re.search(".*cloud_mask.tif", x) for x in sentinel_scene_files)
+            if not spectral or not cloud_mask:
+                print('Scene', sentinel_timestamp, 'is missing spectral or cloud mask file. Deleting...')
+                for sentinel_scene_file in sentinel_scene_files:
+                    os.remove(self.output_sentinel_dir_path + sentinel_scene_file)
+                for enmap_scene_file in enmap_files:
+                    if re.search(sentinel_timestamp, enmap_scene_file):
+                        os.remove(self.output_enmap_dir_path + enmap_scene_file)
 
     def cloud_mask_all(self):
         print('Upsampling and combining cloud masks... \n--------------------------')
@@ -258,7 +326,8 @@ class PreprocessPipeline:
                     print('Masking Sentinel image...')
                     sentinel_raster = rasterio.open(
                         self.output_sentinel_dir_path + timestamp + '_sentinel_spectral.tif')
-                    mask_raster(self.masked_scenes_path, sentinel_raster, merged_mask, timestamp + '_sentinel_masked')
+                    mask_raster(self.masked_scenes_path, sentinel_raster, merged_mask, timestamp + '_sentinel_masked',
+                                value_range=self.value_range)
 
                     # downscale mask --> mask enmap & save
                     print('Downsampling mask & masking EnMaP image...')
@@ -269,12 +338,21 @@ class PreprocessPipeline:
                     merged_mask_downsampled = rasterio.open(
                         self.output_masks_path + timestamp + '_cloud_mask_combined_downsampled.tif')
                     mask_raster(self.masked_scenes_path, enmap_raster, merged_mask_downsampled.read(1),
-                                timestamp + '_enmap_masked')
+                                timestamp + '_enmap_masked', value_range=self.value_range)
 
                     print('Done!')
                     sentinel_cloud_masks.remove(sentinel_cloud_mask)
                     break
             i += 1
+
+    def clean_up(self):
+        print('Cleaning up temporary files... \n--------------------------')
+        shutil.rmtree(self.output_masks_path)
+        os.mkdir(self.output_masks_path)
+        shutil.rmtree(self.output_enmap_dir_path)
+        os.mkdir(self.output_enmap_dir_path)
+        shutil.rmtree(self.output_sentinel_dir_path)
+        os.mkdir(self.output_sentinel_dir_path)
 
     def wald_protocol_all(self):
         print('Starting Wald protocol... \n--------------------------')

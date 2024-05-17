@@ -32,7 +32,6 @@ def resample_raster_in_memory(input_raster, resample_size):
 
     # create an in-memory file
     with MemoryFile() as memfile:
-        # todo: use rastervision and gpu for faster processing (resamplig available?)
         with memfile.open(**meta) as dataset:
             # resample the data using bilinear interpolation
             data = input_raster.read(
@@ -62,15 +61,36 @@ def stack_rasters(raster1, raster2):
         return memfile.open()
 
 
-def tile_raster(raster, tile_size, save_dir, save_name, overlap=0):
+def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, overlap=0):
+    """
+    Slices a raster into tiles of size tile_size x tile_size and saves them as .npy files.
+    Tiles without any values or with fewer values than a given ratio are skipped.
+    :param raster:
+    :param tile_size:
+    :param save_dir:
+    :param save_name:
+    :param min_value_ratio:
+    :param overlap:
+    :return:
+    """
     horizontal_tiles = int(raster.width / (tile_size - overlap))
     vertical_tiles = int(raster.height / (tile_size - overlap))
+    skip_list = []
+    minimum_values = min_value_ratio * tile_size * tile_size * raster.count
     for i_h in range(horizontal_tiles):
         for i_v in range(vertical_tiles):
+            file_name = f'{save_name}_{i_h}_{i_v}.npy'
             w = raster.read(window=((i_v * (tile_size - overlap), (i_v + 1) * tile_size - i_v * overlap),
                                     (i_h * (tile_size - overlap), (i_h + 1) * tile_size - i_h * overlap)))
-            np.save(f'{save_dir}{save_name}_{i_h}_{i_v}.npy', w)
-
+            if not np.any(w):
+                skip_list.append(file_name)
+                continue
+            elif np.count_nonzero(w) < minimum_values:
+                skip_list.append(file_name)
+                continue
+            else:
+                np.save(f'{save_dir}{file_name}', w)
+    return skip_list
 
 def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_dir_path):
     enmap_raster = rasterio.open(dir_path + enmap_file)
@@ -92,6 +112,17 @@ def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_d
 
     print('Tiling and saving X and Y image...')
     start_time = time.time()
-    tile_raster(x_image, 100, output_dir_path + 'x/', save_name, overlap=0)
-    tile_raster(enmap_raster, 100, output_dir_path + 'y/', save_name, overlap=0)
+    x_tiles_path = output_dir_path + 'x/'
+    sparse_x_tiles = tile_raster(x_image, 100, x_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
+    y_tiles_path = output_dir_path + 'y/'
+    sparse_y_tiles = tile_raster(enmap_raster, 100, y_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
+
+    # remove partner tiles if one of the pair was skipped
+    for file in sparse_x_tiles:
+        if os.path.exists(y_tiles_path + file):
+            os.remove(y_tiles_path + file)
+    for file in sparse_y_tiles:
+        if os.path.exists(x_tiles_path + file):
+            os.remove(x_tiles_path + file)
+
     print("Tiling time: %.4fs" % (time.time() - start_time))

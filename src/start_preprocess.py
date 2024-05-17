@@ -7,9 +7,9 @@ if __name__ == '__main__':
     parser.add_argument('--enmap-dir', type=str, default='/data/EnMAP/', help='Path to the directory with EnMAP data')
     parser.add_argument('--output-dir', type=str, default='/data/preprocessing/',
                         help='Path to the directory where the output data will be saved')
-    parser.add_argument('--stages', nargs='+', default='[all]', help='Stages to run (all, crop, scrape, mask, wald')
+    parser.add_argument('--stages', nargs='+', default='[all]', help='Stages to run (all, crop, scrape, mask, wald)')
     parser.add_argument('--cpus', nargs='+', type=int, default=[0, 1, 2, 3], help='Assigned logical CPUs for the pipeline')
-    parser.add_argument('--mem-limit', type=int, default=1, help='Memory limit for the pipeline in GB')
+    parser.add_argument('--mem-limit', type=int, default=10, help='Memory limit for the pipeline in GB')
 
     args = parser.parse_args()
 
@@ -29,8 +29,12 @@ if __name__ == '__main__':
         pipeline.crop_all()
     elif 'scrape' in args.stages:
         pipeline.scrape_all()
+    elif 'check' in args.stages:
+        pipeline.check_and_harmonize_scene_directories()
     elif 'mask' in args.stages:
         pipeline.cloud_mask_all()
+    elif 'clean' in args.stages:
+        pipeline.clean_up()
     elif 'wald' in args.stages:
         pipeline.wald_protocol_all()
 
