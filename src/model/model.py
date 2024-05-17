@@ -39,13 +39,13 @@ class Model:
         # padding: https://hidayatullahhaider.medium.com/a-simple-definition-of-overlap-term-in-cnn-f331f6ef3031
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
         model = models.Sequential()
-        model.add(layers.Conv2D(512,
+        model.add(layers.Conv2D(1024,
                                 self.kernel_size_list[0],
                                 activation='relu',
                                 input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
                                 padding='same'))
         # second hidden layer with more neurons worsens loss and accuracy (reason: lack of data maybe)
-        model.add(layers.Conv2D(400,
+        model.add(layers.Conv2D(512,
                                 self.kernel_size_list[1],
                                 activation='relu',
                                 padding='same'))
@@ -108,10 +108,11 @@ class Model:
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
         # plt.show()
-        plt.savefig(self.output_dir + 'figures/first_model_accuracy.png')
+        plt.savefig(self.output_dir + 'models/first_model_accuracy.png')
         plt.plot(history.history['loss'])
         plt.title('model loss')
-        plt.savefig(self.output_dir + 'figures/first_model_loss.png')
+        plt.savefig(self.output_dir + 'models/first_model_loss.png')
 
         print('Saving model to:', self.output_dir + 'models/first_model.keras')
         self.model.save(self.output_dir + 'models/first_model.keras')
+        return self.model
