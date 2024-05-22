@@ -39,50 +39,22 @@ class Model:
         # padding: https://hidayatullahhaider.medium.com/a-simple-definition-of-overlap-term-in-cnn-f331f6ef3031
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
         model = models.Sequential()
-        # model.add(layers.Conv2D(1024,
-        #                         self.kernel_size_list[0],
-        #                         activation='relu',
-        #                         input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
-        #                         padding='same'))
-        # # second hidden layer with more neurons worsens loss and accuracy (reason: lack of data maybe)
-        # model.add(layers.Conv2D(512,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
-        model.add(layers.Conv2D(self.no_input_bands,
+        model.add(layers.Conv2D(1024,
                                 self.kernel_size_list[0],
                                 activation='relu',
+                                input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
                                 padding='same'))
-        model.add(layers.Conv2D(self.no_input_bands,
+        # second hidden layer with more neurons worsens loss and accuracy (reason: lack of data maybe)
+        model.add(layers.Conv2D(512,
                                 self.kernel_size_list[1],
                                 activation='relu',
                                 padding='same'))
-        model.add(layers.Conv2D(self.no_input_bands,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(self.no_input_bands,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(self.no_input_bands,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(self.no_output_bands,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        # model.add(layers.Conv2D(512,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
         # model.add(layers.Conv2D(256,
         #                         self.kernel_size_list[2],
         #                         activation='relu',
         #                         padding='same'))
         # relu in last layer significantly increased accuracy but worsened loss (stuck after one epoch)
-        #  --> predictio with this model is all 0 this is why the accuracy is 1/3 (many 0s in input data)
+        #  --> prediction with this model is all 0 this is why the accuracy is 1/3 (many 0s in input data)
         model.add(layers.Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
                                 activation='linear',
