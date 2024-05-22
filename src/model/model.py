@@ -56,14 +56,14 @@ class Model:
                                 self.kernel_size_list[1],
                                 activation='relu',
                                 padding='same'))
-        model.add(layers.Conv2D(512,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(512,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
+        # model.add(layers.Conv2D(512,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(512,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
         # model.add(layers.Conv2D(256,
         #                         self.kernel_size_list[2],
         #                         activation='relu',
