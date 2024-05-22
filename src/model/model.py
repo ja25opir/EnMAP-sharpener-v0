@@ -39,11 +39,11 @@ class Model:
         # padding: https://hidayatullahhaider.medium.com/a-simple-definition-of-overlap-term-in-cnn-f331f6ef3031
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
         model = models.Sequential()
-        # model.add(layers.Conv2D(1024,
-        #                         self.kernel_size_list[0],
-        #                         activation='relu',
-        #                         input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
-        #                         padding='same'))
+        model.add(layers.Conv2D(512,
+                                self.kernel_size_list[0],
+                                activation='relu',
+                                input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
+                                padding='same'))
         model.add(layers.Conv2D(512,
                                 self.kernel_size_list[0],
                                 activation='relu',
@@ -56,10 +56,10 @@ class Model:
                                 self.kernel_size_list[1],
                                 activation='relu',
                                 padding='same'))
-        # model.add(layers.Conv2D(512,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
+        model.add(layers.Conv2D(512,
+                                self.kernel_size_list[1],
+                                activation='relu',
+                                padding='same'))
         # model.add(layers.Conv2D(512,
         #                         self.kernel_size_list[1],
         #                         activation='relu',
