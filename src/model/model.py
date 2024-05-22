@@ -49,23 +49,23 @@ class Model:
         #                         self.kernel_size_list[1],
         #                         activation='relu',
         #                         padding='same'))
-        model.add(layers.Conv2D(self.no_output_bands,
+        model.add(layers.Conv2D(self.no_input_bands,
                                 self.kernel_size_list[0],
                                 activation='relu',
                                 padding='same'))
-        model.add(layers.Conv2D(self.no_output_bands,
+        model.add(layers.Conv2D(self.no_input_bands,
                                 self.kernel_size_list[1],
                                 activation='relu',
                                 padding='same'))
-        model.add(layers.Conv2D(self.no_output_bands,
+        model.add(layers.Conv2D(self.no_input_bands,
                                 self.kernel_size_list[1],
                                 activation='relu',
                                 padding='same'))
-        model.add(layers.Conv2D(self.no_output_bands,
+        model.add(layers.Conv2D(self.no_input_bands,
                                 self.kernel_size_list[1],
                                 activation='relu',
                                 padding='same'))
-        model.add(layers.Conv2D(self.no_output_bands,
+        model.add(layers.Conv2D(self.no_input_bands,
                                 self.kernel_size_list[1],
                                 activation='relu',
                                 padding='same'))
