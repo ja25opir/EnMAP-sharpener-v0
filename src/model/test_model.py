@@ -20,7 +20,9 @@ random_file = random.choice(y_data)
 x_raster = np.load(x_data_path + random_file)
 y_raster = np.load(y_data_path + random_file)
 
-model = tf.keras.models.load_model(model_path + 'first_model.keras')
+# model = tf.keras.models.load_model(model_path + 'first_model.keras')
+# looks like 3 layers are not enough to predict the image (2 layers only predict clouds)
+model = tf.keras.models.load_model(model_path + 'multi_layers.keras')
 
 print(model.summary())
 
