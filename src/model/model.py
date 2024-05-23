@@ -87,7 +87,7 @@ class Model:
                                 input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
                                 padding='same'))
         for i in range(self.no_output_bands):
-            model.add(layers.Conv2D(32,
+            model.add(layers.Conv2D(4,
                                     self.kernel_size_list[1],
                                     activation='relu',
                                     padding='same'))
