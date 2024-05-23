@@ -1,6 +1,6 @@
 import os, random
 
-from tensorflow.keras import layers, models, initializers
+from tensorflow.keras import layers, models, initializers, regularizers
 from matplotlib import pyplot as plt
 
 from .load_data import DataGenerator
@@ -32,48 +32,69 @@ class Model:
     def define_model(self):
         # padding = same (output size = input size) --> rethink this
         # activation function relu, relu, linear (Masi) --> rethink this
+        # maybe leaky relu vs vanishing gradients
         # layers described in Masi p.4 (2.2) 64 - 32 - 3 (no. bands) kernels: 9x9, 1x1 (3x3), 5x5
         # todo: add padding to tiles (overlap in windows to avoid edge effects caused by zero padding)
+        # maybe use 3d kernels as spectral bands may be "connected" (but maybe sentinel layers need to be sorted in then)
+        # maybe add more sentinel layers as duplicates (bias) to increase the importance of these layers
         # padding: https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
         # stride: https://tcnguyen.github.io/neuralnetworks/cnn_tensorflow.html
         # padding: https://hidayatullahhaider.medium.com/a-simple-definition-of-overlap-term-in-cnn-f331f6ef3031
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
         model = models.Sequential()
-        model.add(layers.Conv2D(1024,
-                                self.kernel_size_list[0],
-                                activation='relu',
-                                input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
-                                padding='same'))
-        model.add(layers.Conv2D(512,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(512,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(512,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(512,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
-        model.add(layers.Conv2D(512,
-                                self.kernel_size_list[1],
-                                activation='relu',
-                                padding='same'))
+        # experimental
+        # model.add(layers.Conv2D(1024,
+        #                         self.kernel_size_list[0],
+        #                         activation='relu',
+        #                         input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
+        #                         padding='same'))
+        # model.add(layers.Conv2D(512,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(512,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(512,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(512,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(512,
+        #                         self.kernel_size_list[1],
+        #                         activation='relu',
+        #                         padding='same'))
         # model.add(layers.Conv2D(256,
         #                         self.kernel_size_list[2],
         #                         activation='relu',
         #                         padding='same'))
         # relu in last layer significantly increased accuracy but worsened loss (stuck after one epoch)
         #  --> prediction with this model is all 0 this is why the accuracy is 1/3 (many 0s in input data)
+        # model.add(layers.Conv2D(self.no_output_bands,
+        #                         self.kernel_size_list[2],
+        #                         activation='linear',
+        #                         padding='same'))
+
+        #Masi
+        model.add(layers.Conv2D(64,
+                                (9,9),
+                                activation='relu',
+                                input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
+                                padding='same'))
+        model.add(layers.Conv2D(32,
+                                (5,5),
+                                activation='relu',
+                                input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
+                                padding='same'))
         model.add(layers.Conv2D(self.no_output_bands,
-                                self.kernel_size_list[2],
+                                (5,5),
                                 activation='linear',
                                 padding='same'))
+
 
         # todo: this already seems to be set by default
         initializer = initializers.GlorotUniform()

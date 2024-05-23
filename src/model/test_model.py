@@ -15,7 +15,8 @@ x_data = os.listdir(x_data_path)
 y_data = os.listdir(y_data_path)
 
 # get random file from data
-random_file = random.choice(y_data)
+# random_file = random.choice(y_data)
+random_file = '20220627T104548Z_0_0.npy'
 
 x_raster = np.load(x_data_path + random_file)
 y_raster = np.load(y_data_path + random_file)
