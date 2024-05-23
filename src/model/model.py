@@ -88,7 +88,6 @@ class Model:
         model.add(layers.Conv2D(32,
                                 (5,5),
                                 activation='relu',
-                                input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
                                 padding='same'))
         model.add(layers.Conv2D(self.no_output_bands,
                                 (5,5),
