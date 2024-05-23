@@ -19,12 +19,7 @@ def download_file(session, url, save_dir, file_format='tif'):
         sys.exit()
 
 
-def get_item_list(session, url, start_index=None):
-    parameter = {
-        'f': 'json',
-        'limit': 20,
-        'startIndex': start_index,
-    }
+def get_item_list(session, url, parameter):
     enmap_collection_response = session.get(url, params=parameter)
     print(enmap_collection_response.url)
     collection = enmap_collection_response.content.decode('utf-8')
@@ -37,9 +32,11 @@ def get_item_list(session, url, start_index=None):
 
 
 class EnMAP:
-    def __init__(self, enmap_dir, max_cloud_cover, start_index, max_scenes, session_token):
+    def __init__(self, enmap_dir, max_cloud_cover, bbox, date_time, start_index, max_scenes, session_token):
         self.enmap_dir = enmap_dir
         self.max_cloud_cover = max_cloud_cover
+        self.bbox = bbox
+        self.date_time = date_time
         self.start_index = start_index
         self.max_scenes = max_scenes
         self.session_token = session_token
@@ -62,14 +59,14 @@ class EnMAP:
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
             'Cookie': cookie,
             'Host': 'download.geoservice.dlr.de',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 OPR/109.0.0.0'
         }
         session.headers.update(headers)
         return session
 
     def filter_item_list(self, session, item_feature_list, max_cloud_cover, number_all_scenes):
         for item in item_feature_list:
-            print('Downloading item', self.checked_scenes + 1 + int(self.start_index), 'of', number_all_scenes, '...')
+            print('Processing item', self.checked_scenes + 1 + int(self.start_index), 'of', number_all_scenes, '...')
             self.checked_scenes += 1
             cloud_cover = int(item['properties']['eo:cloud_cover']) + int(item['properties']['enmap:cirrus_cover'])
             if cloud_cover < max_cloud_cover and item['properties'][
@@ -92,6 +89,7 @@ class EnMAP:
                 if (time.time() - start_time) < 3:
                     print('Session token expired or invalid. Please provide a new one.')
                     print('Failed item:', scene_dir)
+                    shutil.rmtree(scene_dir)
                     sys.exit()
                 # download metadata, skip on 404
                 status = download_file(session, metadata_href, scene_dir, 'xml')
@@ -119,9 +117,17 @@ class EnMAP:
     def scrape_all_scenes(self):
         next_link = self.default_index_url
         start_idx = self.start_index
+        parameter = {
+            'f': 'json',
+            'limit': 20,
+            'startIndex': start_idx,
+            'bbox': self.bbox,
+            'datetime': self.date_time
+        }
+        item_list = get_item_list(self.auth_session, next_link, parameter=parameter)
+        scenes = item_list['features']
+        # repeat as long as the pagination returns a next link
         while next_link != '':
-            item_list = get_item_list(self.auth_session, next_link, start_idx)
-            scenes = item_list['features']
             self.filter_item_list(self.auth_session, scenes, self.max_cloud_cover, item_list['numberMatched'])
             for link in item_list['links']:
                 if link['rel'] == 'next':
@@ -129,3 +135,6 @@ class EnMAP:
                     break
                 else:
                     next_link = ''
+            # initial parameter are provided in next_link (bbox gets cutoff so we provide the rest again)
+            item_list = get_item_list(self.auth_session, next_link, parameter={'bbox': self.bbox[1:]})
+            scenes = item_list['features']
