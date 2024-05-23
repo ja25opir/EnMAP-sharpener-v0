@@ -79,21 +79,37 @@ class Model:
         #                         activation='linear',
         #                         padding='same'))
 
-        #Masi
+        # very deep network:
+        # one hidden layer per output band
         model.add(layers.Conv2D(64,
-                                (9,9),
+                                self.kernel_size_list[0],
                                 activation='relu',
                                 input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
                                 padding='same'))
-        model.add(layers.Conv2D(32,
-                                (5,5),
-                                activation='relu',
-                                padding='same'))
+        for i in range(self.no_output_bands):
+            model.add(layers.Conv2D(32,
+                                    self.kernel_size_list[1],
+                                    activation='relu',
+                                    padding='same'))
         model.add(layers.Conv2D(self.no_output_bands,
-                                (5,5),
+                                (5, 5),
                                 activation='linear',
                                 padding='same'))
 
+        # Masi
+        # model.add(layers.Conv2D(64,
+        #                         (9,9),
+        #                         activation='relu',
+        #                         input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
+        #                         padding='same'))
+        # model.add(layers.Conv2D(32,
+        #                         (5,5),
+        #                         activation='relu',
+        #                         padding='same'))
+        # model.add(layers.Conv2D(self.no_output_bands,
+        #                         (5,5),
+        #                         activation='linear',
+        #                         padding='same'))
 
         # todo: this already seems to be set by default
         initializer = initializers.GlorotUniform()
@@ -106,7 +122,7 @@ class Model:
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle? -> in DataGenerator
-        self.train_files = all_files[:int(len(all_files) * 0.8)] # todo: WIP
+        self.train_files = all_files[:int(len(all_files) * 0.8)]  # todo: WIP
         self.test_files = all_files[int(len(all_files) * 0.8):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
