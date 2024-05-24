@@ -171,7 +171,8 @@ class Model:
                                        no_output_bands=self.no_output_bands,
                                        shuffle=False)
 
-        self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'], learning_rate=0.0001)
+        optimizer = tf.keras.optimizers.Adam(lr=0.0001)
+        self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
 
         history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
