@@ -187,5 +187,5 @@ class Model:
         plt.savefig(self.output_dir + 'models/first_model_loss.png')
 
         print('Saving model to:', self.output_dir + 'models/first_model.keras')
-        self.model.save(self.output_dir + 'models/first_model.h5')
+        self.model.save(self.output_dir + 'models/first_model.keras')
         return self.model
