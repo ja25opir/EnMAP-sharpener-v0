@@ -1,6 +1,7 @@
 import os, random
 
-from tensorflow.keras import layers, models, initializers, regularizers, Layer, Input
+from tensorflow.keras import layers, models, initializers, regularizers
+from tensorflow.keras.layers import Layer, Input
 from matplotlib import pyplot as plt
 
 from .load_data import DataGenerator
