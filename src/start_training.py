@@ -15,7 +15,7 @@ TRAIN_DATA_DIR = os.getcwd() + '/data/preprocessing/model_input/'
 OUTPUT_DIR = os.getcwd() + '/output/'
 LOSS_FUNCTION = 'mean_squared_error'  # todo: adapt learn rate and momentum, also use other function
 BATCH_SIZE = 128  # (Masi: 128)
-TRAIN_EPOCHS = 2
+TRAIN_EPOCHS = 1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start model training.')

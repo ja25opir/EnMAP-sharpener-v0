@@ -1,17 +1,17 @@
 import os, random
 
 import tensorflow as tf
-from tensorflow.keras import layers, models, initializers, regularizers
-from tensorflow.keras.layers import Layer, Input
+from tensorflow.keras import models, initializers, regularizers
+from tensorflow.keras.layers import Layer, Input, Conv2D
 from matplotlib import pyplot as plt
 
 from .load_data import DataGenerator
 
 
-class SymmetricPadding2D(Layer):
+class ReflectionPadding2D(Layer):
     def __init__(self, padding=(1, 1), **kwargs):
         self.padding = tuple(padding)
-        super(SymmetricPadding2D, self).__init__(**kwargs)
+        super(ReflectionPadding2D, self).__init__(**kwargs)
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0],
@@ -104,23 +104,23 @@ class Model:
         # one hidden layer per output band
         input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
         model.add(Input(shape=input_shape))
-        model.add(SymmetricPadding2D(padding=(4, 4)))
-        model.add(layers.Conv2D(64,
+        model.add(ReflectionPadding2D(padding=(4, 4)))
+        model.add(Conv2D(64,
                                 self.kernel_size_list[0],
                                 # activation=tf.keras.layers.LeakyReLU(),
                                 activation='relu',
                                 kernel_regularizer=regularizers.l1(0.01),
                                 padding='valid'))
         for i in range(10):
-            model.add(SymmetricPadding2D(padding=(1, 1)))
-            model.add(layers.Conv2D(64,
+            model.add(ReflectionPadding2D(padding=(1, 1)))
+            model.add(Conv2D(64,
                                     self.kernel_size_list[1],
                                     # activation=tf.keras.layers.LeakyReLU(),
                                     activation='relu',
                                     kernel_regularizer=regularizers.l1(0.01),
                                     padding='valid'))
-        model.add(SymmetricPadding2D(padding=(2, 2)))
-        model.add(layers.Conv2D(self.no_output_bands,
+        model.add(ReflectionPadding2D(padding=(2, 2)))
+        model.add(Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
                                 activation='linear',
                                 padding='valid'))
