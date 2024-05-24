@@ -142,8 +142,7 @@ class Model:
         for layer in model.layers:
             layer.kernel_initializer = initializer
 
-        model.build()
-        model.summary()
+        # model.summary()
         return model
 
     def train_test_split(self):
@@ -172,6 +171,7 @@ class Model:
                                        shuffle=False)
 
         self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'])
+        self.model.summary()
 
         history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
 
