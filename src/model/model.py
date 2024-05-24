@@ -1,17 +1,32 @@
 import os, random
 
-from tensorflow.keras import layers, models, initializers, regularizers
+from tensorflow.keras import layers, models, initializers, regularizers, Layer, Input
 from matplotlib import pyplot as plt
 
 from .load_data import DataGenerator
+
+
+class SymmetricPadding2D(Layer):
+    def __init__(self, padding=(1, 1), **kwargs):
+        self.padding = tuple(padding)
+        super(SymmetricPadding2D, self).__init__(**kwargs)
+
+    def compute_output_shape(self, input_shape):
+        return (
+            input_shape[0], input_shape[1] + 2 * self.padding[0], input_shape[2] + 2 * self.padding[1], input_shape[3])
+
+    def __call__(self, input_tensor, mask=None):
+        padding_width, padding_height = self.padding
+        print(padding_height, padding_width)
+        return tf.pad(input_tensor,
+                      tf.constant([[padding_height, padding_height], [padding_width, padding_width]]),
+                      'SYMMETRIC')
 
 
 # input shape: https://stackoverflow.com/questions/60157742/convolutional-neural-network-cnn-input-shape
 # SRCNN: https://github.com/Lornatang/SRCNN-PyTorch/blob/main/model.py 64 - 32 - 1 (no. bands)
 # SRCNN: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=7115171
 # Sentinel CNN: https://github.com/jensleitloff/CNN-Sentinel/blob/master/py/02_train_rgb_finetuning.py
-
-
 class Model:
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size, kernel_size_list,
                  loss_function, train_epochs, output_dir):
@@ -81,20 +96,25 @@ class Model:
 
         # very deep network:
         # one hidden layer per output band
-        model.add(layers.Conv2D(64,
-                                self.kernel_size_list[0],
-                                activation='relu',
-                                input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
-                                padding='same'))
-        for i in range(self.no_output_bands):
-            model.add(layers.Conv2D(4,
+        input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
+        inputs = Input(shape=input_shape)
+        x = SymmetricPadding2D(padding=(1, 1))(inputs)
+        x = model.add(layers.Conv2D(64,
+                                    self.kernel_size_list[0],
+                                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                                    padding='valid'))(x)
+        for i in range(10):
+            x = SymmetricPadding2D(padding=(1, 1))(x)
+            model.add(layers.Conv2D(64,
                                     self.kernel_size_list[1],
-                                    activation='relu',
-                                    padding='same'))
+                                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                                    kernel_regularizer=regularizers.l1(0.001),
+                                    padding='valid'))(x)
+        x = SymmetricPadding2D(padding=(1, 1))(x)
         model.add(layers.Conv2D(self.no_output_bands,
                                 (5, 5),
                                 activation='linear',
-                                padding='same'))
+                                padding='linear'))(x)
 
         # Masi
         # model.add(layers.Conv2D(64,

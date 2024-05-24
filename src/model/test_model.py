@@ -22,15 +22,17 @@ x_raster = np.load(x_data_path + random_file)
 y_raster = np.load(y_data_path + random_file)
 
 # model = tf.keras.models.load_model(model_path + 'first_model.keras')
-# looks like 3 layers are not enough to predict the image (2 layers only predict clouds)
-model = tf.keras.models.load_model(model_path + 'multi_layers.keras')
+# all hidden layers in a deep model only filter cloud + cloud edges
+# --> not true: todo: inspect all bands of the hidden layers
+model = tf.keras.models.load_model(model_path + 'very_deep.keras')
 
 print(model.summary())
 
 model_input = x_raster.T.reshape(1, 100, 100, 228)
 predicted_raster = model.predict(model_input).reshape(100, 100, 224).T
 
-bands = [50, 100, 150]
+# bands = [50, 100, 150]
+bands = [1, 2, 3]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 
@@ -49,5 +51,4 @@ for i in range(len(model.layers)):
     arr = get_bands_from_array(get_1_output[0].T, bands)
     plot_3_band_image(arr, title='Layer ' + str(i + 1))
 
-# currently layer 1 and 2 only display clouds / noise (no real features)
 # todo: for a real prediction we have to upscale an enmap image that was not used for training, and add sentinel bands
