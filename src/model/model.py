@@ -103,10 +103,11 @@ class Model:
 
         # very deep network:
         # one hidden layer per output band
+        input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
+        model.add(Input(shape=input_shape))
         model.add(SymmetricPadding2D(padding=(1, 1)))
         model.add(layers.Conv2D(64,
                                     self.kernel_size_list[0],
-                                    input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
                                     activation=tf.keras.layers.LeakyReLU(alpha=0.01),
                                     padding='valid'))
         for i in range(10):
