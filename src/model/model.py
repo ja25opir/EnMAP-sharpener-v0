@@ -103,25 +103,24 @@ class Model:
 
         # very deep network:
         # one hidden layer per output band
-        input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
-        inputs = Input(shape=input_shape)
-        x = SymmetricPadding2D(padding=(1, 1))(inputs)
-        x = model.add(layers.Conv2D(64,
+        model.add(SymmetricPadding2D(padding=(1, 1)))
+        model.add(layers.Conv2D(64,
                                     self.kernel_size_list[0],
-                                    activation='relu',
-                                    padding='valid')(x))
+                                    input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
+                                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                                    padding='valid'))
         for i in range(10):
-            x = SymmetricPadding2D(padding=(1, 1))(x)
+            model.add(SymmetricPadding2D(padding=(1, 1)))
             model.add(layers.Conv2D(64,
                                     self.kernel_size_list[1],
-                                    activation='relu',
+                                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
                                     kernel_regularizer=regularizers.l1(0.001),
-                                    padding='valid')(x))
-        x = SymmetricPadding2D(padding=(1, 1))(x)
+                                    padding='valid'))
+        model.add(SymmetricPadding2D(padding=(1, 1)))
         model.add(layers.Conv2D(self.no_output_bands,
                                 (5, 5),
                                 activation='linear',
-                                padding='linear')(x))
+                                padding='same'))
 
         # Masi
         # model.add(layers.Conv2D(64,
