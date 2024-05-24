@@ -14,14 +14,19 @@ class SymmetricPadding2D(Layer):
         super(SymmetricPadding2D, self).__init__(**kwargs)
 
     def compute_output_shape(self, input_shape):
-        return (
-            input_shape[0], input_shape[1] + 2 * self.padding[0], input_shape[2] + 2 * self.padding[1], input_shape[3])
+        return (input_shape[0],
+                input_shape[1] + 2 * self.padding[0],
+                input_shape[2] + 2 * self.padding[1],
+                input_shape[3])
 
     def __call__(self, input_tensor, mask=None):
         padding_width, padding_height = self.padding
         print(padding_height, padding_width)
         return tf.pad(input_tensor,
-                      tf.constant([[padding_height, padding_height], [padding_width, padding_width]]),
+                      tf.constant([[0, 0],
+                       [padding_height, padding_height],
+                       [padding_width, padding_width],
+                       [0, 0]]),
                       'SYMMETRIC')
 
 
