@@ -46,6 +46,10 @@ class DataGenerator(Sequence):
             y_path = os.path.join(self.data_dir, 'y', self.data_list[data_index])
             y_img = np.load(y_path)
 
+            # todo: WIP testing with 6 bands
+            x_img = x_img[(50,100,150,225,226,227), :, :]
+            y_img = y_img[(50,100,150), :, :]
+
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
             X[i,] = x_img.T
             Y[i,] = y_img.T

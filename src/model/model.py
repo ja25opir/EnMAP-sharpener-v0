@@ -119,7 +119,7 @@ class Model:
                                     padding='valid'))
         model.add(SymmetricPadding2D(padding=(2, 2)))
         model.add(layers.Conv2D(self.no_output_bands,
-                                (5, 5),
+                                self.kernel_size_list[2],
                                 activation='linear',
                                 padding='valid'))
 
@@ -139,9 +139,9 @@ class Model:
         #                         padding='same'))
 
         # todo: this already seems to be set by default
-        initializer = initializers.GlorotUniform()
-        for layer in model.layers:
-            layer.kernel_initializer = initializer
+        # initializer = initializers.GlorotUniform()
+        # for layer in model.layers:
+        #     layer.kernel_initializer = initializer
 
         # model.summary()
         return model
