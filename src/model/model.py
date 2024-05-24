@@ -19,7 +19,7 @@ class SymmetricPadding2D(Layer):
                 input_shape[2] + 2 * self.padding[1],
                 input_shape[3])
 
-    def __call__(self, input_tensor, mask=None):
+    def call(self, input_tensor):
         padding_width, padding_height = self.padding
         return tf.pad(input_tensor,
                       tf.constant([[0, 0],
