@@ -1,14 +1,14 @@
 import os, random
 
 import tensorflow as tf
-from tensorflow.keras import models, initializers, regularizers
+from tensorflow.keras import layers, models, initializers, regularizers
 from tensorflow.keras.layers import Layer, Input, Conv2D
 from matplotlib import pyplot as plt
 
 from .load_data import DataGenerator
 
 
-class ReflectionPadding2D(tf.keras.layers.Layer):
+class ReflectionPadding2D(layers.Layer):
     def __init__(self, padding=(1, 1), **kwargs):
         self.padding = tuple(padding)
         super(ReflectionPadding2D, self).__init__(**kwargs)
