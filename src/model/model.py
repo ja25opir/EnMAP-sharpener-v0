@@ -21,7 +21,6 @@ class SymmetricPadding2D(Layer):
 
     def __call__(self, input_tensor, mask=None):
         padding_width, padding_height = self.padding
-        print(padding_height, padding_width)
         return tf.pad(input_tensor,
                       tf.constant([[0, 0],
                                    [padding_height, padding_height],
@@ -108,13 +107,14 @@ class Model:
         model.add(SymmetricPadding2D(padding=(4, 4)))
         model.add(layers.Conv2D(64,
                                 self.kernel_size_list[0],
-                                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                                activation=tf.keras.layers.LeakyReLU(),
+                                kernel_regularizer=regularizers.l1(0.001),
                                 padding='valid'))
         for i in range(10):
             model.add(SymmetricPadding2D(padding=(1, 1)))
             model.add(layers.Conv2D(64,
                                     self.kernel_size_list[1],
-                                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                                    activation=tf.keras.layers.LeakyReLU(),
                                     kernel_regularizer=regularizers.l1(0.001),
                                     padding='valid'))
         model.add(SymmetricPadding2D(padding=(2, 2)))
@@ -171,7 +171,7 @@ class Model:
                                        no_output_bands=self.no_output_bands,
                                        shuffle=False)
 
-        self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'])
+        self.model.compile(optimizer='adam', loss=self.loss_function, metrics=['accuracy'], learning_rate=0.0001)
         self.model.summary()
 
         history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
