@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from .load_data import DataGenerator
 
 
-class ReflectionPadding2D(Layer):
+class ReflectionPadding2D(tf.keras.layers.Layer):
     def __init__(self, padding=(1, 1), **kwargs):
         self.padding = tuple(padding)
         super(ReflectionPadding2D, self).__init__(**kwargs)
