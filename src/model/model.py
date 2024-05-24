@@ -1,8 +1,7 @@
 import os, random
 
 import tensorflow as tf
-from tensorflow.keras import layers, models, initializers, regularizers
-from tensorflow.keras.layers import Layer, Input, Conv2D
+from tensorflow.keras import layers, models, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
 from .load_data import DataGenerator
@@ -105,7 +104,7 @@ class Model:
         input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
         model.add(Input(shape=input_shape))
         model.add(ReflectionPadding2D(padding=(4, 4)))
-        model.add(Conv2D(64,
+        model.add(layers.Conv2D(64,
                                 self.kernel_size_list[0],
                                 # activation=tf.keras.layers.LeakyReLU(),
                                 activation='relu',
@@ -113,14 +112,14 @@ class Model:
                                 padding='valid'))
         for i in range(10):
             model.add(ReflectionPadding2D(padding=(1, 1)))
-            model.add(Conv2D(64,
+            model.add(layers.Conv2D(64,
                                     self.kernel_size_list[1],
                                     # activation=tf.keras.layers.LeakyReLU(),
                                     activation='relu',
                                     kernel_regularizer=regularizers.l1(0.01),
                                     padding='valid'))
         model.add(ReflectionPadding2D(padding=(2, 2)))
-        model.add(Conv2D(self.no_output_bands,
+        model.add(layers.Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
                                 activation='linear',
                                 padding='valid'))
@@ -188,5 +187,5 @@ class Model:
         plt.savefig(self.output_dir + 'models/first_model_loss.png')
 
         print('Saving model to:', self.output_dir + 'models/first_model.keras')
-        self.model.save(self.output_dir + 'models/first_model.keras')
+        self.model.save(self.output_dir + 'models/first_model.h5')
         return self.model
