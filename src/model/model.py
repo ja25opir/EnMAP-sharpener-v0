@@ -108,13 +108,13 @@ class Model:
         x = SymmetricPadding2D(padding=(1, 1))(inputs)
         x = model.add(layers.Conv2D(64,
                                     self.kernel_size_list[0],
-                                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                                    activation='relu',
                                     padding='valid')(x))
         for i in range(10):
             x = SymmetricPadding2D(padding=(1, 1))(x)
             model.add(layers.Conv2D(64,
                                     self.kernel_size_list[1],
-                                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                                    activation='relu',
                                     kernel_regularizer=regularizers.l1(0.001),
                                     padding='valid')(x))
         x = SymmetricPadding2D(padding=(1, 1))(x)
