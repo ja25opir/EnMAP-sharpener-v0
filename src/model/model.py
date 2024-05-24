@@ -142,6 +142,7 @@ class Model:
         for layer in model.layers:
             layer.kernel_initializer = initializer
 
+        model.build()
         model.summary()
         return model
 
