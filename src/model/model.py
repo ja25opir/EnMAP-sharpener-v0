@@ -173,7 +173,7 @@ class Model:
                                        no_output_bands=self.no_output_bands,
                                        shuffle=False)
 
-        optimizer = tf.keras.optimizers.Adam(lr=0.0001)
+        optimizer = tf.keras.optimizers.Adam(lr=0.00001)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
 
