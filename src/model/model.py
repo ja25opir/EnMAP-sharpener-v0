@@ -120,7 +120,7 @@ class Model:
         model.add(layers.Conv2D(self.no_output_bands,
                                 (5, 5),
                                 activation='linear',
-                                padding='same'))
+                                padding='valid'))
 
         # Masi
         # model.add(layers.Conv2D(64,
