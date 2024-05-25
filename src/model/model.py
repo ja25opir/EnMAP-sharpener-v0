@@ -108,7 +108,7 @@ class Model:
                                 self.kernel_size_list[0],
                                 # activation=tf.keras.layers.LeakyReLU(),
                                 activation='relu',
-                                kernel_regularizer=regularizers.l1(0.01),
+                                kernel_regularizer=regularizers.l1(0.015),
                                 padding='valid'))
         for i in range(10):
             model.add(ReflectionPadding2D(padding=(1, 1)))
@@ -116,12 +116,13 @@ class Model:
                                     self.kernel_size_list[1],
                                     # activation=tf.keras.layers.LeakyReLU(),
                                     activation='relu',
-                                    kernel_regularizer=regularizers.l1(0.01),
+                                    kernel_regularizer=regularizers.l1(0.03),
                                     padding='valid'))
         model.add(ReflectionPadding2D(padding=(2, 2)))
         model.add(layers.Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
                                 activation='linear',
+                                kernel_regularizer=regularizers.l1(0.015),
                                 padding='valid'))
 
         # Masi
