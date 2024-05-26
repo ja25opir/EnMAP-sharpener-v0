@@ -101,6 +101,31 @@ class Model:
 
         # very deep network:
         # one hidden layer per output band
+        # input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
+        # model.add(Input(shape=input_shape))
+        # model.add(ReflectionPadding2D(padding=(4, 4)))
+        # model.add(layers.Conv2D(64,
+        #                         self.kernel_size_list[0],
+        #                         # activation=tf.keras.layers.LeakyReLU(),
+        #                         activation='relu',
+        #                         kernel_regularizer=regularizers.l1(0.015),
+        #                         padding='valid'))
+        # for i in range(10):
+        #     model.add(ReflectionPadding2D(padding=(1, 1)))
+        #     model.add(layers.Conv2D(64,
+        #                             self.kernel_size_list[1],
+        #                             # activation=tf.keras.layers.LeakyReLU(),
+        #                             activation='relu',
+        #                             kernel_regularizer=regularizers.l1(0.03),
+        #                             padding='valid'))
+        # model.add(ReflectionPadding2D(padding=(2, 2)))
+        # model.add(layers.Conv2D(self.no_output_bands,
+        #                         self.kernel_size_list[2],
+        #                         activation='linear',
+        #                         kernel_regularizer=regularizers.l1(0.015),
+        #                         padding='valid'))
+
+        # Masi
         input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
         model.add(Input(shape=input_shape))
         model.add(ReflectionPadding2D(padding=(4, 4)))
@@ -110,22 +135,19 @@ class Model:
                                 activation='relu',
                                 kernel_regularizer=regularizers.l1(0.015),
                                 padding='valid'))
-        for i in range(10):
-            model.add(ReflectionPadding2D(padding=(1, 1)))
-            model.add(layers.Conv2D(64,
-                                    self.kernel_size_list[1],
-                                    # activation=tf.keras.layers.LeakyReLU(),
-                                    activation='relu',
-                                    kernel_regularizer=regularizers.l1(0.03),
-                                    padding='valid'))
+        model.add(ReflectionPadding2D(padding=(1, 1)))
+        model.add(layers.Conv2D(32,
+                                self.kernel_size_list[1],
+                                # activation=tf.keras.layers.LeakyReLU(),
+                                activation='relu',
+                                kernel_regularizer=regularizers.l1(0.03),
+                                padding='valid'))
         model.add(ReflectionPadding2D(padding=(2, 2)))
         model.add(layers.Conv2D(self.no_output_bands,
                                 self.kernel_size_list[2],
                                 activation='linear',
                                 kernel_regularizer=regularizers.l1(0.015),
                                 padding='valid'))
-
-        # Masi
         # model.add(layers.Conv2D(64,
         #                         (9,9),
         #                         activation='relu',
