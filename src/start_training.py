@@ -44,6 +44,8 @@ if __name__ == '__main__':
     # with strategy.scope():
     CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in args.gpus])
     os.environ["CUDA_VISIBLE_DEVICES"] = CUDA_VISIBLE_DEVICES
+    gpus = tf.config.list_logical_devices('GPU')
+    print(gpus)
     print('Using following GPUs:', os.environ["CUDA_VISIBLE_DEVICES"])
     cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
                       LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
