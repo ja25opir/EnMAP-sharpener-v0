@@ -37,7 +37,7 @@ if __name__ == '__main__':
     import tensorflow as tf
     tf.debugging.set_log_device_placement(True)
     gpus = tf.config.list_logical_devices('GPU')
-    strategy = tf.distribute.MirroredStrategy(gpus)
+    strategy = tf.distribute.MirroredStrategy([gpus[1], gpus[2]])
     with strategy.scope():
         cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
                           LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
