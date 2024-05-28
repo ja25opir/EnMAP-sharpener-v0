@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # set mem limit for each GPU
     for device in gpus:
         tf.config.set_logical_device_configuration(
-            gpus[device],
+            device,
             [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * args.mem_limit)])
     # distribute training on multiple GPUs
     strategy = tf.distribute.MirroredStrategy(gpus)
