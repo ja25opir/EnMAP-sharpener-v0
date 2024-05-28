@@ -40,15 +40,22 @@ if __name__ == '__main__':
     # gpus = tf.config.list_logical_devices('GPU')
     # gpus = [gpus[gpu].name for gpu in args.gpus]
     # print('Using following GPUs:', gpus)
-    # strategy = tf.distribute.MirroredStrategy(gpus)
-    # with strategy.scope():
+
+
+    # set GPUs
     CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in args.gpus])
     os.environ["CUDA_VISIBLE_DEVICES"] = CUDA_VISIBLE_DEVICES
     gpus = tf.config.list_logical_devices('GPU')
-    print(gpus)
-    print('Using following GPUs:', os.environ["CUDA_VISIBLE_DEVICES"])
-    cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
-                      LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
+    # set mem limit for each GPU
+    for device in gpus:
+        tf.config.set_logical_device_configuration(
+            gpus[device].name,
+            [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * args.mem_limit)])
+    # distribute training on multiple GPUs
+    strategy = tf.distribute.MirroredStrategy(gpus)
+    with strategy.scope():
+        cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
+                          LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
 
-    print('Starting training...')
-    cnn_model.train_model()
+        print('Starting training...')
+        cnn_model.train_model()
