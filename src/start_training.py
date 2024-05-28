@@ -46,8 +46,10 @@ if __name__ == '__main__':
     CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in args.gpus])
     os.environ["CUDA_VISIBLE_DEVICES"] = CUDA_VISIBLE_DEVICES
     gpus = tf.config.list_logical_devices('GPU')
+    print(gpus)
     # set mem limit for each GPU
     for device in gpus:
+        print(device)
         tf.config.set_logical_device_configuration(
             device,
             [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * args.mem_limit)])
