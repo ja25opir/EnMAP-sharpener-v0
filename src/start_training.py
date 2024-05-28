@@ -54,7 +54,8 @@ if __name__ == '__main__':
             device,
             [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * args.mem_limit)])
     # distribute training on multiple GPUs
-    strategy = tf.distribute.MirroredStrategy(gpus)
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    strategy = tf.distribute.MirroredStrategy(logical_gpus)
     with strategy.scope():
         cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
                           LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
