@@ -31,7 +31,7 @@ if __name__ == '__main__':
     if os.path.exists(TRAIN_DATA_DIR + 'y/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'y/.gitkeep')
 
-    limit_tf_gpu_usage(args.gpus, args.mem_limit)
+    # limit_tf_gpu_usage(args.gpus, args.mem_limit)
     # flexible_tf_gpu_memory_growth(args.gpus)
 
     import tensorflow as tf
@@ -42,6 +42,9 @@ if __name__ == '__main__':
     # print('Using following GPUs:', gpus)
     # strategy = tf.distribute.MirroredStrategy(gpus)
     # with strategy.scope():
+    CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in args.gpus])
+    os.environ["CUDA_VISIBLE_DEVICES"] = CUDA_VISIBLE_DEVICES
+    print('Using following GPUs:', os.environ["CUDA_VISIBLE_DEVICES"])
     cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
                       LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
 
