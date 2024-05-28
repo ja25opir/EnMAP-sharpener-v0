@@ -19,6 +19,7 @@ def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
     """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on the first GPU"""
     import tensorflow as tf
     gpus = tf.config.list_physical_devices('GPU')
+    print('Available GPUs:', gpus)
 
     tf.config.set_logical_device_configuration(
         gpus[1],
