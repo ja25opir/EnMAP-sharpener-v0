@@ -31,18 +31,19 @@ if __name__ == '__main__':
     if os.path.exists(TRAIN_DATA_DIR + 'y/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'y/.gitkeep')
 
-    # limit_tf_gpu_usage(args.gpus, args.mem_limit)
+    limit_tf_gpu_usage(args.gpus, args.mem_limit)
     # flexible_tf_gpu_memory_growth(args.gpus)
 
     import tensorflow as tf
+
     # tf.debugging.set_log_device_placement(True)
-    gpus = tf.config.list_logical_devices('GPU')
-    gpus = [gpus[gpu].name for gpu in args.gpus]
-    print('Using following GPUs:', gpus)
-    strategy = tf.distribute.MirroredStrategy(gpus)
-    with strategy.scope():
-        cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
-                          LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
+    # gpus = tf.config.list_logical_devices('GPU')
+    # gpus = [gpus[gpu].name for gpu in args.gpus]
+    # print('Using following GPUs:', gpus)
+    # strategy = tf.distribute.MirroredStrategy(gpus)
+    # with strategy.scope():
+    cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
+                      LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
 
     print('Starting training...')
     cnn_model.train_model()
