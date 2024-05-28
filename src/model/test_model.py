@@ -4,6 +4,7 @@ import tensorflow as tf
 import numpy as np
 import keras.backend as K
 
+from src.model.model import ReflectionPadding2D
 from src.visualization.helpers import get_bands_from_array
 from src.visualization.plot_raster import plot_3_band_image
 
@@ -24,15 +25,19 @@ y_raster = np.load(y_data_path + random_file)
 # model = tf.keras.models.load_model(model_path + 'first_model.keras')
 # all hidden layers in a deep model only filter cloud + cloud edges
 # --> not true: todo: inspect all bands of the hidden layers
-model = tf.keras.models.load_model(model_path + 'very_deep.keras')
+custom_objects = {'ReflectionPadding2D': ReflectionPadding2D}
+model = tf.keras.models.load_model(model_path + 'masi_3_3.keras', custom_objects=custom_objects)
 
 print(model.summary())
 
-model_input = x_raster.T.reshape(1, 100, 100, 228)
-predicted_raster = model.predict(model_input).reshape(100, 100, 224).T
+x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :] # 6 bands only
+model_input = x_raster.T.reshape(1, 100, 100, 6)
+predicted_raster = model.predict(model_input).reshape(100, 100, 3).T
+# model_input = x_raster.T.reshape(1, 100, 100, 228)
+# predicted_raster = model.predict(model_input).reshape(100, 100, 224).T
 
 # bands = [50, 100, 150]
-bands = [1, 2, 3]
+bands = [0,1,2]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 

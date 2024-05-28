@@ -5,17 +5,17 @@ from model.model import Model
 from config.resource_limiter import limit_tf_gpu_usage, flexible_tf_gpu_memory_growth
 
 TILE_SIZE = 100
-# NO_INPUT_BANDS = 224 + 4
-# NO_OUTPUT_BANDS = 224
-NO_INPUT_BANDS = 6
-NO_OUTPUT_BANDS = 3
+NO_INPUT_BANDS = 224 + 4
+NO_OUTPUT_BANDS = 224
+# NO_INPUT_BANDS = 6
+# NO_OUTPUT_BANDS = 3
 KERNEL_SIZES = [(9, 9), (3, 3), (5, 5)]
 
 TRAIN_DATA_DIR = os.getcwd() + '/data/preprocessing/model_input/'
 OUTPUT_DIR = os.getcwd() + '/output/'
 LOSS_FUNCTION = 'mean_squared_error'  # todo: adapt learn rate and momentum, also use other function
 BATCH_SIZE = 128  # (Masi: 128)
-TRAIN_EPOCHS = 20
+TRAIN_EPOCHS = 10
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start model training.')

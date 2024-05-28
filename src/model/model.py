@@ -62,43 +62,6 @@ class Model:
         # padding: https://hidayatullahhaider.medium.com/a-simple-definition-of-overlap-term-in-cnn-f331f6ef3031
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
         model = models.Sequential()
-        # experimental
-        # model.add(layers.Conv2D(1024,
-        #                         self.kernel_size_list[0],
-        #                         activation='relu',
-        #                         input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
-        #                         padding='same'))
-        # model.add(layers.Conv2D(512,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
-        # model.add(layers.Conv2D(512,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
-        # model.add(layers.Conv2D(512,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
-        # model.add(layers.Conv2D(512,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
-        # model.add(layers.Conv2D(512,
-        #                         self.kernel_size_list[1],
-        #                         activation='relu',
-        #                         padding='same'))
-        # model.add(layers.Conv2D(256,
-        #                         self.kernel_size_list[2],
-        #                         activation='relu',
-        #                         padding='same'))
-        # relu in last layer significantly increased accuracy but worsened loss (stuck after one epoch)
-        #  --> prediction with this model is all 0 this is why the accuracy is 1/3 (many 0s in input data)
-        # model.add(layers.Conv2D(self.no_output_bands,
-        #                         self.kernel_size_list[2],
-        #                         activation='linear',
-        #                         padding='same'))
-
         # very deep network:
         # one hidden layer per output band
         # input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
@@ -126,17 +89,41 @@ class Model:
         #                         padding='valid'))
 
         # Masi
+        # input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
+        # model.add(Input(shape=input_shape))
+        # model.add(ReflectionPadding2D(padding=(4, 4)))
+        # model.add(layers.Conv2D(64,
+        #                         self.kernel_size_list[0],
+        #                         # activation=tf.keras.layers.LeakyReLU(),
+        #                         activation='relu',
+        #                         kernel_regularizer=regularizers.l1(0.015),
+        #                         padding='valid'))
+        # model.add(ReflectionPadding2D(padding=(1, 1)))
+        # model.add(layers.Conv2D(32,
+        #                         self.kernel_size_list[1],
+        #                         # activation=tf.keras.layers.LeakyReLU(),
+        #                         activation='relu',
+        #                         kernel_regularizer=regularizers.l1(0.03),
+        #                         padding='valid'))
+        # model.add(ReflectionPadding2D(padding=(2, 2)))
+        # model.add(layers.Conv2D(self.no_output_bands,
+        #                         self.kernel_size_list[2],
+        #                         activation='linear',
+        #                         kernel_regularizer=regularizers.l1(0.015),
+        #                         padding='valid'))
+
+        # Masi hyperspectral
         input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
         model.add(Input(shape=input_shape))
         model.add(ReflectionPadding2D(padding=(4, 4)))
-        model.add(layers.Conv2D(64,
+        model.add(layers.Conv2D(2048,
                                 self.kernel_size_list[0],
                                 # activation=tf.keras.layers.LeakyReLU(),
                                 activation='relu',
                                 kernel_regularizer=regularizers.l1(0.015),
                                 padding='valid'))
         model.add(ReflectionPadding2D(padding=(1, 1)))
-        model.add(layers.Conv2D(32,
+        model.add(layers.Conv2D(1024,
                                 self.kernel_size_list[1],
                                 # activation=tf.keras.layers.LeakyReLU(),
                                 activation='relu',
@@ -148,19 +135,6 @@ class Model:
                                 activation='linear',
                                 kernel_regularizer=regularizers.l1(0.015),
                                 padding='valid'))
-        # model.add(layers.Conv2D(64,
-        #                         (9,9),
-        #                         activation='relu',
-        #                         input_shape=(self.tile_size, self.tile_size, self.no_input_bands),
-        #                         padding='same'))
-        # model.add(layers.Conv2D(32,
-        #                         (5,5),
-        #                         activation='relu',
-        #                         padding='same'))
-        # model.add(layers.Conv2D(self.no_output_bands,
-        #                         (5,5),
-        #                         activation='linear',
-        #                         padding='same'))
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -173,8 +147,8 @@ class Model:
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle? -> in DataGenerator
-        self.train_files = all_files[:int(len(all_files) * 0.8)]  # todo: WIP
-        self.test_files = all_files[int(len(all_files) * 0.8):]
+        self.train_files = all_files[:int(len(all_files) * 0.4)]  # todo: WIP
+        self.test_files = all_files[int(len(all_files) * 0.9):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
