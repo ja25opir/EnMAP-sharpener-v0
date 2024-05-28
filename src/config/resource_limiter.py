@@ -20,15 +20,19 @@ def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
     import tensorflow as tf
     gpus = tf.config.list_physical_devices('GPU')
 
-    for gpu in gpu_list:
-        try:
-            tf.config.set_logical_device_configuration(
-                gpus[gpu],
-                [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
-            print('Using GPU', gpu, 'with memory limit of', max_memory_limit_gb, 'GB')
-        except RuntimeError as e:
-            # Virtual devices must be set before GPUs have been initialized
-            print(e)
+    tf.config.set_logical_device_configuration(
+        gpus[1],
+        [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
+
+    # for gpu in gpu_list:
+    #     try:
+    #         tf.config.set_logical_device_configuration(
+    #             gpus[gpu],
+    #             [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
+    #         print('Using GPU', gpu, 'with memory limit of', max_memory_limit_gb, 'GB')
+    #     except RuntimeError as e:
+    #         # Virtual devices must be set before GPUs have been initialized
+    #         print(e)
 
 
 def flexible_tf_gpu_memory_growth(gpu_list):
@@ -38,7 +42,7 @@ def flexible_tf_gpu_memory_growth(gpu_list):
     for gpu in gpu_list:
         try:
             # memory growth needs to be the same across GPUs
-            tf.config.experimental.set_memory_growth(gpus[gpu], False)
+            tf.config.experimental.set_memory_growth(gpus[gpu], True)
             print('Using GPU', gpu)
         except RuntimeError as e:
             # memory growth must be set before GPUs have been initialized
