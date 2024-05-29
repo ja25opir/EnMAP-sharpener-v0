@@ -2,7 +2,7 @@ import argparse
 import os
 from model.model import Model
 
-from config.resource_limiter import limit_tf_gpu_usage, multiple_gpu_usage
+from config.resource_limiter import limit_gpu_memory_usage, multiple_gpu_distribution
 
 TILE_SIZE = 100
 NO_INPUT_BANDS = 224 + 4
@@ -17,6 +17,15 @@ LOSS_FUNCTION = 'mean_squared_error'  # todo: adapt learn rate and momentum, als
 BATCH_SIZE = 128  # (Masi: 128)
 TRAIN_EPOCHS = 10
 
+@multiple_gpu_distribution
+def train_model():
+    cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
+                      LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
+
+    print('Starting training...')
+    cnn_model.train_model()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start model training.')
     parser.add_argument('--gpus', nargs='+', type=int, default=[0],
@@ -30,12 +39,6 @@ if __name__ == '__main__':
     if os.path.exists(TRAIN_DATA_DIR + 'y/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'y/.gitkeep')
 
-    limit_tf_gpu_usage(args.gpus, args.mem_limit)
+    limit_gpu_memory_usage(args.gpus, args.mem_limit)
 
-    strategy = multiple_gpu_usage()
-    with strategy.scope():
-        cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
-                          LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)
-
-        print('Starting training...')
-        cnn_model.train_model()
+    train_model()

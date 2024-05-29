@@ -1,5 +1,5 @@
-from time import sleep
 import os, resource
+import tensorflow as tf
 
 
 def limit_logical_cpus(logical_cpus):
@@ -15,9 +15,8 @@ def limit_memory_usage(max_memory_limit_gb):
     print('Using following memory limit: ', resource.getrlimit(resource.RLIMIT_AS)[1] / 1024 / 1024 / 1024, 'GB')
 
 
-def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
+def limit_gpu_memory_usage(gpu_list, max_memory_limit_gb):
     """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on all given GPUs"""
-    import tensorflow as tf
 
     # set GPUs
     CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in gpu_list])
@@ -31,8 +30,11 @@ def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
             device,
             [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
 
-def multiple_gpu_usage():
-    import tensorflow as tf
-    # distribute training on multiple GPUs
-    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-    return tf.distribute.MirroredStrategy(logical_gpus)
+def multiple_gpu_distribution(func):
+    """Decorator to distribute a function across multiple GPUs"""
+    def wrapper(*args, **kwargs):
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        strategy = tf.distribute.MirroredStrategy(logical_gpus)
+        with strategy.scope():
+            return func(*args, **kwargs)
+    return wrapper
