@@ -2,7 +2,7 @@ import argparse
 import os
 from model.model import Model
 
-from config.resource_limiter import limit_tf_gpu_usage, flexible_tf_gpu_memory_growth
+from config.resource_limiter import limit_tf_gpu_usage, multiple_gpu_usage
 
 TILE_SIZE = 100
 NO_INPUT_BANDS = 224 + 4
@@ -25,37 +25,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # todo: move to preprocess_pipeline or remove
     if os.path.exists(TRAIN_DATA_DIR + 'x/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'x/.gitkeep')
     if os.path.exists(TRAIN_DATA_DIR + 'y/.gitkeep'):
         os.remove(TRAIN_DATA_DIR + 'y/.gitkeep')
 
-    # limit_tf_gpu_usage(args.gpus, args.mem_limit)
-    # flexible_tf_gpu_memory_growth(args.gpus)
+    limit_tf_gpu_usage(args.gpus, args.mem_limit)
 
-    import tensorflow as tf
-
-    # tf.debugging.set_log_device_placement(True)
-    # gpus = tf.config.list_logical_devices('GPU')
-    # gpus = [gpus[gpu].name for gpu in args.gpus]
-    # print('Using following GPUs:', gpus)
-
-
-    # set GPUs
-    CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in args.gpus])
-    os.environ["CUDA_VISIBLE_DEVICES"] = CUDA_VISIBLE_DEVICES
-    gpus = tf.config.list_physical_devices('GPU')
-    print(gpus)
-    # set mem limit for each GPU
-    for device in gpus:
-        print(device)
-        tf.config.set_logical_device_configuration(
-            device,
-            [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * args.mem_limit)])
-    # distribute training on multiple GPUs
-    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-    strategy = tf.distribute.MirroredStrategy(logical_gpus)
+    strategy = multiple_gpu_usage()
     with strategy.scope():
         cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
                           LOSS_FUNCTION, TRAIN_EPOCHS, OUTPUT_DIR)

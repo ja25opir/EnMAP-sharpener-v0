@@ -4,28 +4,8 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
+from .architecture import Masi, ReflectionPadding2D
 from .load_data import DataGenerator
-
-
-class ReflectionPadding2D(layers.Layer):
-    def __init__(self, padding=(1, 1), **kwargs):
-        self.padding = tuple(padding)
-        super(ReflectionPadding2D, self).__init__(**kwargs)
-
-    def compute_output_shape(self, input_shape):
-        return (input_shape[0],
-                input_shape[1] + 2 * self.padding[0],
-                input_shape[2] + 2 * self.padding[1],
-                input_shape[3])
-
-    def call(self, input_tensor):
-        padding_width, padding_height = self.padding
-        return tf.pad(input_tensor,
-                      tf.constant([[0, 0],
-                                   [padding_height, padding_height],
-                                   [padding_width, padding_width],
-                                   [0, 0]]),
-                      'SYMMETRIC')
 
 
 # input shape: https://stackoverflow.com/questions/60157742/convolutional-neural-network-cnn-input-shape
@@ -61,80 +41,9 @@ class Model:
         # stride: https://tcnguyen.github.io/neuralnetworks/cnn_tensorflow.html
         # padding: https://hidayatullahhaider.medium.com/a-simple-definition-of-overlap-term-in-cnn-f331f6ef3031
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
-        model = models.Sequential()
-        # very deep network:
-        # one hidden layer per output band
-        # input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
-        # model.add(Input(shape=input_shape))
-        # model.add(ReflectionPadding2D(padding=(4, 4)))
-        # model.add(layers.Conv2D(64,
-        #                         self.kernel_size_list[0],
-        #                         # activation=tf.keras.layers.LeakyReLU(),
-        #                         activation='relu',
-        #                         kernel_regularizer=regularizers.l1(0.015),
-        #                         padding='valid'))
-        # for i in range(10):
-        #     model.add(ReflectionPadding2D(padding=(1, 1)))
-        #     model.add(layers.Conv2D(64,
-        #                             self.kernel_size_list[1],
-        #                             # activation=tf.keras.layers.LeakyReLU(),
-        #                             activation='relu',
-        #                             kernel_regularizer=regularizers.l1(0.03),
-        #                             padding='valid'))
-        # model.add(ReflectionPadding2D(padding=(2, 2)))
-        # model.add(layers.Conv2D(self.no_output_bands,
-        #                         self.kernel_size_list[2],
-        #                         activation='linear',
-        #                         kernel_regularizer=regularizers.l1(0.015),
-        #                         padding='valid'))
 
         # Masi
-        # input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
-        # model.add(Input(shape=input_shape))
-        # model.add(ReflectionPadding2D(padding=(4, 4)))
-        # model.add(layers.Conv2D(64,
-        #                         self.kernel_size_list[0],
-        #                         # activation=tf.keras.layers.LeakyReLU(),
-        #                         activation='relu',
-        #                         kernel_regularizer=regularizers.l1(0.015),
-        #                         padding='valid'))
-        # model.add(ReflectionPadding2D(padding=(1, 1)))
-        # model.add(layers.Conv2D(32,
-        #                         self.kernel_size_list[1],
-        #                         # activation=tf.keras.layers.LeakyReLU(),
-        #                         activation='relu',
-        #                         kernel_regularizer=regularizers.l1(0.03),
-        #                         padding='valid'))
-        # model.add(ReflectionPadding2D(padding=(2, 2)))
-        # model.add(layers.Conv2D(self.no_output_bands,
-        #                         self.kernel_size_list[2],
-        #                         activation='linear',
-        #                         kernel_regularizer=regularizers.l1(0.015),
-        #                         padding='valid'))
-
-        # Masi hyperspectral
-        input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
-        model.add(Input(shape=input_shape))
-        model.add(ReflectionPadding2D(padding=(4, 4)))
-        model.add(layers.Conv2D(2048,
-                                self.kernel_size_list[0],
-                                # activation=tf.keras.layers.LeakyReLU(),
-                                activation='relu',
-                                kernel_regularizer=regularizers.l1(0.015),
-                                padding='valid'))
-        model.add(ReflectionPadding2D(padding=(1, 1)))
-        model.add(layers.Conv2D(1024,
-                                self.kernel_size_list[1],
-                                # activation=tf.keras.layers.LeakyReLU(),
-                                activation='relu',
-                                kernel_regularizer=regularizers.l1(0.03),
-                                padding='valid'))
-        model.add(ReflectionPadding2D(padding=(2, 2)))
-        model.add(layers.Conv2D(self.no_output_bands,
-                                self.kernel_size_list[2],
-                                activation='linear',
-                                kernel_regularizer=regularizers.l1(0.015),
-                                padding='valid'))
+        model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -147,8 +56,8 @@ class Model:
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle? -> in DataGenerator
-        self.train_files = all_files[:int(len(all_files) * 0.4)]  # todo: WIP
-        self.test_files = all_files[int(len(all_files) * 0.9):]
+        self.train_files = all_files[:int(len(all_files) * 0.8)]  # todo: WIP
+        self.test_files = all_files[int(len(all_files) * 0.8):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 

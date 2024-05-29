@@ -16,35 +16,23 @@ def limit_memory_usage(max_memory_limit_gb):
 
 
 def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
-    """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on the first GPU"""
+    """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on all given GPUs"""
     import tensorflow as tf
+
+    # set GPUs
+    CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in gpu_list])
+    os.environ["CUDA_VISIBLE_DEVICES"] = CUDA_VISIBLE_DEVICES
     gpus = tf.config.list_physical_devices('GPU')
-    print('Available GPUs:', gpus)
 
-    tf.config.set_logical_device_configuration(
-        gpus[1].name,
-        [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
+    # set mem limit for each GPU
+    for device in gpus:
+        print(device)
+        tf.config.set_logical_device_configuration(
+            device,
+            [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
 
-    # for gpu in gpu_list:
-    #     try:
-    #         tf.config.set_logical_device_configuration(
-    #             gpus[gpu],
-    #             [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
-    #         print('Using GPU', gpu, 'with memory limit of', max_memory_limit_gb, 'GB')
-    #     except RuntimeError as e:
-    #         # Virtual devices must be set before GPUs have been initialized
-    #         print(e)
-
-
-def flexible_tf_gpu_memory_growth(gpu_list):
+def multiple_gpu_usage():
     import tensorflow as tf
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-
-    for gpu in gpu_list:
-        try:
-            # memory growth needs to be the same across GPUs
-            tf.config.experimental.set_memory_growth(gpus[gpu], True)
-            print('Using GPU', gpu)
-        except RuntimeError as e:
-            # memory growth must be set before GPUs have been initialized
-            print(e)
+    # distribute training on multiple GPUs
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    return tf.distribute.MirroredStrategy(logical_gpus)
