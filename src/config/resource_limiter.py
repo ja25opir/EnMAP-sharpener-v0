@@ -35,7 +35,6 @@ def multiple_gpu_distribution(func):
     def wrapper(*args, **kwargs):
         logical_gpus = tf.config.experimental.list_logical_devices('GPU')
         # no distributed training if only one GPU is available
-        print(len(logical_gpus))
         if len(logical_gpus) < 2:
             return func(*args, **kwargs)
         # distribute across all GPUs with mirrored strategy

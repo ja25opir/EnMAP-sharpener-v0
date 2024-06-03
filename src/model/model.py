@@ -14,7 +14,7 @@ from .load_data import DataGenerator
 # Sentinel CNN: https://github.com/jensleitloff/CNN-Sentinel/blob/master/py/02_train_rgb_finetuning.py
 class Model:
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size, kernel_size_list,
-                 loss_function, train_epochs, output_dir):
+                 loss_function, learning_rate, train_epochs, output_dir):
         self.train_data_dir = train_data_dir
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
@@ -22,6 +22,7 @@ class Model:
         self.batch_size = batch_size
         self.kernel_size_list = kernel_size_list
         self.loss_function = loss_function
+        self.learning_rate = learning_rate
         self.train_epochs = train_epochs
         self.output_dir = output_dir
         self.train_files = None
@@ -78,7 +79,7 @@ class Model:
                                        no_output_bands=self.no_output_bands,
                                        shuffle=False)
 
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.00001)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
 
