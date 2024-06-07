@@ -1,6 +1,4 @@
 import os, resource
-import tensorflow as tf
-
 
 def limit_logical_cpus(logical_cpus):
     """Set process CPU affinity to the first max_cpus CPUs"""
@@ -17,6 +15,7 @@ def limit_memory_usage(max_memory_limit_gb):
 
 def limit_gpu_memory_usage(gpu_list, max_memory_limit_gb):
     """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on all given GPUs"""
+    import tensorflow as tf
 
     # set GPUs
     CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in gpu_list])
@@ -32,6 +31,8 @@ def limit_gpu_memory_usage(gpu_list, max_memory_limit_gb):
 
 def multiple_gpu_distribution(func):
     """Decorator to distribute a function across multiple GPUs"""
+    import tensorflow as tf
+
     def wrapper(*args, **kwargs):
         logical_gpus = tf.config.experimental.list_logical_devices('GPU')
         # no distributed training if only one GPU is available
