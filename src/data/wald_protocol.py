@@ -71,7 +71,7 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
     :param save_name:
     :param min_value_ratio:
     :param overlap:
-    :return:
+    :return: list with filenames of skipped tiles
     """
     horizontal_tiles = int(raster.width / (tile_size - overlap))
     vertical_tiles = int(raster.height / (tile_size - overlap))
@@ -92,7 +92,11 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
                 np.save(f'{save_dir}{file_name}', w)
     return skip_list
 
-def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_dir_path):
+def remove_tile(path, name):
+    if os.path.exists(path + name):
+        os.remove(path + name)
+
+def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_dir_path, save_lr_enmap=False):
     enmap_raster = rasterio.open(dir_path + enmap_file)
     sentinel_raster = rasterio.open(dir_path + sentinel_file)
 
@@ -112,6 +116,7 @@ def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_d
 
     print('Tiling and saving X and Y image...')
     start_time = time.time()
+    # x = stacked resampled raster, y = original EnMAP raster, x1 = resampled EnMAP raster
     x_tiles_path = output_dir_path + 'x/'
     sparse_x_tiles = tile_raster(x_image, 100, x_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
     y_tiles_path = output_dir_path + 'y/'
@@ -119,10 +124,20 @@ def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_d
 
     # remove partner tiles if one of the pair was skipped
     for file in sparse_x_tiles:
-        if os.path.exists(y_tiles_path + file):
-            os.remove(y_tiles_path + file)
+        remove_tile(y_tiles_path, file)
     for file in sparse_y_tiles:
-        if os.path.exists(x_tiles_path + file):
-            os.remove(x_tiles_path + file)
+        remove_tile(x_tiles_path, file)
+
+    # save resampled EnMAP raster as x1 files
+    if save_lr_enmap:
+        x1_tiles_path = output_dir_path + 'x1/'
+        sparse_x1_tiles = tile_raster(enmap_rescaled, 100, x1_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
+        for file in sparse_x1_tiles:
+            remove_tile(y_tiles_path, file)
+            remove_tile(x_tiles_path, file)
+        for file in sparse_x_tiles:
+            remove_tile(x1_tiles_path, file)
+        for file in sparse_y_tiles:
+            remove_tile(x1_tiles_path, file)
 
     print("Tiling time: %.4fs" % (time.time() - start_time))
