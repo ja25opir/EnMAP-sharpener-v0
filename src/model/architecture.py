@@ -161,10 +161,10 @@ class SaPnn:
 
     def create_layers(self):
         # first layer
-        input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands))
+        input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
         detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
-        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands))
+        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
         approx = tf.expand_dims(input_approx, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
         approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
@@ -188,6 +188,6 @@ class SaPnn:
         merged_branches = sft_layer([approx, detail])
 
         y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
-        y = tf.squeeze(y, axis=-1)
+        y = tf.squeeze(y, axis=-1, name='y')
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
