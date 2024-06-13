@@ -109,8 +109,7 @@ class DuoBranchDataGenerator(Sequence):
             X1[i,] = x1_img.T
             Y[i,] = y_img.T
 
-        print(X[0], X1[0], Y[0])
-        return [X, X1], Y
+        return [X, X1], [Y]
 
 
 # class DuoBranchDataGenerator(DataGenerator):
