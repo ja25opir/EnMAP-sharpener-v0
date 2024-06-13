@@ -111,6 +111,7 @@ class Model:
         y = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
         # todo: this gives the same result. maybe a bug in architecture.py
         # todo: looks like its working without the sft layer!
+        # todo: error gone when chanegd call to __call__ but oom then
         history = self.model.fit({'x': x, 'x1': x1}, y, epochs=self.train_epochs, verbose=1)
         # history = self.model.fit(([x, x1], [y]), epochs=self.train_epochs, verbose=1)
 

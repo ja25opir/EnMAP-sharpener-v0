@@ -122,7 +122,7 @@ class SFTLayer(layers.Layer):
         self.beta_conv = layers.Conv2D(filters, kernel_size, activation=tf.keras.layers.LeakyReLU(), padding='same')
 
     # warning: overwriting __call__ can cause problems
-    def __call__(self, inputs):
+    def call(self, inputs):
         x, psi = inputs  # psi is input from detail branch; x is input approx branch
         gamma = self.gamma_conv(psi)
         beta = self.beta_conv(psi)
@@ -164,6 +164,7 @@ class SaPnn:
     def create_layers(self):
         # first layer
         input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        print(input_detail[0])
         detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
         detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
