@@ -175,7 +175,6 @@ class SaPnn:
         detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
         approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
         approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        print(approx.shape, detail.shape)
         sft_layer = SFTLayer(filters=64)
         merged_branches = sft_layer([approx, detail])
 
