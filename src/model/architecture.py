@@ -155,17 +155,16 @@ class SaPnn:
         self.padding2d = (self.kernel2d[0] // 2, self.kernel2d[1] // 2)
         self.kernel3d = (7, 7, 3)
         self.padding3d = (self.kernel3d[0] // 2, self.kernel3d[1] // 2, self.kernel3d[2] // 2)
-        self.model = models.Sequential()
+        self.input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands))
+        self.input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands))
+        self.model = models.Sequential([self.input_detail, self.input_approx])
         self.create_layers()
 
     def create_layers(self):
         # first layer
-        input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands))
-        detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
-        print(detail)
+        detail = ReflectionPadding2D(padding=self.padding2d)(self.input_detail)
         detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
-        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands))
-        approx = tf.expand_dims(input_approx, axis=-1)
+        approx = tf.expand_dims(self.input_approx, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
         approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
         sft_layer = SFTLayer(filters=64)
@@ -190,4 +189,4 @@ class SaPnn:
         y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
         y = tf.squeeze(y, axis=-1)
 
-        self.model = Model(inputs=[input_detail, input_approx], outputs=y)
+        self.model = Model(inputs=[self.input_detail, self.input_approx], outputs=y)
