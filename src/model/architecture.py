@@ -189,8 +189,8 @@ class SaPnn:
         sft_layer = SFTLayer(filters=64)
         merged_branches = sft_layer([approx, detail])
 
-        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
-        y = tf.squeeze(y, axis=-1, name='y')
+        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear', name='y')(merged_branches)
+        y = tf.squeeze(y, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
         # https://www.tensorflow.org/guide/keras/functional_api#models_with_multiple_inputs_and_outputs
