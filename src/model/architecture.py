@@ -170,27 +170,26 @@ class SaPnn:
         approx = tf.expand_dims(input_approx, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
         approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        # sft_layer = SFTLayer(filters=64)
-        # merged_branches = sft_layer([approx, detail])
-        #
-        # # second layer
-        # detail = ReflectionPadding2D(padding=self.padding2d)(detail)
-        # detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
-        # approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
-        # approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        # sft_layer = SFTLayer(filters=64)
-        # merged_branches = sft_layer([approx, detail])
-        #
-        # # third layer
-        # detail = ReflectionPadding2D(padding=self.padding2d)(detail)
-        # detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
-        # approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
-        # approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        # sft_layer = SFTLayer(filters=64)
-        # merged_branches = sft_layer([approx, detail])
+        sft_layer = SFTLayer(filters=64)
+        merged_branches = sft_layer()([approx, detail])
 
-        # y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
-        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(approx)
+        # second layer
+        detail = ReflectionPadding2D(padding=self.padding2d)(detail)
+        detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
+        approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
+        approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
+        sft_layer = SFTLayer(filters=64)
+        merged_branches = sft_layer()([approx, detail])
+
+        # third layer
+        detail = ReflectionPadding2D(padding=self.padding2d)(detail)
+        detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
+        approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
+        approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
+        sft_layer = SFTLayer(filters=64)
+        merged_branches = sft_layer()([approx, detail])
+
+        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
         y = tf.squeeze(y, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
