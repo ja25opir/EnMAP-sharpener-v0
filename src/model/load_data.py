@@ -54,7 +54,6 @@ class DataGenerator(Sequence):
             X[i,] = x_img.T
             Y[i,] = y_img.T
 
-        # return [X, X1], Y # for architectures with two branches
         return X, Y
 
 
