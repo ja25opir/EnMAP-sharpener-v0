@@ -84,4 +84,5 @@ class DuoBranchDataGenerator(DataGenerator):
             X1[i,] = x1_img.T
             Y[i,] = y_img.T
 
-        return (X, X1), Y
+        # return (X, X1), Y
+        return {"input_1": X, "input_2": X1}, Y
