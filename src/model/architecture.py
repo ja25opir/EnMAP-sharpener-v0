@@ -162,6 +162,7 @@ class SaPnn:
         # first layer
         input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='input_detail')
         detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
+        print(detail)
         detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='input_approx')
         approx = tf.expand_dims(input_approx, axis=-1)
