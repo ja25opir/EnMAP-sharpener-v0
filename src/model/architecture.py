@@ -89,6 +89,7 @@ class Brook:
 
     # todo
 
+
 class ReflectionPadding3D(layers.Layer):
     def __init__(self, padding=(1, 1, 1), **kwargs):
         self.padding = tuple(padding)
@@ -110,6 +111,7 @@ class ReflectionPadding3D(layers.Layer):
                                    [padding_width, padding_width],
                                    [0, 0]]),
                       'SYMMETRIC')
+
 
 class SFTLayer(layers.Layer):
     def __init__(self, filters, kernel_size=(3, 3), **kwargs):
@@ -191,3 +193,4 @@ class SaPnn:
         y = tf.squeeze(y, axis=-1, name='y')
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
+        # https://www.tensorflow.org/guide/keras/functional_api#models_with_multiple_inputs_and_outputs

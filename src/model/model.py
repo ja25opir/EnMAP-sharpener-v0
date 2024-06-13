@@ -1,5 +1,5 @@
 import os, random
-
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models, initializers, regularizers, Input
 from matplotlib import pyplot as plt
@@ -102,7 +102,11 @@ class Model:
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
 
-        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        # history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
+        x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
+        y = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
+        history = self.model.fit({'x': x, 'x1': x1, 'y': y}, epochs=self.train_epochs, verbose=1)
 
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
