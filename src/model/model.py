@@ -4,8 +4,8 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D
-from .load_data import DataGenerator
+from .architecture import Masi, ReflectionPadding2D, SaPnn
+from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
 # input shape: https://stackoverflow.com/questions/60157742/convolutional-neural-network-cnn-input-shape
@@ -44,7 +44,10 @@ class Model:
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
 
         # Masi
-        model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
+
+        # SaPNN
+        model = SaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -63,7 +66,23 @@ class Model:
         print('Test data size:', len(self.test_files))
 
     def train_model(self):
-        train_generator = DataGenerator(self.train_data_dir,
+        # train_generator = DataGenerator(self.train_data_dir,
+        #                                 data_list=self.train_files,
+        #                                 batch_size=self.batch_size,
+        #                                 output_size=(self.tile_size, self.tile_size),
+        #                                 no_input_bands=self.no_input_bands,
+        #                                 no_output_bands=self.no_output_bands,
+        #                                 shuffle=False)
+        #
+        # test_generator = DataGenerator(self.train_data_dir,
+        #                                data_list=self.test_files,
+        #                                batch_size=self.batch_size,
+        #                                output_size=(self.tile_size, self.tile_size),
+        #                                no_input_bands=self.no_input_bands,
+        #                                no_output_bands=self.no_output_bands,
+        #                                shuffle=False)
+
+        train_generator = DuoBranchDataGenerator(self.train_data_dir,
                                         data_list=self.train_files,
                                         batch_size=self.batch_size,
                                         output_size=(self.tile_size, self.tile_size),
@@ -71,7 +90,7 @@ class Model:
                                         no_output_bands=self.no_output_bands,
                                         shuffle=False)
 
-        test_generator = DataGenerator(self.train_data_dir,
+        test_generator = DuoBranchDataGenerator(self.train_data_dir,
                                        data_list=self.test_files,
                                        batch_size=self.batch_size,
                                        output_size=(self.tile_size, self.tile_size),

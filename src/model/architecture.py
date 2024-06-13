@@ -126,8 +126,6 @@ class SFTLayer(layers.Layer):
         beta = self.beta_conv(psi)
         merged = None
 
-        print(x.shape) # todo: restart from here (x dims are none)
-
         for band_no in range(x.shape[-2]):
             x_band = x[:, :, :, band_no, :]
             x_band = gamma * x_band + beta

@@ -24,7 +24,6 @@ def limit_gpu_memory_usage(gpu_list, max_memory_limit_gb):
 
     # set mem limit for each GPU
     for device in gpus:
-        print(device)
         tf.config.set_logical_device_configuration(
             device,
             [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
