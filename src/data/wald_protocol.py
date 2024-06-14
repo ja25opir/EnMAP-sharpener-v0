@@ -96,7 +96,7 @@ def remove_tile(path, name):
     if os.path.exists(path + name):
         os.remove(path + name)
 
-def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_dir_path, save_lr_enmap=False):
+def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_name, output_dir_path, save_lr_enmap=False):
     enmap_raster = rasterio.open(dir_path + enmap_file)
     sentinel_raster = rasterio.open(dir_path + sentinel_file)
 
@@ -118,9 +118,9 @@ def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_d
     start_time = time.time()
     # x = stacked resampled raster, y = original EnMAP raster, x1 = resampled EnMAP raster
     x_tiles_path = output_dir_path + 'x/'
-    sparse_x_tiles = tile_raster(x_image, 100, x_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
+    sparse_x_tiles = tile_raster(x_image, tile_size, x_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
     y_tiles_path = output_dir_path + 'y/'
-    sparse_y_tiles = tile_raster(enmap_raster, 100, y_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
+    sparse_y_tiles = tile_raster(enmap_raster, tile_size, y_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
 
     # remove partner tiles if one of the pair was skipped
     for file in sparse_x_tiles:
@@ -131,7 +131,7 @@ def start_wald_protocol(dir_path, enmap_file, sentinel_file, save_name, output_d
     # save resampled EnMAP raster as x1 files
     if save_lr_enmap:
         x1_tiles_path = output_dir_path + 'x1/'
-        sparse_x1_tiles = tile_raster(enmap_rescaled, 100, x1_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
+        sparse_x1_tiles = tile_raster(enmap_rescaled, tile_size, x1_tiles_path, save_name, min_value_ratio=0.3, overlap=0)
         for file in sparse_x1_tiles:
             remove_tile(y_tiles_path, file)
             remove_tile(x_tiles_path, file)

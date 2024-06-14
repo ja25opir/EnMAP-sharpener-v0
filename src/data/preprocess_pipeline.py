@@ -359,6 +359,7 @@ class PreprocessPipeline:
         input_files = os.listdir(self.masked_scenes_path)
         enmap_files = [x for x in input_files if re.search(".*enmap_masked.tif", x)]
         sentinel_files = [x for x in input_files if re.search(".*sentinel_masked.tif", x)]
+        tile_size = 32
 
         i = 1
         for enmap_scene in enmap_files:
@@ -366,7 +367,7 @@ class PreprocessPipeline:
             timestamp = enmap_scene.split('_')[0]
             for sentinel_scene in sentinel_files:
                 if re.search(timestamp, sentinel_scene):
-                    start_wald_protocol(self.masked_scenes_path, enmap_scene, sentinel_scene, timestamp,
+                    start_wald_protocol(self.masked_scenes_path, tile_size, enmap_scene, sentinel_scene, timestamp,
                                         self.model_input_path, save_lr_enmap=True)
                     sentinel_files.remove(sentinel_scene)
                     break
