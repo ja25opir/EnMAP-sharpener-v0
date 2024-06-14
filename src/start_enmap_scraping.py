@@ -8,6 +8,8 @@ if __name__ == '__main__':
     parser.add_argument('--enmap-dir', type=str, default='/data/EnMAP/',
                         help='Path to the directory where the EnMAP data will be saved')
     parser.add_argument('--max-cloud-cover', type=int, default=70, help='Maximum cloud and cirrus cover in percentage')
+    parser.add_argument('--bbox', nargs='+', type=float, default=[], help='Bounding box for scene acquisition')
+    parser.add_argument('--date-time', type=str, default=None, help='Interval for scene acquisition in ISO 8601 format')
     parser.add_argument('--start-index', type=str, default='0', help='Index of first scene to download')
     parser.add_argument('--max-scenes', type=int, default=1000, help='Maximum number of scenes to download')
     parser.add_argument('--session-token', type=str, default='', help='Session token for DLR authentication')
@@ -24,7 +26,8 @@ if __name__ == '__main__':
     cpu_start = time.process_time()
 
     enmap_dir_path = os.getcwd() + args.enmap_dir
-    enmap = EnMAP(enmap_dir_path, args.max_cloud_cover, args.start_index, args.max_scenes, args.session_token)
+    enmap = EnMAP(enmap_dir_path, args.max_cloud_cover, args.bbox, args.date_time, args.start_index, args.max_scenes,
+                  args.session_token)
     enmap.scrape_all_scenes()
 
     print("---EnMAPScraping---Elapsed time: %.2fs seconds ---" % (time.time() - start_time))
