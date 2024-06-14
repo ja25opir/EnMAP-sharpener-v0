@@ -143,7 +143,7 @@ class SFTLayer(layers.Layer):
         config = super(SFTLayer, self).get_config()
         config.update({
             'filters': self.filters,
-            'kernel_size': self.kernel_size,
+            'kernel_size': self.kernel,
         })
         return config
 
