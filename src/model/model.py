@@ -83,20 +83,20 @@ class Model:
         #                                shuffle=False)
 
         train_generator = DuoBranchDataGenerator(self.train_data_dir,
-                                        data_list=self.train_files,
-                                        batch_size=self.batch_size,
-                                        output_size=(self.tile_size, self.tile_size),
-                                        no_input_bands=self.no_input_bands,
-                                        no_output_bands=self.no_output_bands,
-                                        shuffle=False)
+                                                 data_list=self.train_files,
+                                                 batch_size=self.batch_size,
+                                                 output_size=(self.tile_size, self.tile_size),
+                                                 no_input_bands=self.no_input_bands,
+                                                 no_output_bands=self.no_output_bands,
+                                                 shuffle=False)
 
         test_generator = DuoBranchDataGenerator(self.train_data_dir,
-                                       data_list=self.test_files,
-                                       batch_size=self.batch_size,
-                                       output_size=(self.tile_size, self.tile_size),
-                                       no_input_bands=self.no_input_bands,
-                                       no_output_bands=self.no_output_bands,
-                                       shuffle=False)
+                                                data_list=self.test_files,
+                                                batch_size=self.batch_size,
+                                                output_size=(self.tile_size, self.tile_size),
+                                                no_input_bands=self.no_input_bands,
+                                                no_output_bands=self.no_output_bands,
+                                                shuffle=False)
 
         optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
@@ -104,14 +104,14 @@ class Model:
 
         # todo: restart from here
         # https://www.tensorflow.org/guide/keras/functional_api#models_with_multiple_inputs_and_outputs
-        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        # history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
         # todo: testing...
         x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
         x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
         y = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
         # todo: this gives the same result. maybe a bug in architecture.py
         # todo: looks like its working without the sft layer!
-        # todo: error gone when chanegd call to __call__ but oom then
+        # todo: error gone when changed call to __call__ but oom then
         history = self.model.fit({'x': x, 'x1': x1}, y, epochs=self.train_epochs, verbose=1)
         # history = self.model.fit(([x, x1], [y]), epochs=self.train_epochs, verbose=1)
 

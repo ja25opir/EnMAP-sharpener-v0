@@ -164,7 +164,6 @@ class SaPnn:
     def create_layers(self):
         # first layer
         input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
-        print(input_detail[0])
         detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
         detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
