@@ -1,9 +1,9 @@
 import numpy as np
 import os
-from tensorflow.keras.utils import Sequence
+from tensorflow.keras import utils
 
 
-class DataGenerator(Sequence):
+class DataGenerator(utils.Sequence):
     def __init__(self, data_dir, data_list, batch_size, output_size, no_input_bands, no_output_bands, shuffle):
         self.data_dir = data_dir
         self.data_list = data_list
@@ -87,5 +87,7 @@ class DuoBranchDataGenerator(DataGenerator):
         X = np.random.randint(0, 255, (self.batch_size,*self.output_size, self.no_input_bands))
         X1 = np.random.randint(0, 255, (self.batch_size, *self.output_size, self.no_output_bands))
         out = np.random.randint(0, 255, (self.batch_size, *self.output_size, self.no_output_bands))
+
+        print(X.shape, X1.shape, out.shape)
 
         return {'x': X, 'x1': X1}, out
