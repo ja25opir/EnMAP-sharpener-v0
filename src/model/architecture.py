@@ -118,8 +118,8 @@ class SFTLayer(layers.Layer):
         super(SFTLayer, self).__init__(**kwargs)
         self.filters = filters
         self.kernel = kernel_size
-        self.gamma_conv = layers.Conv2D(filters, kernel_size, activation=tf.keras.layers.LeakyReLU(), padding='same')
-        self.beta_conv = layers.Conv2D(filters, kernel_size, activation=tf.keras.layers.LeakyReLU(), padding='same')
+        self.gamma_conv = layers.Conv2D(filters, kernel_size, activation=layers.LeakyReLU(), padding='same')
+        self.beta_conv = layers.Conv2D(filters, kernel_size, activation=layers.LeakyReLU(), padding='same')
 
     # warning: overwriting __call__ can cause problems
     def call(self, inputs):
