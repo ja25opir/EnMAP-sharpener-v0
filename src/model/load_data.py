@@ -67,26 +67,22 @@ class DuoBranchDataGenerator(DataGenerator):
         # get the indices of the requested batch
         indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-        # for i, data_index in enumerate(indices):
-        #     # find img path
-        #     x_path = os.path.join(self.data_dir, 'x', self.data_list[data_index])
-        #     # read img
-        #     x_img = np.load(x_path)
-        #
-        #     x1_path = os.path.join(self.data_dir, 'x1', self.data_list[data_index])
-        #     x1_img = np.load(x1_path)
-        #
-        #     y_path = os.path.join(self.data_dir, 'y', self.data_list[data_index])
-        #     y_img = np.load(y_path)
-        #
-        #     # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
-        #     X[i,] = x_img.T
-        #     X1[i,] = x1_img.T
-        #     out[i,] = y_img.T
+        for i, data_index in enumerate(indices):
+            # find img path
+            x_path = os.path.join(self.data_dir, 'x', self.data_list[data_index])
+            # read img
+            x_img = np.load(x_path)
 
-        X = np.random.randint(0, 255, (self.batch_size,*self.output_size, self.no_input_bands))
-        X1 = np.random.randint(0, 255, (self.batch_size, *self.output_size, self.no_output_bands))
-        out = np.random.randint(0, 255, (self.batch_size, *self.output_size, self.no_output_bands))
+            x1_path = os.path.join(self.data_dir, 'x1', self.data_list[data_index])
+            x1_img = np.load(x1_path)
+
+            y_path = os.path.join(self.data_dir, 'y', self.data_list[data_index])
+            y_img = np.load(y_path)
+
+            # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
+            X[i,] = x_img.T
+            X1[i,] = x1_img.T
+            out[i,] = y_img.T
 
         print(X.shape, X1.shape, out.shape)
 
