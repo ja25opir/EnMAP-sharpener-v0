@@ -117,19 +117,21 @@ class SFTLayer(layers.Layer):
         super(SFTLayer, self).__init__(**kwargs)
         self.filters = filters
         self.kernel = kernel_size
-        self.gamma_conv = layers.Conv2D(filters, kernel_size, activation=layers.LeakyReLU(), padding='same')
-        self.beta_conv = layers.Conv2D(filters, kernel_size, activation=layers.LeakyReLU(), padding='same')
+        # todo: are those weights trainable? https://www.tensorflow.org/guide/keras/making_new_layers_and_models_via_subclassing
+        self.gamma_conv = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')
+        self.beta_conv = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')
+        self.x_shape = None
 
-    # warning: overwriting __call__ can cause problems
+    def build(self, input_shape):
+        self.x_shape = input_shape[0]
+
     def call(self, inputs):
-        print(inputs.shape)
         x, psi = inputs  # psi is input from detail branch; x is input approx branch
-        print(x.shape, psi.shape)
         gamma = self.gamma_conv(psi)
         beta = self.beta_conv(psi)
         merged = None
 
-        for band_no in range(x.shape[-2]):
+        for band_no in range(self.x_shape[-2]):
             x_band = x[:, :, :, band_no, :]
             x_band = gamma * x_band + beta
             x_band = tf.expand_dims(x_band, axis=-2)
@@ -139,14 +141,6 @@ class SFTLayer(layers.Layer):
                 merged = tf.concat([merged, x_band], axis=-2)
 
         return merged
-
-    def get_config(self):
-        config = super(SFTLayer, self).get_config()
-        config.update({
-            'filters': self.filters,
-            'kernel_size': self.kernel,
-        })
-        return config
 
 
 class SaPnn:
@@ -158,7 +152,6 @@ class SaPnn:
         self.padding2d = (self.kernel2d[0] // 2, self.kernel2d[1] // 2)
         self.kernel3d = (7, 7, 3)
         self.padding3d = (self.kernel3d[0] // 2, self.kernel3d[1] // 2, self.kernel3d[2] // 2)
-        # self.model = models.Sequential()
         self.model = None
         self.create_layers()
 
@@ -171,28 +164,25 @@ class SaPnn:
         approx = tf.expand_dims(input_approx, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
         approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        print(approx.shape, detail.shape)
-        # merged_branches = SFTLayer(filters=64)([approx, detail])
-        # todo: restart from here: works locally WITH SFT but on cluster only WITHOUT SFT
+        merged_branches = SFTLayer(filters=64)([approx, detail])
 
         # second layer
-        # detail = ReflectionPadding2D(padding=self.padding2d)(detail)
-        # detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
-        # approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
-        # approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        # sft_layer = SFTLayer(filters=64)
-        # merged_branches = sft_layer([approx, detail])
-        #
-        # # third layer
-        # detail = ReflectionPadding2D(padding=self.padding2d)(detail)
-        # detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
-        # approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
-        # approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        # sft_layer = SFTLayer(filters=64)
-        # merged_branches = sft_layer([approx, detail])
+        detail = ReflectionPadding2D(padding=self.padding2d)(detail)
+        detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
+        approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
+        approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
+        sft_layer = SFTLayer(filters=64)
+        merged_branches = sft_layer([approx, detail])
 
-        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(approx)
+        # third layer
+        detail = ReflectionPadding2D(padding=self.padding2d)(detail)
+        detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
+        approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
+        approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
+        sft_layer = SFTLayer(filters=64)
+        merged_branches = sft_layer([approx, detail])
+
+        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
         y = tf.squeeze(y, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
-
