@@ -103,7 +103,7 @@ class Model:
 
         # todo: restart from here
         # https://www.tensorflow.org/guide/keras/functional_api#models_with_multiple_inputs_and_outputs
-        history = self.model.fit(x=train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
         # todo: this works...
         # x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
         # x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
