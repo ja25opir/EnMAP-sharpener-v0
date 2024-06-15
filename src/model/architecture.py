@@ -166,7 +166,7 @@ class SaPnn:
         detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
         detail = tf.keras.layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
         input_approx = tf.keras.Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
-        approx = tf.expand_dims(input_approx, axis=-1)
+        approx = tf.expand_dims()(input_approx, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
         approx = tf.keras.layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
         sft_layer = SFTLayer(filters=64)
