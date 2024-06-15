@@ -133,6 +133,7 @@ class SFTLayer(layers.Layer):
 
         for band_no in range(self.x_shape[-2]):
             x_band = x[:, :, :, band_no, :]
+            # todo: check if this works as intended
             x_band = gamma * x_band + beta
             x_band = tf.expand_dims(x_band, axis=-2)
             if merged is None:

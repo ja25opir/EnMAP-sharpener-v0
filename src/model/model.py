@@ -14,7 +14,7 @@ from .load_data import DataGenerator, DuoBranchDataGenerator
 # Sentinel CNN: https://github.com/jensleitloff/CNN-Sentinel/blob/master/py/02_train_rgb_finetuning.py
 class Model:
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size, kernel_size_list,
-                 loss_function, learning_rate, train_epochs, output_dir):
+                 loss_function, train_epochs, output_dir):
         self.train_data_dir = train_data_dir
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
@@ -22,11 +22,11 @@ class Model:
         self.batch_size = batch_size
         self.kernel_size_list = kernel_size_list
         self.loss_function = loss_function
-        self.learning_rate = learning_rate
         self.train_epochs = train_epochs
         self.output_dir = output_dir
         self.train_files = None
         self.test_files = None
+        self.learning_rate = self.set_lr_schedule()
         self.model = self.define_model()
         self.train_test_split()
 
@@ -64,6 +64,17 @@ class Model:
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
+    def set_lr_schedule(self):
+        initial_learning_rate = 0.1
+        final_learning_rate = 0.0001
+        learning_rate_decay_factor = (final_learning_rate / initial_learning_rate) ** (1 / epochs)
+        steps_per_epoch = int(len(self.train_files) / self.batch_size)
+        return optimizers.schedules.ExponentialDecay(
+            initial_learning_rate=initial_learning_rate,
+            decay_steps=steps_per_epoch,
+            decay_rate=learning_rate_decay_factor,
+            staircase=True)
+
     def train_model(self):
         # train_generator = DataGenerator(self.train_data_dir,
         #                                 data_list=self.train_files,
@@ -96,6 +107,7 @@ class Model:
                                                 no_input_bands=self.no_input_bands,
                                                 no_output_bands=self.no_output_bands,
                                                 shuffle=False)
+
 
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
