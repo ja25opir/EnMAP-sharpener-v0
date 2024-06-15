@@ -122,7 +122,9 @@ class SFTLayer(layers.Layer):
 
     # warning: overwriting __call__ can cause problems
     def call(self, inputs):
+        print(inputs.shape)
         x, psi = inputs  # psi is input from detail branch; x is input approx branch
+        print(x.shape, psi.shape)
         gamma = self.gamma_conv(psi)
         beta = self.beta_conv(psi)
         merged = None
@@ -169,8 +171,8 @@ class SaPnn:
         approx = tf.expand_dims(input_approx, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
         approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        # sft_layer = SFTLayer(filters=64)
         merged_branches = SFTLayer(filters=64)([approx, detail])
+        # todo: restart from here: works locally WITH SFT but on cluster only WITHOUT SFT
 
         # second layer
         # detail = ReflectionPadding2D(padding=self.padding2d)(detail)

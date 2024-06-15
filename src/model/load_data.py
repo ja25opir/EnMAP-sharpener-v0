@@ -84,6 +84,4 @@ class DuoBranchDataGenerator(DataGenerator):
             X1[i,] = x1_img.T
             out[i,] = y_img.T
 
-        print(X.shape, X1.shape, out.shape)
-
         return {'x': X, 'x1': X1}, out
