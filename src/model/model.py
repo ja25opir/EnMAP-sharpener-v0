@@ -1,7 +1,7 @@
 import os, random
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
+from keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
 from .architecture import Masi, ReflectionPadding2D, SaPnn

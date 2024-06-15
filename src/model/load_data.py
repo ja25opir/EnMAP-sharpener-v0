@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from tensorflow.keras import utils
+from keras import utils
 
 
 class DataGenerator(utils.PyDataset):
