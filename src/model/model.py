@@ -1,8 +1,7 @@
 import os, random
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
-from keras import layers, models, optimizers, initializers, regularizers, Input
+# from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
 from .architecture import Masi, ReflectionPadding2D, SaPnn
@@ -98,7 +97,7 @@ class Model:
                                                 no_output_bands=self.no_output_bands,
                                                 shuffle=False)
 
-        optimizer = optimizers.Adam(learning_rate=self.learning_rate)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
 

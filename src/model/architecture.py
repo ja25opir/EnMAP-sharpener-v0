@@ -1,10 +1,8 @@
-import numpy as np
 import tensorflow as tf
-from tensorflow import keras
-from keras import models, layers, regularizers, Input, Model
+# from tensorflow.keras import models, layers, regularizers, Input, Model
 
 
-class ReflectionPadding2D(layers.Layer):
+class ReflectionPadding2D(tf.keras.layers.Layer):
     def __init__(self, padding=(1, 1), **kwargs):
         self.padding = tuple(padding)
         super(ReflectionPadding2D, self).__init__(**kwargs)
@@ -30,38 +28,38 @@ class Masi:
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
-        self.model = models.Sequential()
+        self.model = tf.keras.models.Sequential()
         self.create_layers()
 
     def create_layers(self):
         input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
-        self.model.add(Input(shape=input_shape))
+        self.model.add(tf.keras.Input(shape=input_shape))
 
         kernel = (9, 9)
         padding = (lambda x: (x[0] // 2, x[1] // 2))
         self.model.add(ReflectionPadding2D(padding=padding(kernel)))
-        self.model.add(layers.Conv2D(64,
+        self.model.add(tf.keras.layers.Conv2D(64,
                                      kernel,
                                      # activation=tf.keras.layers.LeakyReLU(),
                                      activation='relu',
-                                     kernel_regularizer=regularizers.l1(0.015),
+                                     kernel_regularizer=tf.keras.regularizers.l1(0.015),
                                      padding='valid'))
 
         kernel = (3, 3)
         self.model.add(ReflectionPadding2D(padding=padding(kernel)))
-        self.model.add(layers.Conv2D(32,
+        self.model.add(tf.keras.layers.Conv2D(32,
                                      kernel,
                                      # activation=tf.keras.layers.LeakyReLU(),
                                      activation='relu',
-                                     kernel_regularizer=regularizers.l1(0.03),
+                                     kernel_regularizer=tf.keras.regularizers.l1(0.03),
                                      padding='valid'))
 
         kernel = (3, 3)
         self.model.add(ReflectionPadding2D(padding=padding(kernel)))
-        self.model.add(layers.Conv2D(self.no_output_bands,
+        self.model.add(tf.keras.layers.Conv2D(self.no_output_bands,
                                      kernel,
                                      activation='linear',
-                                     kernel_regularizer=regularizers.l1(0.015),
+                                     kernel_regularizer=tf.keras.regularizers.l1(0.015),
                                      padding='valid'))
 
 
@@ -70,28 +68,28 @@ class Brook:
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
-        self.model = models.Sequential()
+        self.model = tf.keras.models.Sequential()
         self.create_layers()
 
     # todo
     def create_layers(self):
         input_shape = (self.tile_size, self.tile_size, self.no_input_bands)
-        self.model.add(Input(shape=input_shape))
+        self.model.add(tf.keras.Input(shape=input_shape))
 
         kernel = (9, 9)
         padding = (lambda x: (x[0] // 2, x[1] // 2))
         self.model.add(ReflectionPadding2D(padding=padding(kernel)))
-        self.model.add(layers.Conv2D(64,
+        self.model.add(tf.keras.layers.Conv2D(64,
                                      kernel,
                                      # activation=tf.keras.layers.LeakyReLU(),
                                      activation='relu',
-                                     kernel_regularizer=regularizers.l1(0.015),
+                                     kernel_regularizer=tf.keras.regularizers.l1(0.015),
                                      padding='valid'))
 
     # todo
 
 
-class ReflectionPadding3D(layers.Layer):
+class ReflectionPadding3D(tf.keras.layers.Layer):
     def __init__(self, padding=(1, 1, 1), **kwargs):
         self.padding = tuple(padding)
         super(ReflectionPadding3D, self).__init__(**kwargs)
@@ -114,13 +112,13 @@ class ReflectionPadding3D(layers.Layer):
                       'SYMMETRIC')
 
 
-class SFTLayer(layers.Layer):
+class SFTLayer(tf.keras.layers.Layer):
     def __init__(self, filters, kernel_size=(3, 3), **kwargs):
         super(SFTLayer, self).__init__(**kwargs)
         self.filters = filters
         self.kernel = kernel_size
-        self.gamma_conv = layers.Conv2D(filters, kernel_size, activation=layers.LeakyReLU(), padding='same')
-        self.beta_conv = layers.Conv2D(filters, kernel_size, activation=layers.LeakyReLU(), padding='same')
+        self.gamma_conv = tf.keras.layers.Conv2D(filters, kernel_size, activation=tf.keras.layers.LeakyReLU(), padding='same')
+        self.beta_conv = tf.keras.layers.Conv2D(filters, kernel_size, activation=tf.keras.layers.LeakyReLU(), padding='same')
 
     # warning: overwriting __call__ can cause problems
     def call(self, inputs):
@@ -164,34 +162,34 @@ class SaPnn:
 
     def create_layers(self):
         # first layer
-        input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        input_detail = tf.keras.Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
-        detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
-        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
+        detail = tf.keras.layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
+        input_approx = tf.keras.Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
         approx = tf.expand_dims(input_approx, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
-        approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
+        approx = tf.keras.layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
         sft_layer = SFTLayer(filters=64)
         merged_branches = sft_layer([approx, detail])
 
         # second layer
         detail = ReflectionPadding2D(padding=self.padding2d)(detail)
-        detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
+        detail = tf.keras.layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
         approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
-        approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
+        approx = tf.keras.layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
         sft_layer = SFTLayer(filters=64)
         merged_branches = sft_layer([approx, detail])
 
         # third layer
         detail = ReflectionPadding2D(padding=self.padding2d)(detail)
-        detail = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
+        detail = tf.keras.layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail)
         approx = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
-        approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
+        approx = tf.keras.layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
         sft_layer = SFTLayer(filters=64)
         merged_branches = sft_layer([approx, detail])
 
-        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
+        y = tf.keras.layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
         y = tf.squeeze(y, axis=-1)
 
-        self.model = Model(inputs=[input_detail, input_approx], outputs=y)
+        self.model = tf.keras.Model(inputs=[input_detail, input_approx], outputs=y)
 

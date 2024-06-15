@@ -1,10 +1,10 @@
 import numpy as np
 import os
-from tensorflow import keras
-from keras import utils
+# from tensorflow.keras import utils
+import tensorflow as tf
 
 
-class DataGenerator(utils.PyDataset):
+class DataGenerator(tf.keras.utils.PyDataset):
     def __init__(self, data_dir, data_list, batch_size, output_size, no_input_bands, no_output_bands, shuffle):
         self.data_dir = data_dir
         self.data_list = data_list
