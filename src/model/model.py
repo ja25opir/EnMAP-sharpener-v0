@@ -44,10 +44,10 @@ class Model:
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
 
         # Masi
-        # model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # SaPNN
-        model = SaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # model = SaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -65,37 +65,37 @@ class Model:
         print('Test data size:', len(self.test_files))
 
     def train_model(self):
-        # train_generator = DataGenerator(self.train_data_dir,
-        #                                 data_list=self.train_files,
-        #                                 batch_size=self.batch_size,
-        #                                 output_size=(self.tile_size, self.tile_size),
-        #                                 no_input_bands=self.no_input_bands,
-        #                                 no_output_bands=self.no_output_bands,
-        #                                 shuffle=False)
+        train_generator = DataGenerator(self.train_data_dir,
+                                        data_list=self.train_files,
+                                        batch_size=self.batch_size,
+                                        output_size=(self.tile_size, self.tile_size),
+                                        no_input_bands=self.no_input_bands,
+                                        no_output_bands=self.no_output_bands,
+                                        shuffle=False)
+
+        test_generator = DataGenerator(self.train_data_dir,
+                                       data_list=self.test_files,
+                                       batch_size=self.batch_size,
+                                       output_size=(self.tile_size, self.tile_size),
+                                       no_input_bands=self.no_input_bands,
+                                       no_output_bands=self.no_output_bands,
+                                       shuffle=False)
+
+        # train_generator = DuoBranchDataGenerator(self.train_data_dir,
+        #                                          data_list=self.train_files,
+        #                                          batch_size=self.batch_size,
+        #                                          output_size=(self.tile_size, self.tile_size),
+        #                                          no_input_bands=self.no_input_bands,
+        #                                          no_output_bands=self.no_output_bands,
+        #                                          shuffle=False)
         #
-        # test_generator = DataGenerator(self.train_data_dir,
-        #                                data_list=self.test_files,
-        #                                batch_size=self.batch_size,
-        #                                output_size=(self.tile_size, self.tile_size),
-        #                                no_input_bands=self.no_input_bands,
-        #                                no_output_bands=self.no_output_bands,
-        #                                shuffle=False)
-
-        train_generator = DuoBranchDataGenerator(self.train_data_dir,
-                                                 data_list=self.train_files,
-                                                 batch_size=self.batch_size,
-                                                 output_size=(self.tile_size, self.tile_size),
-                                                 no_input_bands=self.no_input_bands,
-                                                 no_output_bands=self.no_output_bands,
-                                                 shuffle=False)
-
-        test_generator = DuoBranchDataGenerator(self.train_data_dir,
-                                                data_list=self.test_files,
-                                                batch_size=self.batch_size,
-                                                output_size=(self.tile_size, self.tile_size),
-                                                no_input_bands=self.no_input_bands,
-                                                no_output_bands=self.no_output_bands,
-                                                shuffle=False)
+        # test_generator = DuoBranchDataGenerator(self.train_data_dir,
+        #                                         data_list=self.test_files,
+        #                                         batch_size=self.batch_size,
+        #                                         output_size=(self.tile_size, self.tile_size),
+        #                                         no_input_bands=self.no_input_bands,
+        #                                         no_output_bands=self.no_output_bands,
+        #                                         shuffle=False)
 
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
@@ -103,12 +103,12 @@ class Model:
 
         # todo: restart from here
         # https://www.tensorflow.org/guide/keras/functional_api#models_with_multiple_inputs_and_outputs
-        # history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
         # todo: this works...
-        x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
-        x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
-        out = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
-        history = self.model.fit(({'x': x, 'x1': x1}, out), epochs=self.train_epochs, verbose=1)
+        # x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
+        # x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
+        # out = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
+        # history = self.model.fit({'x': x, 'x1': x1}, out, epochs=self.train_epochs, verbose=1)
 
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
