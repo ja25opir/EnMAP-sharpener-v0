@@ -26,7 +26,7 @@ class Model:
         self.output_dir = output_dir
         self.train_files = None
         self.test_files = None
-        self.learning_rate = self.set_lr_schedule()
+        self.learning_rate = None
         self.model = self.define_model()
         self.train_test_split()
 
@@ -108,7 +108,7 @@ class Model:
                                                 no_output_bands=self.no_output_bands,
                                                 shuffle=False)
 
-
+        self.learning_rate = self.set_lr_schedule()
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
