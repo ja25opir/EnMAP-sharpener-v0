@@ -60,7 +60,6 @@ class Model:
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle? -> in DataGenerator
         self.train_files = all_files[:int(len(all_files) * 0.8)]  # todo: WIP
-        print(self.train_files[:10])
         self.test_files = all_files[int(len(all_files) * 0.8):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
@@ -104,12 +103,12 @@ class Model:
 
         # todo: restart from here
         # https://www.tensorflow.org/guide/keras/functional_api#models_with_multiple_inputs_and_outputs
-        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        # history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
         # todo: this works...
-        # x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
-        # x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
-        # out = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
-        # history = self.model.fit({'x': x, 'x1': x1}, out, epochs=self.train_epochs, verbose=1)
+        x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
+        x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
+        out = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
+        history = self.model.fit({'x': x, 'x1': x1}, out, epochs=self.train_epochs, verbose=1)
 
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
