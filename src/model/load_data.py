@@ -3,9 +3,8 @@ import os
 from tensorflow.keras import utils
 
 
-class DataGenerator(utils.Sequence):
-    def __init__(self, data_dir, data_list, batch_size, output_size, no_input_bands, no_output_bands, shuffle, **kwargs):
-        super().__init__(**kwargs)
+class DataGenerator(utils.PyDataset):
+    def __init__(self, data_dir, data_list, batch_size, output_size, no_input_bands, no_output_bands, shuffle):
         self.data_dir = data_dir
         self.data_list = data_list
         self.indices = None
