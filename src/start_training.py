@@ -13,7 +13,6 @@ KERNEL_SIZES = [(9, 9), (3, 3), (5, 5)]
 
 TRAIN_DATA_DIR = os.getcwd() + '/data/preprocessing/model_input/'
 OUTPUT_DIR = os.getcwd() + '/output/'
-BATCH_SIZE = 32  # x * no. of GPUs
 LOSS_FUNCTION = 'mean_squared_error'  # todo: adapt learn rate and momentum, also use other loss function
 LEARN_RATE = 0.00001 # todo: maybe use a adaptive learning rate (big steps in the beginning, small steps later)
 # https://www.activeloop.ai/resources/glossary/adaptive-learning-rate-methods/#:~:text=Adaptive%20learning%20rate%20methods%20improve%20deep%20learning%20model%20performance%20by,faster%20convergence%20and%20better%20generalization.
@@ -21,8 +20,8 @@ LEARN_RATE = 0.00001 # todo: maybe use a adaptive learning rate (big steps in th
 TRAIN_EPOCHS = 10
 
 @multiple_gpu_distribution
-def train_model():
-    cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, BATCH_SIZE, KERNEL_SIZES,
+def train_model(batch_size):
+    cnn_model = Model(TRAIN_DATA_DIR, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, batch_size, KERNEL_SIZES,
                       LOSS_FUNCTION, LEARN_RATE, TRAIN_EPOCHS, OUTPUT_DIR)
 
     print('Starting training...')
@@ -34,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpus', nargs='+', type=int, default=[0],
                         help='Assigned GPUs for the pipeline')
     parser.add_argument('--mem-limit', type=int, default=10, help='GPU memory limit training in GB (per GPU)')
+    parser.add_argument('--batch-size', type=int, default=32, help='Batch size for training')
 
     args = parser.parse_args()
 
@@ -44,4 +44,4 @@ if __name__ == '__main__':
 
     limit_gpu_memory_usage(args.gpus, args.mem_limit)
 
-    train_model()
+    train_model(args.batch_size)
