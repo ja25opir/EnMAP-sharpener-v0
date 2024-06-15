@@ -169,8 +169,8 @@ class SaPnn:
         approx = tf.expand_dims(input_approx, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
         approx = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx)
-        sft_layer = SFTLayer(filters=64)
-        merged_branches = sft_layer([approx, detail])
+        # sft_layer = SFTLayer(filters=64)
+        merged_branches = SFTLayer(filters=64)([approx, detail])
 
         # second layer
         # detail = ReflectionPadding2D(padding=self.padding2d)(detail)
