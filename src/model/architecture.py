@@ -134,6 +134,10 @@ class SFTLayer(layers.Layer):
         for band_no in range(self.x_shape[-2]):
             x_band = x[:, :, :, band_no, :]
             # todo: check if this works as intended
+            # todo: restart from here:
+            # build a branch that extracts edged (maybe from sentinel input only) and that injects them into the other branch
+            # test this and monitor the output with a very small training sample to see if it actually works
+            # also rethink the dimensions of each "cube" in a layer. the paper says k*s*s*c where c is the number of bands
             x_band = gamma * x_band + beta
             x_band = tf.expand_dims(x_band, axis=-2)
             if merged is None:
@@ -183,6 +187,36 @@ class SaPnn:
         approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
         sft_layer = SFTLayer(filters=self.feature_maps)
         merged_branches = sft_layer([approx, detail])
+
+        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
+        y = tf.squeeze(y, axis=-1)
+
+        self.model = Model(inputs=[input_detail, input_approx], outputs=y)
+
+
+class TestSaPnn:
+    def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.tile_size = tile_size
+        self.no_input_bands = no_input_bands
+        self.no_output_bands = no_output_bands
+        self.kernel2d = (3, 3)
+        self.padding2d = (self.kernel2d[0] // 2, self.kernel2d[1] // 2)
+        self.kernel3d = (7, 7, 3)
+        self.padding3d = (self.kernel3d[0] // 2, self.kernel3d[1] // 2, self.kernel3d[2] // 2)
+        self.feature_maps = 16
+        self.model = None
+        self.create_layers()
+
+    def create_layers(self):
+        # first layer
+        input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
+        detail = layers.Conv2D(self.feature_maps, self.kernel2d, padding='valid', activation='relu')(detail)
+        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
+        approx = tf.expand_dims(input_approx, axis=-1)
+        approx = ReflectionPadding3D(padding=self.padding3d)(approx)
+        approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
+        merged_branches = SFTLayer(filters=self.feature_maps)([approx, detail])
 
         y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
         y = tf.squeeze(y, axis=-1)

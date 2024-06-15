@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPnn
+from .architecture import Masi, ReflectionPadding2D, SaPnn, TestSaPnn
 from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
@@ -47,7 +47,10 @@ class Model:
         # model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # SaPNN
-        model = SaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # model = SaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
+
+        # Test
+        model = TestSaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -59,7 +62,7 @@ class Model:
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle? -> in DataGenerator
-        self.train_files = all_files[:int(len(all_files) * 0.2)]  # todo: WIP
+        self.train_files = all_files[:int(len(all_files) * 0.1)]  # todo: WIP
         self.test_files = all_files[int(len(all_files) * 0.9):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
@@ -122,6 +125,7 @@ class Model:
         plt.plot(history.history['loss'])
         plt.title('model loss')
         plt.savefig(self.output_dir + 'models/first_model_loss.png')
+        # todo: add training time measurement
 
         print('Saving model to:', self.output_dir + 'models/first_model.keras')
         self.model.save(self.output_dir + 'models/first_model.keras')
