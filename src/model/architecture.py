@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import models, layers, regularizers, Input, Model
+from tensorflow import keras
+from keras import models, layers, regularizers, Input, Model
 
 
 class ReflectionPadding2D(layers.Layer):
