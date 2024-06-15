@@ -79,8 +79,6 @@ class DuoBranchDataGenerator(DataGenerator):
             y_path = os.path.join(self.data_dir, 'y', self.data_list[data_index])
             y_img = np.load(y_path)
 
-            print(x_img.shape, x1_img.shape, y_img.shape)
-
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
             X[i,] = x_img.T
             X1[i,] = x1_img.T
