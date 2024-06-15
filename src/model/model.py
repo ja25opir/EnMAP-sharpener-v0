@@ -1,7 +1,7 @@
 import os, random
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers, models, initializers, regularizers, Input
+from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
 from .architecture import Masi, ReflectionPadding2D, SaPnn
@@ -97,18 +97,18 @@ class Model:
                                                 no_output_bands=self.no_output_bands,
                                                 shuffle=False)
 
-        optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
 
         # todo: restart from here
         # https://www.tensorflow.org/guide/keras/functional_api#models_with_multiple_inputs_and_outputs
-        # history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
         # todo: this works...
-        x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
-        x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
-        out = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
-        history = self.model.fit({'x': x, 'x1': x1}, out, epochs=self.train_epochs, verbose=1)
+        # x = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_input_bands))
+        # x1 = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
+        # out = np.random.randint(0, 255, (self.batch_size, self.tile_size, self.tile_size, self.no_output_bands))
+        # history = self.model.fit({'x': x, 'x1': x1}, out, epochs=self.train_epochs, verbose=1)
 
         plt.plot(history.history['accuracy'])
         plt.title('model accuracy')
