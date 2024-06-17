@@ -12,6 +12,9 @@ if __name__ == '__main__':
     parser.add_argument('--date-time', type=str, default=None, help='Interval for scene acquisition in ISO 8601 format')
     parser.add_argument('--start-index', type=str, default='0', help='Index of first scene to download')
     parser.add_argument('--max-scenes', type=int, default=1000, help='Maximum number of scenes to download')
+    parser.add_argument('--timestamps-file', type=int, default=0,
+                        help='Controls if a file with timestamps from all matching scenes is created. '
+                             '0: no file, 1: file with timestamps only (no scene download), 2: file with timestamps and scene download')
     parser.add_argument('--session-token', type=str, default='', help='Session token for DLR authentication')
     parser.add_argument('--cpus', nargs='+', type=int, default=[0, 1, 2, 3],
                         help='Assigned logical CPUs for the pipeline')
@@ -27,7 +30,7 @@ if __name__ == '__main__':
 
     enmap_dir_path = os.getcwd() + args.enmap_dir
     enmap = EnMAP(enmap_dir_path, args.max_cloud_cover, args.bbox, args.date_time, args.start_index, args.max_scenes,
-                  args.session_token)
+                  args.timestamps_file, args.session_token)
     enmap.scrape_all_scenes()
 
     print("---EnMAPScraping---Elapsed time: %.2fs seconds ---" % (time.time() - start_time))

@@ -32,13 +32,15 @@ def get_item_list(session, url, parameter):
 
 
 class EnMAP:
-    def __init__(self, enmap_dir, max_cloud_cover, bbox, date_time, start_index, max_scenes, session_token):
+    def __init__(self, enmap_dir, max_cloud_cover, bbox, date_time, start_index, max_scenes, timestamps_file,
+                 session_token):
         self.enmap_dir = enmap_dir
         self.max_cloud_cover = max_cloud_cover
         self.bbox = bbox
         self.date_time = date_time
         self.start_index = start_index
         self.max_scenes = max_scenes
+        self.timestamps_file = timestamps_file
         self.session_token = session_token
         self.auth_session = self.set_auth()
         self.default_index_url = 'https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A/items'
@@ -64,13 +66,16 @@ class EnMAP:
         session.headers.update(headers)
         return session
 
-    def filter_item_list(self, session, item_feature_list, max_cloud_cover, number_all_scenes):
+    def filter_and_download(self, session, item_feature_list, max_cloud_cover, number_all_scenes):
+        """Filter the item list for the scenes that are to be downloaded.
+        Skip broken scenes and scenes with too high cloud cover."""
         for item in item_feature_list:
             print('Processing item', self.checked_scenes + 1 + int(self.start_index), 'of', number_all_scenes, '...')
             self.checked_scenes += 1
             cloud_cover = int(item['properties']['eo:cloud_cover']) + int(item['properties']['enmap:cirrus_cover'])
             if cloud_cover < max_cloud_cover and item['properties'][
                 'enmap:sceneAOT'] != '-999':
+
                 metadata_href = item['assets']['metadata']['href']
                 scene_dir = self.enmap_dir + metadata_href.split('/')[-1].split('-META')[0] + '/'
                 if os.path.exists(scene_dir):
@@ -114,6 +119,17 @@ class EnMAP:
                 print('Downloaded', self.max_scenes, 'scenes. Stopping download.')
                 sys.exit()
 
+    def create_scene_list(self, item_feature_list, max_cloud_cover, number_all_scenes):
+        """Filter the item list by cloud cover. Write all resulting scene timestamps to a text file."""
+        print('Found a total of', number_all_scenes, 'scenes. Checking cloud cover...')
+        for item in item_feature_list:
+            cloud_cover = int(item['properties']['eo:cloud_cover']) + int(item['properties']['enmap:cirrus_cover'])
+            if cloud_cover < max_cloud_cover and item['properties'][
+                'enmap:sceneAOT'] != '-999':
+                scene_timestamp = item['properties']['start_datetime']
+                with open(self.enmap_dir + 'scene_list.txt', 'a') as f:
+                    f.write(scene_timestamp + '\n')
+
     def scrape_all_scenes(self):
         next_link = self.default_index_url
         start_idx = self.start_index
@@ -128,13 +144,20 @@ class EnMAP:
         scenes = item_list['features']
         # repeat as long as the pagination returns a next link
         while next_link != '':
-            self.filter_item_list(self.auth_session, scenes, self.max_cloud_cover, item_list['numberMatched'])
+            if self.timestamps_file == 0:
+                self.filter_and_download(self.auth_session, scenes, self.max_cloud_cover, item_list['numberMatched'])
+            elif self.timestamps_file == 1:
+                self.create_scene_list(scenes, self.max_cloud_cover, item_list['numberMatched'])
+            elif self.timestamps_file == 2:
+                self.filter_and_download(self.auth_session, scenes, self.max_cloud_cover, item_list['numberMatched'])
+                self.create_scene_list(scenes, self.max_cloud_cover, item_list['numberMatched'])
             for link in item_list['links']:
                 if link['rel'] == 'next':
                     next_link = link['href']
                     break
                 else:
                     next_link = ''
-            # initial parameter are provided in next_link (bbox gets cutoff so we provide the rest again)
-            item_list = get_item_list(self.auth_session, next_link, parameter={'bbox': self.bbox[1:]})
-            scenes = item_list['features']
+            # initial parameter are provided in next_link (bbox gets cutoff, so we provide the rest again)
+            if next_link != '':
+                item_list = get_item_list(self.auth_session, next_link, parameter={'bbox': self.bbox[1:]})
+                scenes = item_list['features']
