@@ -69,7 +69,7 @@ class Model:
         print('Test data size:', len(self.test_files))
 
     def set_lr_schedule(self):
-        initial_learning_rate = 0.1
+        initial_learning_rate = 0.3
         final_learning_rate = 0.0001
         learning_rate_decay_factor = (final_learning_rate / initial_learning_rate) ** (1 / self.train_epochs)
         steps_per_epoch = int(len(self.train_files) / self.batch_size)
@@ -113,10 +113,8 @@ class Model:
                                                 shuffle=False)
 
         self.learning_rate = self.set_lr_schedule()
-        # optimizer = optimizers.Adam(learning_rate=self.learning_rate)
-        optimizer = optimizers.Adam(learning_rate=0.00005)
-        # self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
-        self.model.compile(optimizer=optimizer, loss='mse', metrics=['accuracy'])
+        optimizer = optimizers.Adam(learning_rate=self.learning_rate)
+        self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
 
         history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
