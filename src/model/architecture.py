@@ -261,7 +261,7 @@ class FCNN:
         #
         approx = layers.Conv2D(64, (9,9), padding='same',
                                activation='relu',
-                               kernel_initializer=initializer)(input3d)
+                               kernel_initializer=initializer)(input3d[0])
         approx = layers.Conv2D(32, (3,3), padding='same',
                                activation='relu',
                                kernel_initializer=initializer)(approx)
