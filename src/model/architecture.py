@@ -241,7 +241,7 @@ class FCNN:
         approx = layers.Conv3D(64, (9,9,7), padding='same', activation='relu')(approx)
         approx = layers.Conv3D(32, (1,1,1), padding='same', activation='relu')(approx)
         approx = layers.Conv3D(9, (1,1,1), padding='same', activation='relu')(approx)
-        y = layers.Conv3D(1, (5,5,3), padding='same', activation='relu')(approx)
+        y = layers.Conv3D(1, (5,5,3), padding='same', activation='linear')(approx)
 
         y = tf.squeeze(y, axis=-1)
 

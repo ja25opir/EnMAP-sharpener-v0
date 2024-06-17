@@ -30,7 +30,7 @@ y_raster = np.load(y_data_path + random_file)
 custom_objects = {'ReflectionPadding2D': ReflectionPadding2D,
                   'ReflectionPadding3D': ReflectionPadding3D,
                   'SFTLayer': SFTLayer}
-model = tf.keras.models.load_model(model_path + 'sapnn.keras', custom_objects=custom_objects)
+model = tf.keras.models.load_model(model_path + 'FCNN.keras', custom_objects=custom_objects)
 
 print(model.summary())
 
@@ -39,7 +39,8 @@ print(model.summary())
 # predicted_raster = model.predict(model_input).reshape(100, 100, 3).T
 x = x_raster.T.reshape(1, 32, 32, 228)
 x1 = x1_raster.T.reshape(1, 32, 32, 224)
-predicted_raster = model.predict([x, x1]).reshape(32, 32, 224).T
+# predicted_raster = model.predict([x, x1]).reshape(32, 32, 224).T
+predicted_raster = model.predict(x1).reshape(32, 32, 224).T
 
 # bands = [50, 100, 150]
 bands = [0,1,2]
@@ -58,12 +59,13 @@ get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers
 output_0 = get_layer_output([x1])
 get_layer_output = K.function(inputs=model.layers[1].input, outputs=model.layers[1].output)
 output_1 = get_layer_output([output_0])
+get_layer_output = K.function(inputs=model.layers[2].input, outputs=model.layers[2].output)
+output_2 = get_layer_output([output_1])
 get_layer_output = K.function(inputs=model.layers[3].input, outputs=model.layers[3].output)
-output_3 = get_layer_output([output_1])
-get_layer_output = K.function(inputs=model.layers[5].input, outputs=model.layers[5].output)
-output_5 = get_layer_output([output_3])
+output_3 = get_layer_output([output_2])
 
-y_rgb = get_bands_from_array(output_5[0, :, :, :, 1], bands)
+output = output_3[0, :, :, :, 0].T
+y_rgb = get_bands_from_array(output, bands)
 plot_3_band_image(y_rgb, title='3d conv')
 
 # for i in range(len(model.layers)):
