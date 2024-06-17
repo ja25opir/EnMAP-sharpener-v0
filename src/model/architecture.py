@@ -231,8 +231,6 @@ class Test3dConv:
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
-        self.kernel2d = (3, 3)
-        self.padding2d = (self.kernel2d[0] // 2, self.kernel2d[1] // 2)
         self.kernel3d = (7, 7, 3)
         self.padding3d = (self.kernel3d[0] // 2, self.kernel3d[1] // 2, self.kernel3d[2] // 2)
         self.feature_maps = 16
@@ -247,6 +245,27 @@ class Test3dConv:
         approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
 
         y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(approx)
+        y = tf.squeeze(y, axis=-1)
+
+        self.model = Model(inputs=input3d, outputs=y)
+
+class FCNN:
+    def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.tile_size = tile_size
+        self.no_input_bands = no_input_bands
+        self.no_output_bands = no_output_bands
+        self.model = None
+        self.create_layers()
+
+    def create_layers(self):
+        # first layer
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
+        approx = tf.expand_dims(input3d, axis=-1)
+        approx = layers.Conv3D(64, (9,9,7), padding='same', activation='relu')(approx)
+        approx = layers.Conv3D(32, (1,1,1), padding='same', activation='relu')(approx)
+        approx = layers.Conv3D(9, (1,1,1), padding='same', activation='relu')(approx)
+        y = layers.Conv3D(1, (5,5,3), padding='same', activation='relu')(approx)
+
         y = tf.squeeze(y, axis=-1)
 
         self.model = Model(inputs=input3d, outputs=y)
