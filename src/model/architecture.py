@@ -243,7 +243,8 @@ class FCNN:
         initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 
         # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
+        # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
         # approx = tf.expand_dims(input3d, axis=-1)
         # approx = layers.Conv3D(64, (9, 9, 7), padding='same',
         #                        activation='relu',
@@ -264,11 +265,11 @@ class FCNN:
         approx = layers.Conv2D(32, (3,3), padding='same',
                                activation='relu',
                                kernel_initializer=initializer)(approx)
-        approx = layers.Conv2D(16, (5,5), padding='same',
+        y = layers.Conv2D(224, (5,5), padding='same',
                                activation='relu',
                                kernel_initializer=initializer)(approx)
-        y = layers.Conv3D(1, (5, 5, 3), padding='same',
-                          activation='linear',
-                          kernel_initializer=initializer)(approx)
+        # y = layers.Conv3D(1, (5, 5, 3), padding='same',
+        #                   activation='linear',
+        #                   kernel_initializer=initializer)(approx)
 
         self.model = Model(inputs=input3d, outputs=y)
