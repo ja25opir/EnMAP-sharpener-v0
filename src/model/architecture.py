@@ -225,31 +225,8 @@ class TestSaPnn:
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
 
-
-class Test3dConv:
-    def __init__(self, tile_size, no_input_bands, no_output_bands):
-        self.tile_size = tile_size
-        self.no_input_bands = no_input_bands
-        self.no_output_bands = no_output_bands
-        self.kernel3d = (7, 7, 3)
-        self.padding3d = (self.kernel3d[0] // 2, self.kernel3d[1] // 2, self.kernel3d[2] // 2)
-        self.feature_maps = 16
-        self.model = None
-        self.create_layers()
-
-    def create_layers(self):
-        # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
-        approx = tf.expand_dims(input3d, axis=-1)
-        approx = ReflectionPadding3D(padding=self.padding3d)(approx)
-        approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
-
-        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(approx)
-        y = tf.squeeze(y, axis=-1)
-
-        self.model = Model(inputs=input3d, outputs=y)
-
 class FCNN:
+    """https://www.mdpi.com/2072-4292/9/11/1139#"""
     def __init__(self, tile_size, no_input_bands, no_output_bands):
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands

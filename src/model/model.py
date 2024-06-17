@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPnn, TestSaPnn, Test3dConv
+from .architecture import Masi, ReflectionPadding2D, SaPnn, TestSaPnn, Test3dConv, FCNN
 from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
@@ -51,7 +51,7 @@ class Model:
 
         # Test
         # model = TestSaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
-        model = Test3dConv(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        model = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -63,8 +63,8 @@ class Model:
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
         # todo: shuffle? -> in DataGenerator
-        self.train_files = all_files[:int(len(all_files) * 0.01)]  # todo: WIP
-        self.test_files = all_files[int(len(all_files) * 0.99):]
+        self.train_files = all_files[:int(len(all_files) * 0.1)]  # todo: WIP
+        self.test_files = all_files[int(len(all_files) * 0.95):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
