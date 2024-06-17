@@ -244,7 +244,7 @@ class FCNN:
 
         # first layer
         # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands))
         # approx = tf.expand_dims(input3d, axis=-1)
         # approx = layers.Conv3D(64, (9, 9, 7), padding='same',
         #                        activation='relu',
@@ -261,7 +261,7 @@ class FCNN:
         #
         approx = layers.Conv2D(64, (9,9), padding='same',
                                activation='relu',
-                               kernel_initializer=initializer)(input3d[0])
+                               kernel_initializer=initializer)(input3d)
         approx = layers.Conv2D(32, (3,3), padding='same',
                                activation='relu',
                                kernel_initializer=initializer)(approx)
