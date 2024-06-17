@@ -56,17 +56,18 @@ plot_3_band_image(y_rgb, title='Original Image')
 # tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)
 
 get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers[0].output)
-output_0 = get_layer_output([x1])
-get_layer_output = K.function(inputs=model.layers[1].input, outputs=model.layers[1].output)
-output_1 = get_layer_output([output_0])
-get_layer_output = K.function(inputs=model.layers[2].input, outputs=model.layers[2].output)
-output_2 = get_layer_output([output_1])
-get_layer_output = K.function(inputs=model.layers[3].input, outputs=model.layers[3].output)
-output_3 = get_layer_output([output_2])
-
-output = output_3[0, :, :, :, 0].T
-y_rgb = get_bands_from_array(output, bands)
-plot_3_band_image(y_rgb, title='3d conv')
+input_l = get_layer_output([x1])
+for i in range(len(model.layers)):
+    if i == 0:
+        get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers[0].output)
+        input_l = get_layer_output([x1])
+    else:
+        get_layer_output = K.function(inputs=model.layers[i].input, outputs=model.layers[i].output)
+        output_l = get_layer_output([input_l])
+        input_l = output_l
+        if model.layers[i].name == 'conv3d':
+            arr = get_bands_from_array(output_l[0, :, :, :, 0].T, bands)
+            plot_3_band_image(arr, title='Layer ' + str(i + 1))
 
 # for i in range(len(model.layers)):
 #     # if model.layers[i].name == 'conv3d':

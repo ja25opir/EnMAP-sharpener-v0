@@ -225,8 +225,13 @@ class TestSaPnn:
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
 
+
 class FCNN:
-    """https://www.mdpi.com/2072-4292/9/11/1139#"""
+    """
+    https://www.mdpi.com/2072-4292/9/11/1139#
+    Repo: https://github.com/MeiShaohui/Hyperspectral-Image-Spatial-Super-Resolution-via-3D-Full-Convolutional-Neural-Network/blob/master/network3d.py
+    """
+
     def __init__(self, tile_size, no_input_bands, no_output_bands):
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
@@ -236,13 +241,12 @@ class FCNN:
 
     def create_layers(self):
         # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
-        approx = tf.expand_dims(input3d, axis=-1)
-        approx = layers.Conv3D(64, (9,9,7), padding='same', activation='relu')(approx)
-        approx = layers.Conv3D(32, (1,1,1), padding='same', activation='relu')(approx)
-        approx = layers.Conv3D(9, (1,1,1), padding='same', activation='relu')(approx)
-        y = layers.Conv3D(1, (5,5,3), padding='same', activation='linear')(approx)
-
-        y = tf.squeeze(y, axis=-1)
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
+        # approx = tf.expand_dims(input3d, axis=-1)
+        approx = layers.Conv3D(64, (9, 9, 7), padding='same', activation='relu')(input3d)
+        approx = layers.Conv3D(32, (1, 1, 1), padding='same', activation='relu')(approx)
+        approx = layers.Conv3D(9, (1, 1, 1), padding='same', activation='relu')(approx)
+        y = layers.Conv3D(1, (5, 5, 3), padding='same', activation='linear')(approx)
+        # y = tf.squeeze(y, axis=-1)
 
         self.model = Model(inputs=input3d, outputs=y)
