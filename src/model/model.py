@@ -44,7 +44,7 @@ class Model:
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
 
         # Masi
-        model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # SaPNN
         # model = SaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
@@ -52,6 +52,7 @@ class Model:
         # Test
         # model = TestSaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
         # model = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        model = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -80,37 +81,37 @@ class Model:
             staircase=True)
 
     def train_model(self):
-        train_generator = DataGenerator(self.train_data_dir,
-                                        data_list=self.train_files,
-                                        batch_size=self.batch_size,
-                                        output_size=(self.tile_size, self.tile_size),
-                                        no_input_bands=self.no_input_bands,
-                                        no_output_bands=self.no_output_bands,
-                                        shuffle=False)
-
-        test_generator = DataGenerator(self.train_data_dir,
-                                       data_list=self.test_files,
-                                       batch_size=self.batch_size,
-                                       output_size=(self.tile_size, self.tile_size),
-                                       no_input_bands=self.no_input_bands,
-                                       no_output_bands=self.no_output_bands,
-                                       shuffle=False)
-
-        # train_generator = DuoBranchDataGenerator(self.train_data_dir,
-        #                                          data_list=self.train_files,
-        #                                          batch_size=self.batch_size,
-        #                                          output_size=(self.tile_size, self.tile_size),
-        #                                          no_input_bands=self.no_input_bands,
-        #                                          no_output_bands=self.no_output_bands,
-        #                                          shuffle=False)
+        # train_generator = DataGenerator(self.train_data_dir,
+        #                                 data_list=self.train_files,
+        #                                 batch_size=self.batch_size,
+        #                                 output_size=(self.tile_size, self.tile_size),
+        #                                 no_input_bands=self.no_input_bands,
+        #                                 no_output_bands=self.no_output_bands,
+        #                                 shuffle=False)
         #
-        # test_generator = DuoBranchDataGenerator(self.train_data_dir,
-        #                                         data_list=self.test_files,
-        #                                         batch_size=self.batch_size,
-        #                                         output_size=(self.tile_size, self.tile_size),
-        #                                         no_input_bands=self.no_input_bands,
-        #                                         no_output_bands=self.no_output_bands,
-        #                                         shuffle=False)
+        # test_generator = DataGenerator(self.train_data_dir,
+        #                                data_list=self.test_files,
+        #                                batch_size=self.batch_size,
+        #                                output_size=(self.tile_size, self.tile_size),
+        #                                no_input_bands=self.no_input_bands,
+        #                                no_output_bands=self.no_output_bands,
+        #                                shuffle=False)
+
+        train_generator = DuoBranchDataGenerator(self.train_data_dir,
+                                                 data_list=self.train_files,
+                                                 batch_size=self.batch_size,
+                                                 output_size=(self.tile_size, self.tile_size),
+                                                 no_input_bands=self.no_input_bands,
+                                                 no_output_bands=self.no_output_bands,
+                                                 shuffle=False)
+
+        test_generator = DuoBranchDataGenerator(self.train_data_dir,
+                                                data_list=self.test_files,
+                                                batch_size=self.batch_size,
+                                                output_size=(self.tile_size, self.tile_size),
+                                                no_input_bands=self.no_input_bands,
+                                                no_output_bands=self.no_output_bands,
+                                                shuffle=False)
 
         self.learning_rate = self.set_lr_schedule()
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
