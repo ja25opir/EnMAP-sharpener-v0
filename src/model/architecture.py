@@ -241,7 +241,7 @@ class Test3dConv:
 
     def create_layers(self):
         # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x')
         approx = tf.expand_dims(input3d, axis=-1)
         approx = ReflectionPadding3D(padding=self.padding3d)(approx)
         approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
