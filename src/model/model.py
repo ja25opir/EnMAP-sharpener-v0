@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPnn, TestSaPnn, Test3dConv, FCNN
+from .architecture import Masi, ReflectionPadding2D, SaPnn, TestSaPnn, FCNN
 from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
