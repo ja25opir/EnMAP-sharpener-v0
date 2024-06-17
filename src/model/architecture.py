@@ -254,7 +254,10 @@ class FCNN:
         # approx = layers.Conv3D(9, (1, 1, 1), padding='same',
         #                        activation='relu',
         #                        kernel_initializer=initializer)(approx)
-        y = layers.Conv3D(1, (5, 5, 3), padding='same',
+        # y = layers.Conv3D(1, (5, 5, 3), padding='same',
+        #                   activation='linear',
+        #                   kernel_initializer=initializer)(input3d)
+        y = layers.Conv2D(1, (5, 5), padding='same',
                           activation='linear',
                           kernel_initializer=initializer)(input3d)
         # y = tf.squeeze(y, axis=-1)
