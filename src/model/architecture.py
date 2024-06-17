@@ -138,6 +138,8 @@ class SFTLayer(layers.Layer):
             # build a branch that extracts edged (maybe from sentinel input only) and that injects them into the other branch
             # test this and monitor the output with a very small training sample to see if it actually works
             # also rethink the dimensions of each "cube" in a layer. the paper says k*s*s*c where c is the number of bands
+            # also print model graph
+            # and take a look at test_model.py
             x_band = gamma * x_band + beta
             x_band = tf.expand_dims(x_band, axis=-2)
             if merged is None:
@@ -222,3 +224,29 @@ class TestSaPnn:
         y = tf.squeeze(y, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
+
+
+class Test3dConv:
+    def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.tile_size = tile_size
+        self.no_input_bands = no_input_bands
+        self.no_output_bands = no_output_bands
+        self.kernel2d = (3, 3)
+        self.padding2d = (self.kernel2d[0] // 2, self.kernel2d[1] // 2)
+        self.kernel3d = (7, 7, 3)
+        self.padding3d = (self.kernel3d[0] // 2, self.kernel3d[1] // 2, self.kernel3d[2] // 2)
+        self.feature_maps = 16
+        self.model = None
+        self.create_layers()
+
+    def create_layers(self):
+        # first layer
+        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
+        approx = tf.expand_dims(input_approx, axis=-1)
+        approx = ReflectionPadding3D(padding=self.padding3d)(approx)
+        approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
+
+        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(approx)
+        y = tf.squeeze(y, axis=-1)
+
+        self.model = Model(inputs=input_approx, outputs=y)
