@@ -256,10 +256,19 @@ class FCNN:
         #                        kernel_initializer=initializer)(approx)
         # y = layers.Conv3D(1, (5, 5, 3), padding='same',
         #                   activation='linear',
-        #                   kernel_initializer=initializer)(input3d)
-        y = layers.Conv2D(1, (5, 5), padding='same',
+        #                   kernel_initializer=initializer)(approx)
+        #
+        approx = layers.Conv2D(64, (9,9), padding='same',
+                               activation='relu',
+                               kernel_initializer=initializer)(input3d)
+        approx = layers.Conv2D(32, (3,3), padding='same',
+                               activation='relu',
+                               kernel_initializer=initializer)(approx)
+        approx = layers.Conv2D(16, (5,5), padding='same',
+                               activation='relu',
+                               kernel_initializer=initializer)(approx)
+        y = layers.Conv3D(1, (5, 5, 3), padding='same',
                           activation='linear',
-                          kernel_initializer=initializer)(input3d)
-        # y = tf.squeeze(y, axis=-1)
+                          kernel_initializer=initializer)(approx)
 
         self.model = Model(inputs=input3d, outputs=y)
