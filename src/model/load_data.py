@@ -54,7 +54,7 @@ class DataGenerator(Sequence):
             X[i,] = x_img.T
             Y[i,] = y_img.T
 
-        return {'x': X}, Y
+        return X, Y
 
 
 class DuoBranchDataGenerator(DataGenerator):
@@ -84,4 +84,5 @@ class DuoBranchDataGenerator(DataGenerator):
             X1[i, :, :, :, 0] = x1_img.T
             Y[i, :, :, :, 0] = y_img.T
 
-        return {'x': X, 'x1': X1}, Y
+        # return {'x': X, 'x1': X1}, Y
+        return X1, Y
