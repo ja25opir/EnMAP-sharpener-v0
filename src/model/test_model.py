@@ -42,8 +42,8 @@ x1 = x1_raster.T.reshape(1, 32, 32, 224)
 # predicted_raster = model.predict([x, x1]).reshape(32, 32, 224).T
 predicted_raster = model.predict(x1).reshape(32, 32, 224).T
 
-# bands = [50, 100, 150]
-bands = [0,1,2]
+bands = [50, 100, 150]
+# bands = [0,1,2]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 
