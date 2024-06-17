@@ -47,8 +47,8 @@ class DataGenerator(Sequence):
             y_img = np.load(y_path)
 
             # todo: WIP testing with 6 bands
-            x_img = x_img[(50,100,150,225,226,227), :, :]
-            y_img = y_img[(50,100,150), :, :]
+            # x_img = x_img[(50,100,150,225,226,227), :, :]
+            # y_img = y_img[(50,100,150), :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
             X[i,] = x_img.T
@@ -62,7 +62,8 @@ class DuoBranchDataGenerator(DataGenerator):
         # (batch_size, w, h, no_input_bands)
         X = np.empty((self.batch_size, *self.output_size, self.no_input_bands))
         X1 = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
-        Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
+        # Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
+        Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands))
 
         # get the indices of the requested batch
         indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
@@ -80,14 +81,15 @@ class DuoBranchDataGenerator(DataGenerator):
             y_img = np.load(y_path)
 
             # todo: testing...
-            x_img = x_img[(50,100,150), :, :]
+            x_img = x_img[(50, 100, 150, 225, 226, 227), :, :]
             x1_img = x1_img[(50,100,150), :, :]
             y_img = y_img[(50,100,150), :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
             X[i,] = x_img.T
             X1[i, :, :, :, 0] = x1_img.T
-            Y[i, :, :, :, 0] = y_img.T
+            # Y[i, :, :, :, 0] = y_img.T
+            Y[i,] = y_img.T
 
             # X1[i, ] = x1_img.T
             # Y[i, ] = y_img.T
