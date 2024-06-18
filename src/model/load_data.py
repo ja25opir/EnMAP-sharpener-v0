@@ -62,10 +62,10 @@ class DuoBranchDataGenerator(DataGenerator):
         # (batch_size, w, h, no_input_bands)
         X = np.empty((self.batch_size, *self.output_size, self.no_input_bands, 1))
         X1 = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
-        # Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
+        Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
         # X = np.empty((self.batch_size, *self.output_size, self.no_input_bands))
         # X1 = np.empty((self.batch_size, *self.output_size, self.no_input_bands))
-        Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands))
+        # Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands))
 
         # get the indices of the requested batch
         indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
