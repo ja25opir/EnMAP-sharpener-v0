@@ -298,6 +298,8 @@ class TestFCNN:
         # todo: vgl mit Masi mit 6+3 Bändern --> tf api syntax könnte das Problem sein
         # --> funktioniert aber mit DataGenerator, vielleicht DuoBranchGenerator das Problem?
         # --> DuoBranchGen funktioniert auch, jetzt Model schrittweise ändern (expand_dims, etc.)
+        # --> conclusion 18.06.: funktioniert nicht mit 4d Input!!! --> s. scratch2.py
+        # --> vielleicht y nur 3d (W x H x C) angeben (trotz 4d input)
         # Masi hat eine accuracy von 0.9385!!!
         # todo: Verschiebungen beim Resamplen fixen!
 
