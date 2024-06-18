@@ -240,7 +240,7 @@ class FCNN:
         self.create_layers()
 
     def create_layers(self):
-        initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=tf.keras.random.SeedGenerator(42))
+        initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=tf.keras.backend.SeedGenerator(42))
 
         # first layer
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
