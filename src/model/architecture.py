@@ -243,24 +243,18 @@ class FCNN:
         initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 
         # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x')
-        approx = layers.Conv3D(64, (9, 9, 7), padding='same',
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
+        conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
                                activation='relu',
                                kernel_initializer=initializer)(input3d)
-        approx = layers.Conv3D(32, (1, 1, 1), padding='same',
+        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
                                activation='relu',
-                               kernel_initializer=initializer)(approx)
-        approx = layers.Conv3D(9, (1, 1, 1), padding='same',
+                               kernel_initializer=initializer)(conv1)
+        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
                                activation='relu',
-                               kernel_initializer=initializer)(approx)
-        approx = layers.Conv3D(1, (5, 5, 3), padding='same',
+                               kernel_initializer=initializer)(conv2)
+        y = layers.Conv3D(1, (5, 5, 3), padding='same',
                           activation='linear',
-                          kernel_initializer=initializer)(approx)
-
-        approx = tf.squeeze(approx, axis=-1)
-
-        y = layers.Conv2D(self.no_output_bands, (1, 1), padding='same',
-                          activation='linear',
-                          kernel_initializer=initializer)(approx)
+                          kernel_initializer=initializer)(conv3)
 
         self.model = Model(inputs=input3d, outputs=y)
