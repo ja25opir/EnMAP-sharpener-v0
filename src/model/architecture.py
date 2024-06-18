@@ -273,9 +273,9 @@ class TestFCNN:
         initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x')
-        # input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
-        input2d = tf.squeeze(input3d, axis=-1)
+        # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x')
+        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        # input2d = tf.squeeze(input3d, axis=-1)
         kernel = (9, 9)
         padding = (lambda x: (x[0] // 2, x[1] // 2))
         reflect_pad_1 = ReflectionPadding2D(padding=padding(kernel))(input2d)
@@ -289,10 +289,10 @@ class TestFCNN:
                               kernel_regularizer=regularizers.l1(0.03))(reflect_pad_2)
         kernel = (3, 3)
         reflect_pad_2 = ReflectionPadding2D(padding=padding(kernel))(conv2)
-        conv3 = layers.Conv2D(self.no_output_bands, kernel, padding='valid',
+        y = layers.Conv2D(self.no_output_bands, kernel, padding='valid',
                           activation='linear',
                           kernel_regularizer=regularizers.l1(0.015))(reflect_pad_2)
-        y = tf.expand_dims(conv3, axis=-1)
+        # y = tf.expand_dims(conv3, axis=-1)
 
         # restart from here
         # todo: vgl mit Masi mit 6+3 Bändern --> tf api syntax könnte das Problem sein
