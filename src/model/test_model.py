@@ -30,7 +30,7 @@ y_raster = np.load(y_data_path + random_file)
 custom_objects = {'ReflectionPadding2D': ReflectionPadding2D,
                   'ReflectionPadding3D': ReflectionPadding3D,
                   'SFTLayer': SFTLayer}
-model = tf.keras.models.load_model(model_path + 'first_model.keras', custom_objects=custom_objects)
+model = tf.keras.models.load_model(model_path + 'masi_3_3.keras', custom_objects=custom_objects)
 
 print(model.summary())
 
@@ -50,7 +50,7 @@ plot_3_band_image(predicted_rgb, title='Predicted Image')
 x_rgb = get_bands_from_array(x_raster, bands)
 plot_3_band_image(x_rgb, title='Input Image')
 
-y_rgb = get_bands_from_array(y_raster, bands)
+y_rgb = get_bands_from_array(y_raster, [50,100,150])
 plot_3_band_image(y_rgb, title='Original Image')
 
 # tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)

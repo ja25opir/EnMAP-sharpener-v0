@@ -134,7 +134,6 @@ class SFTLayer(layers.Layer):
         for band_no in range(self.x_shape[-2]):
             x_band = x[:, :, :, band_no, :]
             # todo: check if this works as intended
-            # todo: restart from here:
             # build a branch that extracts edged (maybe from sentinel input only) and that injects them into the other branch
             # test this and monitor the output with a very small training sample to see if it actually works
             # also rethink the dimensions of each "cube" in a layer. the paper says k*s*s*c where c is the number of bands
@@ -275,7 +274,7 @@ class TestFCNN:
 
         # first layer
         # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
-        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands))
         # input2d = tf.squeeze(input3d, axis=-1)
         kernel = (9, 9)
         padding = (lambda x: (x[0] // 2, x[1] // 2))
@@ -295,7 +294,9 @@ class TestFCNN:
                           kernel_regularizer=regularizers.l1(0.015))(reflect_pad_2)
         # y = tf.expand_dims(conv3, axis=-1)
 
+        # restart from here
         # todo: vgl mit Masi mit 6+3 Bändern --> tf api syntax könnte das Problem sein
         # Masi hat eine accuracy von 0.9385!!!
+        # todo: Verschiebungen beim Resamplen fixen!
 
         self.model = Model(inputs=input2d, outputs=y)

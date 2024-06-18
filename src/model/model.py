@@ -44,7 +44,7 @@ class Model:
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
 
         # Masi
-        model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # SaPNN
         # model = SaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
@@ -52,7 +52,7 @@ class Model:
         # Test
         # model = TestSaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
         # model = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
-        # model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -70,8 +70,8 @@ class Model:
         print('Test data size:', len(self.test_files))
 
     def set_lr_schedule(self):
-        initial_learning_rate = 0.005 # 0.3
-        final_learning_rate = 0.0001 # 0.0001
+        initial_learning_rate = 0.005
+        final_learning_rate = 0.0001
         learning_rate_decay_factor = (final_learning_rate / initial_learning_rate) ** (1 / self.train_epochs)
         steps_per_epoch = int(len(self.train_files) / self.batch_size)
         return optimizers.schedules.ExponentialDecay(
