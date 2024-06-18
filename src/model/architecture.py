@@ -296,6 +296,6 @@ class TestFCNN:
         # y = tf.expand_dims(conv3, axis=-1)
 
         # todo: vgl mit Masi mit 6+3 Bändern --> tf api syntax könnte das Problem sein
-        # Masi hat eine accuracy von 0.65!!!
+        # Masi hat eine accuracy von 0.9385!!!
 
         self.model = Model(inputs=input2d, outputs=y)
