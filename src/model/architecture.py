@@ -274,17 +274,20 @@ class TestFCNN:
         initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
-        input2d = tf.squeeze(input3d, axis=-1)
+        # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
+        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x1')
+        # input2d = tf.squeeze(input3d, axis=-1)
         conv1 = layers.Conv2D(64, (9, 9), padding='same',
                               activation='relu',
                               kernel_initializer=initializer)(input2d)
         conv2 = layers.Conv2D(32, (1, 1), padding='same',
                               activation='relu',
                               kernel_initializer=initializer)(conv1)
-        conv3 = layers.Conv2D(self.no_output_bands, (3, 3), padding='same',
+        y = layers.Conv2D(self.no_output_bands, (3, 3), padding='same',
                               activation='relu',
                               kernel_initializer=initializer)(conv2)
-        y = tf.expand_dims(conv3, axis=-1)
+        # y = tf.expand_dims(conv3, axis=-1)
 
-        self.model = Model(inputs=input3d, outputs=y)
+        # todo: vgl mit Masi mit 20 Bändern --> dimension expand könnte Problem sein
+
+        self.model = Model(inputs=input2d, outputs=y)
