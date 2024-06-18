@@ -81,9 +81,10 @@ class DuoBranchDataGenerator(DataGenerator):
             y_img = np.load(y_path)
 
             # todo: testing...
-            x_img = x_img[(50, 100, 150, 225, 226, 227), :, :]
+            # x_img = x_img[(50, 100, 150, 225, 226, 227), :, :]
             # x1_img = x1_img[(50,100,150), :, :]
             # y_img = y_img[(50,100,150), :, :]
+            x_img = x_img[50:70, :, :]
             x1_img = x1_img[50:70, :, :]
             y_img = y_img[50:70, :, :]
 
