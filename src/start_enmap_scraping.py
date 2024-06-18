@@ -22,6 +22,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.max_cloud_cover < 0 or args.max_cloud_cover > 100:
+        raise ValueError('Cloud cover must be a percentage between 0 and 100.')
+
     limit_logical_cpus(args.cpus)
     limit_memory_usage(args.mem_limit)
 

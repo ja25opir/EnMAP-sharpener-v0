@@ -46,6 +46,9 @@ class EnMAP:
         self.default_index_url = 'https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A/items'
         self.downloaded_scenes = 0
         self.checked_scenes = 0
+        self.checked_scenes_listing = 0
+        self.broken_scenes_listing = 0
+        self.accepted_scenes_listing = 0
 
     def set_auth(self):
         # load_dotenv(dotenv_path=find_dotenv())
@@ -123,12 +126,20 @@ class EnMAP:
         """Filter the item list by cloud cover. Write all resulting scene timestamps to a text file."""
         print('Found a total of', number_all_scenes, 'scenes. Checking cloud cover...')
         for item in item_feature_list:
+            self.checked_scenes_listing += 1
             cloud_cover = int(item['properties']['eo:cloud_cover']) + int(item['properties']['enmap:cirrus_cover'])
-            if cloud_cover < max_cloud_cover and item['properties'][
-                'enmap:sceneAOT'] != '-999':
+            broken_scene_indicator = item['properties']['enmap:sceneAOT'] == '-999'
+            if broken_scene_indicator:
+                self.broken_scenes_listing += 1
+                continue
+            if cloud_cover <= max_cloud_cover:
                 scene_timestamp = item['properties']['start_datetime']
+                self.accepted_scenes_listing += 1
                 with open(self.enmap_dir + 'scene_list.txt', 'a') as f:
                     f.write(scene_timestamp + '\n')
+            if self.checked_scenes_listing % 20 == 0:
+                print('Checked', self.checked_scenes_listing, 'scenes...')
+                print('Accepted', self.accepted_scenes_listing, 'scenes...')
 
     def scrape_all_scenes(self):
         next_link = self.default_index_url
@@ -161,3 +172,10 @@ class EnMAP:
             if next_link != '':
                 item_list = get_item_list(self.auth_session, next_link, parameter={'bbox': self.bbox[1:]})
                 scenes = item_list['features']
+            if next_link == '':
+                # print summary of listed files
+                if self.timestamps_file == 1:
+                    print('Done! Listed', self.accepted_scenes_listing, 'scenes.')
+                    print('Skipped', self.broken_scenes_listing, 'broken scenes and',
+                          self.checked_scenes_listing - self.accepted_scenes_listing - self.broken_scenes_listing,
+                          'scenes with too high cloud cover.')
