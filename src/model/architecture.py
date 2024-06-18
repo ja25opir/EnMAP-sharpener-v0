@@ -290,7 +290,7 @@ class TestFCNN:
                               kernel_regularizer=regularizers.l1(0.03))(reflect_pad_2)
         kernel = (3, 3)
         reflect_pad_2 = ReflectionPadding2D(padding=padding(kernel))(conv2)
-        y = layers.Conv2D(self.no_output_bands, kernel, padding='same',
+        y = layers.Conv2D(self.no_output_bands, kernel, padding='valid',
                           activation='linear',
                           kernel_regularizer=regularizers.l1(0.015))(reflect_pad_2)
         # y = tf.expand_dims(conv3, axis=-1)
