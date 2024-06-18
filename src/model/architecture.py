@@ -282,7 +282,7 @@ class TestFCNN:
         conv2 = layers.Conv2D(32, (1, 1), padding='same',
                               activation='relu',
                               kernel_initializer=initializer)(conv1)
-        conv3 = layers.Conv2D(16, (3, 3), padding='same',
+        conv3 = layers.Conv2D(self.no_output_bands, (3, 3), padding='same',
                               activation='relu',
                               kernel_initializer=initializer)(conv2)
         y = tf.expand_dims(conv3, axis=-1)
