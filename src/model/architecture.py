@@ -279,15 +279,12 @@ class TestFCNN:
         conv1 = layers.Conv2D(64, (9, 9), padding='same',
                               activation='relu',
                               kernel_initializer=initializer)(input2d)
-        conv2 = layers.Conv2D(20, (1, 1), padding='same',
+        conv2 = layers.Conv2D(32, (1, 1), padding='same',
                               activation='relu',
                               kernel_initializer=initializer)(conv1)
-        conv2_3d = tf.expand_dims(conv2, axis=-1)
-        conv3 = layers.Conv3D(16, (1, 1, 1), padding='same',
+        conv3 = layers.Conv2D(16, (1, 1, 1), padding='same',
                               activation='relu',
-                              kernel_initializer=initializer)(conv2_3d)
-        y = layers.Conv3D(1, (5, 5, 3), padding='same',
-                          activation='linear',
-                          kernel_initializer=initializer)(conv3)
+                              kernel_initializer=initializer)(conv2)
+        y = tf.expand(conv3, axis=-1)
 
         self.model = Model(inputs=input3d, outputs=y)
