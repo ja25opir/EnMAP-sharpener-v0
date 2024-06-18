@@ -30,20 +30,20 @@ y_raster = np.load(y_data_path + random_file)
 custom_objects = {'ReflectionPadding2D': ReflectionPadding2D,
                   'ReflectionPadding3D': ReflectionPadding3D,
                   'SFTLayer': SFTLayer}
-model = tf.keras.models.load_model(model_path + 'FCNN.keras', custom_objects=custom_objects)
+model = tf.keras.models.load_model(model_path + 'first_model.keras', custom_objects=custom_objects)
 
 print(model.summary())
 
-# x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :] # 6 bands only
-# model_input = x_raster.T.reshape(1, 100, 100, 6)
-# predicted_raster = model.predict(model_input).reshape(100, 100, 3).T
-x = x_raster.T.reshape(1, 32, 32, 228)
-x1 = x1_raster.T.reshape(1, 32, 32, 224)
+x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :] # 6 bands only
+model_input = x_raster.T.reshape(1, 32, 32, 6)
+predicted_raster = model.predict(model_input).reshape(32, 32, 3).T
+# x = x_raster.T.reshape(1, 32, 32, 228)
+# x1 = x1_raster.T.reshape(1, 32, 32, 224)
 # predicted_raster = model.predict([x, x1]).reshape(32, 32, 224).T
-predicted_raster = model.predict(x1).reshape(32, 32, 224).T
+# predicted_raster = model.predict(x1).reshape(32, 32, 224).T
 
-bands = [50, 100, 150]
-# bands = [0,1,2]
+# bands = [50, 100, 150]
+bands = [0,1,2]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 
@@ -55,29 +55,16 @@ plot_3_band_image(y_rgb, title='Original Image')
 
 # tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)
 
-get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers[0].output)
-input_l = get_layer_output([x1])
-for i in range(len(model.layers)):
-    if i == 0:
-        get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers[0].output)
-        input_l = get_layer_output([x1])
-    else:
-        get_layer_output = K.function(inputs=model.layers[i].input, outputs=model.layers[i].output)
-        output_l = get_layer_output([input_l])
-        input_l = output_l
-        if model.layers[i].name == 'conv3d':
-            arr = get_bands_from_array(output_l[0, :, :, :, 0].T, bands)
-            plot_3_band_image(arr, title='Layer ' + str(i + 1))
-
+# get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers[0].output)
+# input_l = get_layer_output([x1])
 # for i in range(len(model.layers)):
-#     # if model.layers[i].name == 'conv3d':
-#         # todo: cant print conv3d
-#     if model.layers[i].name == 'conv2d':
-#         # todo: graph disconnected error on conv2d --> print network graph
-#         get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers[i].output)
-#         get_1_output = get_layer_output([x])
-#         # print(get_1_output.shape) << Use this to check if the Output shape matches the shape of Model.summary()
-#
-#         arr = get_bands_from_array(get_1_output[0].T, bands)
-#         plot_3_band_image(arr, title='Layer ' + str(i + 1))
-
+#     if i == 0:
+#         get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers[0].output)
+#         input_l = get_layer_output([x1])
+#     else:
+#         get_layer_output = K.function(inputs=model.layers[i].input, outputs=model.layers[i].output)
+#         output_l = get_layer_output([input_l])
+#         input_l = output_l
+#         if model.layers[i].name == 'conv3d':
+#             arr = get_bands_from_array(output_l[0, :, :, :, 0].T, bands)
+#             plot_3_band_image(arr, title='Layer ' + str(i + 1))
