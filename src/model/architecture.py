@@ -275,7 +275,7 @@ class TestFCNN:
 
         # first layer
         # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
-        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x1')
+        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         # input2d = tf.squeeze(input3d, axis=-1)
         conv1 = layers.Conv2D(64, (9, 9), padding='same',
                               activation='relu',
