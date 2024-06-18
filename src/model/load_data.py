@@ -87,7 +87,7 @@ class DuoBranchDataGenerator(DataGenerator):
             # x1_img = x1_img[(50,100,150), :, :]
             # y_img = y_img[(50,100,150), :, :]
             x_img = x_img[(50, 100, 150, 225, 226, 227), :, :]
-            x1_img = x1_img[(50, 100, 150, 151, 152, 153), :, :]
+            x1_img = x1_img[(50, 100, 150), :, :]
             y_img = y_img[(50, 100, 150), :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
