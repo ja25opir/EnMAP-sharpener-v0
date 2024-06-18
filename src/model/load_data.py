@@ -51,8 +51,8 @@ class DataGenerator(Sequence):
             y_img = y_img[(50,100,150), :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
-            # X[i,] = x_img.T
-            # Y[i,] = y_img.T
+            X[i,] = x_img.T
+            Y[i,] = y_img.T
 
         return X, Y
 
