@@ -91,11 +91,10 @@ class DuoBranchDataGenerator(DataGenerator):
             y_img = y_img[(50, 100, 150), :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
-            X[i,] = x_img.T
             # X1[i, :, :, :, 0] = x1_img.T
             # X1[i, :, :, :, 0] = x1_img.T
             # Y[i, :, :, :, 0] = y_img.T
-
+            X[i,] = x_img.T
             X1[i,] = x1_img.T
             Y[i,] = y_img.T
 

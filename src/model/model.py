@@ -81,37 +81,37 @@ class Model:
             staircase=True)
 
     def train_model(self):
-        train_generator = DataGenerator(self.train_data_dir,
-                                        data_list=self.train_files,
-                                        batch_size=self.batch_size,
-                                        output_size=(self.tile_size, self.tile_size),
-                                        no_input_bands=self.no_input_bands,
-                                        no_output_bands=self.no_output_bands,
-                                        shuffle=False)
-
-        test_generator = DataGenerator(self.train_data_dir,
-                                       data_list=self.test_files,
-                                       batch_size=self.batch_size,
-                                       output_size=(self.tile_size, self.tile_size),
-                                       no_input_bands=self.no_input_bands,
-                                       no_output_bands=self.no_output_bands,
-                                       shuffle=False)
-
-        # train_generator = DuoBranchDataGenerator(self.train_data_dir,
-        #                                          data_list=self.train_files,
-        #                                          batch_size=self.batch_size,
-        #                                          output_size=(self.tile_size, self.tile_size),
-        #                                          no_input_bands=self.no_input_bands,
-        #                                          no_output_bands=self.no_output_bands,
-        #                                          shuffle=False)
+        # train_generator = DataGenerator(self.train_data_dir,
+        #                                 data_list=self.train_files,
+        #                                 batch_size=self.batch_size,
+        #                                 output_size=(self.tile_size, self.tile_size),
+        #                                 no_input_bands=self.no_input_bands,
+        #                                 no_output_bands=self.no_output_bands,
+        #                                 shuffle=False)
         #
-        # test_generator = DuoBranchDataGenerator(self.train_data_dir,
-        #                                         data_list=self.test_files,
-        #                                         batch_size=self.batch_size,
-        #                                         output_size=(self.tile_size, self.tile_size),
-        #                                         no_input_bands=self.no_input_bands,
-        #                                         no_output_bands=self.no_output_bands,
-        #                                         shuffle=False)
+        # test_generator = DataGenerator(self.train_data_dir,
+        #                                data_list=self.test_files,
+        #                                batch_size=self.batch_size,
+        #                                output_size=(self.tile_size, self.tile_size),
+        #                                no_input_bands=self.no_input_bands,
+        #                                no_output_bands=self.no_output_bands,
+        #                                shuffle=False)
+
+        train_generator = DuoBranchDataGenerator(self.train_data_dir,
+                                                 data_list=self.train_files,
+                                                 batch_size=self.batch_size,
+                                                 output_size=(self.tile_size, self.tile_size),
+                                                 no_input_bands=self.no_input_bands,
+                                                 no_output_bands=self.no_output_bands,
+                                                 shuffle=False)
+
+        test_generator = DuoBranchDataGenerator(self.train_data_dir,
+                                                data_list=self.test_files,
+                                                batch_size=self.batch_size,
+                                                output_size=(self.tile_size, self.tile_size),
+                                                no_input_bands=self.no_input_bands,
+                                                no_output_bands=self.no_output_bands,
+                                                shuffle=False)
 
         self.learning_rate = self.set_lr_schedule()
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
