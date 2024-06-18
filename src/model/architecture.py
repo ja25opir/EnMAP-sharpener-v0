@@ -303,4 +303,4 @@ class TestFCNN:
         # Masi hat eine accuracy von 0.9385!!!
         # todo: Verschiebungen beim Resamplen fixen!
 
-        self.model = Model(inputs=input3d, outputs=y)
+        self.model = Model(inputs=input2d, outputs=y)
