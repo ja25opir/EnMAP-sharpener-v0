@@ -246,14 +246,46 @@ class FCNN:
         # first layer
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
-                               activation='relu',
-                               kernel_initializer=initializer)(input3d)
+                              activation='relu',
+                              kernel_initializer=initializer)(input3d)
         conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
-                               activation='relu',
-                               kernel_initializer=initializer)(conv1)
+                              activation='relu',
+                              kernel_initializer=initializer)(conv1)
         conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
-                               activation='relu',
-                               kernel_initializer=initializer)(conv2)
+                              activation='relu',
+                              kernel_initializer=initializer)(conv2)
+        y = layers.Conv3D(1, (5, 5, 3), padding='same',
+                          activation='linear',
+                          kernel_initializer=initializer)(conv3)
+
+        self.model = Model(inputs=input3d, outputs=y)
+
+
+class TestFCNN:
+    def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.tile_size = tile_size
+        self.no_input_bands = no_input_bands
+        self.no_output_bands = no_output_bands
+        self.model = None
+        self.create_layers()
+
+    def create_layers(self):
+        seed_gen = tf.keras.utils.set_random_seed(42)
+        initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
+
+        # first layer
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
+        input2d = tf.squeeze(input3d, axis=-1)
+        conv1 = layers.Conv2D(64, (9, 9), padding='same',
+                              activation='relu',
+                              kernel_initializer=initializer)(input2d)
+        conv2 = layers.Conv2D(32, (1, 1), padding='same',
+                              activation='relu',
+                              kernel_initializer=initializer)(conv1)
+        conv2_3d = tf.expand_dims(conv2, axis=-1)
+        conv3 = layers.Conv3D(16, (1, 1, 1), padding='same',
+                              activation='relu',
+                              kernel_initializer=initializer)(conv2_3d)
         y = layers.Conv3D(1, (5, 5, 3), padding='same',
                           activation='linear',
                           kernel_initializer=initializer)(conv3)
