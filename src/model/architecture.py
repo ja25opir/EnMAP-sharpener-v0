@@ -277,15 +277,22 @@ class TestFCNN:
         # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
         input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         # input2d = tf.squeeze(input3d, axis=-1)
-        conv1 = layers.Conv2D(64, (9, 9), padding='same',
+        kernel = (9, 9)
+        padding = (lambda x: (x[0] // 2, x[1] // 2))
+        reflect_pad_1 = ReflectionPadding2D(padding=padding(kernel))(input2d)
+        conv1 = layers.Conv2D(64, kernel, padding='valid',
                               activation='relu',
-                              kernel_initializer=initializer)(input2d)
-        conv2 = layers.Conv2D(32, (3, 3), padding='same',
+                              kernel_regularizer=regularizers.l1(0.015))(reflect_pad_1)
+        kernel = (3, 3)
+        reflect_pad_2 = ReflectionPadding2D(padding=padding(kernel))(conv1)
+        conv2 = layers.Conv2D(32, kernel, padding='valid',
                               activation='relu',
-                              kernel_initializer=initializer)(conv1)
-        y = layers.Conv2D(self.no_output_bands, (3, 3), padding='same',
-                          activation='relu',
-                          kernel_initializer=initializer)(conv2)
+                              kernel_regularizer=regularizers.l1(0.03))(reflect_pad_2)
+        kernel = (3, 3)
+        reflect_pad_2 = ReflectionPadding2D(padding=padding(kernel))(conv2)
+        y = layers.Conv2D(self.no_output_bands, kernel, padding='same',
+                          activation='linear',
+                          kernel_regularizer=regularizers.l1(0.015))(reflect_pad_2)
         # y = tf.expand_dims(conv3, axis=-1)
 
         # todo: vgl mit Masi mit 20 Bändern --> dimension expand könnte Problem sein
