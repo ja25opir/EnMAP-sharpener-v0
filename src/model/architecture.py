@@ -273,9 +273,9 @@ class TestFCNN:
         initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         # first layer
-        # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x')
-        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
-        # input2d = tf.squeeze(input3d, axis=-1)
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x')
+        # input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        input2d = tf.squeeze(input3d, axis=-1)
         kernel = (9, 9)
         padding = (lambda x: (x[0] // 2, x[1] // 2))
         reflect_pad_1 = ReflectionPadding2D(padding=padding(kernel))(input2d)
@@ -303,4 +303,4 @@ class TestFCNN:
         # Masi hat eine accuracy von 0.9385!!!
         # todo: Verschiebungen beim Resamplen fixen!
 
-        self.model = Model(inputs=input2d, outputs=y)
+        self.model = Model(inputs=input3d, outputs=y)
