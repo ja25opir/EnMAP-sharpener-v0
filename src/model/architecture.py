@@ -295,6 +295,7 @@ class TestFCNN:
                           kernel_regularizer=regularizers.l1(0.015))(reflect_pad_2)
         # y = tf.expand_dims(conv3, axis=-1)
 
-        # todo: vgl mit Masi mit 20 Bändern --> dimension expand könnte Problem sein
+        # todo: vgl mit Masi mit 6+3 Bändern --> tf api syntax könnte das Problem sein
+        # Masi hat eine accuracy von 0.65!!!
 
         self.model = Model(inputs=input2d, outputs=y)

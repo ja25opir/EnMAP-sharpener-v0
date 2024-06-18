@@ -114,7 +114,8 @@ class Model:
         #                                         shuffle=False)
 
         self.learning_rate = self.set_lr_schedule()
-        optimizer = optimizers.Adam(learning_rate=self.learning_rate)
+        # optimizer = optimizers.Adam(learning_rate=self.learning_rate)
+        optimizer = optimizers.Adam(learning_rate=0.001)
         self.model.compile(optimizer=optimizer, loss=self.loss_function, metrics=['accuracy'])
         self.model.summary()
 
