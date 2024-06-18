@@ -274,7 +274,7 @@ class TestFCNN:
 
         # first layer
         # input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
-        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands))
+        input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         # input2d = tf.squeeze(input3d, axis=-1)
         kernel = (9, 9)
         padding = (lambda x: (x[0] // 2, x[1] // 2))
@@ -296,6 +296,7 @@ class TestFCNN:
 
         # restart from here
         # todo: vgl mit Masi mit 6+3 Bändern --> tf api syntax könnte das Problem sein
+        # --> funktioniert aber mit DataGenerator, vielleicht DuoBranchGenerator das Problem?
         # Masi hat eine accuracy von 0.9385!!!
         # todo: Verschiebungen beim Resamplen fixen!
 
