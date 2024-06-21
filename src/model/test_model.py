@@ -30,12 +30,13 @@ y_raster = np.load(y_data_path + random_file)
 custom_objects = {'ReflectionPadding2D': ReflectionPadding2D,
                   'ReflectionPadding3D': ReflectionPadding3D,
                   'SFTLayer': SFTLayer}
-model = tf.keras.models.load_model(model_path + 'masi_3_3.keras', custom_objects=custom_objects)
+model = tf.keras.models.load_model(model_path + 'FCNN_3.keras', custom_objects=custom_objects)
 
 print(model.summary())
 
-x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :] # 6 bands only
-model_input = x_raster.T.reshape(1, 32, 32, 6)
+# x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :] # 6 bands only
+x_raster = x_raster[(50, 100, 150), :, :] # 3 bands only
+model_input = x_raster.T.reshape(1, 32, 32, 3)
 predicted_raster = model.predict(model_input).reshape(32, 32, 3).T
 # x = x_raster.T.reshape(1, 32, 32, 228)
 # x1 = x1_raster.T.reshape(1, 32, 32, 224)
