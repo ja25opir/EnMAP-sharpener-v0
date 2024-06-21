@@ -243,19 +243,20 @@ class FCNN:
         initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x1')
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
                               activation='relu',
-                              kernel_initializer=initializer)(input3d)
+                              kernel_regularizer=regularizers.l1(0.015))(input3d)
         conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
                               activation='relu',
-                              kernel_initializer=initializer)(conv1)
+                              kernel_regularizer=regularizers.l1(0.015))(conv1)
         conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
                               activation='relu',
-                              kernel_initializer=initializer)(conv2)
-        y = layers.Conv3D(1, (5, 5, 3), padding='same',
+                              kernel_regularizer=regularizers.l1(0.015))(conv2)
+        convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
                           activation='linear',
-                          kernel_initializer=initializer)(conv3)
+                          kernel_regularizer=regularizers.l1(0.015))(conv3)
+        y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=input3d, outputs=y)
 
@@ -294,12 +295,13 @@ class TestFCNN:
                           kernel_regularizer=regularizers.l1(0.015))(reflect_pad_2)
         # y = tf.expand_dims(conv3, axis=-1)
 
-        # restart from here
         # todo: vgl mit Masi mit 6+3 Bändern --> tf api syntax könnte das Problem sein
         # --> funktioniert aber mit DataGenerator, vielleicht DuoBranchGenerator das Problem?
         # --> DuoBranchGen funktioniert auch, jetzt Model schrittweise ändern (expand_dims, etc.)
         # --> conclusion 18.06.: funktioniert nicht mit 4d Input!!! --> s. scratch2.py
-        # --> vielleicht y nur 3d (W x H x C) angeben (trotz 4d input)
+        # --> vielleicht y nur 3d (W x H x C) angeben (trotz 4d input) --> THIS WORKS todo: restart from here
+        # --> todo: FCNN mit 4d input und 3d output testen
+        #
         # Masi hat eine accuracy von 0.9385!!!
         # todo: Verschiebungen beim Resamplen fixen!
 
