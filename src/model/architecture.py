@@ -215,7 +215,7 @@ class TestSaPNN:
         # first layer
         input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         padding2d = (lambda x: (x[0] // 2, x[1] // 2))
-        kernel = (5,5)
+        kernel = (7,7)
         detail_1_pad = ReflectionPadding2D(padding=padding2d(kernel))(input_detail)
         detail_1 = layers.Conv2D(64, kernel, padding='valid', activation='relu')(detail_1_pad)
 
