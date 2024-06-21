@@ -128,8 +128,11 @@ class SFTLayer(layers.Layer):
 
     def call(self, inputs):
         x, psi = inputs  # psi is input from detail branch; x is input approx branch
-        gamma = self.gamma_conv(psi)
-        beta = self.beta_conv(psi)
+        gamma_conv_1 = self.gamma_conv(psi)
+        gamma = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')(gamma_conv_1)
+        beta_conv_1 = self.beta_conv(psi)
+        beta = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')(beta_conv1)
+        # todo: double conv2d?
         merged = None
 
         for band_no in range(self.x_shape[-2]):
@@ -215,32 +218,35 @@ class TestSaPNN:
         # first layer
         input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         padding2d = (lambda x: (x[0] // 2, x[1] // 2))
-        kernel = (7,7)
+        kernel = (7, 7)
         detail_1_pad = ReflectionPadding2D(padding=padding2d(kernel))(input_detail)
         detail_1 = layers.Conv2D(64, kernel, padding='valid', activation='relu')(detail_1_pad)
 
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         padding = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
-        kernel = (9,9,7)
+        kernel = (9, 9, 7)
         approx_1_pad = ReflectionPadding3D(padding=padding(kernel))(input_approx)
         approx_1 = layers.Conv3D(64, kernel, padding='valid', activation='relu')(approx_1_pad)
         merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
 
-        # second layer
-        kernel = (1,1,1)
-        approx_2_pad = ReflectionPadding3D(padding=padding(kernel))(merged_branches)
-        approx_2 = layers.Conv3D(32, kernel, padding='valid', activation='relu')(approx_2_pad)
+        # # second layer
+        # kernel = (1, 1, 1)
+        # approx_2_pad = ReflectionPadding3D(padding=padding(kernel))(merged_branches)
+        # approx_2 = layers.Conv3D(32, kernel, padding='valid', activation='relu')(approx_2_pad)
+        #
+        # # third layer
+        # kernel = (1, 1, 1)
+        # approx_3_pad = ReflectionPadding3D(padding=padding(kernel))(approx_2)
+        # approx_3 = layers.Conv3D(9, kernel, padding='valid', activation='relu')(approx_3_pad)
 
-        # third layer
-        kernel = (1,1,1)
-        approx_3_pad = ReflectionPadding3D(padding=padding(kernel))(approx_2)
-        approx_3 = layers.Conv3D(9, kernel, padding='valid', activation='relu')(approx_3_pad)
-
-        convOutput = layers.Conv3D(1, (5,5,3), padding='same', activation='linear')(approx_3)
+        # convOutput = layers.Conv3D(1, (5, 5, 3), padding='same', activation='linear')(approx_3)
+        convOutput = layers.Conv3D(1, (5, 5, 3), padding='same', activation='linear')(merged_branches)
         y = tf.squeeze(convOutput, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
-        # todo: kernel size very important! only fits with same kernels as fcnn
+        # todo: stops working when trying with sft layer --> investigate this
+        # todo: kernel size very important! fcnn doesnt fit with all kernels = (7,7,3)
+
 
 class FCNN:
     """
@@ -277,7 +283,7 @@ class FCNN:
         # todo: restart from here
         # fcnn with 4d input and 3d output works for 3 input and ouput bands
         # todo: train with more bands (and more training samples)
-        # atm fits with 40 bands but not with 224
+        # atm fits with 40 bands but not with 224 --> continue at TestSaPNN
         # todo: Verschiebungen beim Resamplen fixen!
 
 
