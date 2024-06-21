@@ -216,9 +216,9 @@ class TestSaPNN:
         input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
         detail = layers.Conv2D(self.feature_maps, self.kernel2d, padding='valid', activation='relu')(detail)
-        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands), name='x1')
-        approx = tf.expand_dims(input_approx, axis=-1)
-        approx = ReflectionPadding3D(padding=self.padding3d)(approx)
+        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
+        # approx = tf.expand_dims(input_approx, axis=-1)
+        approx = ReflectionPadding3D(padding=self.padding3d)(input_approx)
         approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
         merged_branches = SFTLayer(filters=self.feature_maps)([approx, detail])
 

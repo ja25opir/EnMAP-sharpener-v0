@@ -60,10 +60,10 @@ class DataGenerator(Sequence):
 class DuoBranchDataGenerator(DataGenerator):
     def __getitem__(self, idx):
         # (batch_size, w, h, no_input_bands)
-        X = np.empty((self.batch_size, *self.output_size, self.no_input_bands, 1))
+        # X = np.empty((self.batch_size, *self.output_size, self.no_input_bands, 1))
         X1 = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
         # Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
-        # X = np.empty((self.batch_size, *self.output_size, self.no_input_bands))
+        X = np.empty((self.batch_size, *self.output_size, self.no_input_bands))
         # X1 = np.empty((self.batch_size, *self.output_size, self.no_output_bands))
         Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands))
 
@@ -86,15 +86,16 @@ class DuoBranchDataGenerator(DataGenerator):
             # x_img = x_img[(50, 100, 150, 225, 226, 227), :, :]
             # x1_img = x1_img[(50,100,150), :, :]
             # y_img = y_img[(50,100,150), :, :]
-            x_img = np.hstack([x_img[80:100, :, :], x_img[224:, :, :]])
+            indices = np.hstack([np.arange(80, 100), np.arange(224, 228)])
+            x_img = np.take(x_img, indices, axis=0)
             x1_img = x1_img[80:100, :, :]
             y_img = y_img[80:100, :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
-            X[i, :, :, :, 0] = x_img.T
+            # X[i, :, :, :, 0] = x_img.T
             X1[i, :, :, :, 0] = x1_img.T
             # Y[i, :, :, :, 0] = y_img.T
-            # X[i,] = x_img.T
+            X[i,] = x_img.T
             # X1[i,] = x1_img.T
             Y[i,] = y_img.T
 
