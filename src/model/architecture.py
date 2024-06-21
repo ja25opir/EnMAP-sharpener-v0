@@ -213,7 +213,7 @@ class TestSaPNN:
 
     def create_layers(self):
         # first layer
-        # input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
         # detail_1_pad = ReflectionPadding2D(padding=self.padding2d)(input_detail)
         # detail_1 = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail_1_pad)
 
