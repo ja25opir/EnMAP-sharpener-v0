@@ -52,9 +52,9 @@ class Model:
         # model = SaPNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # Test
-        # model = TestSaPNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        architecture = TestSaPNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
         # FCNN
-        architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
+        # architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         model = architecture.model

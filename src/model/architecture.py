@@ -222,8 +222,8 @@ class TestSaPNN:
         approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
         merged_branches = SFTLayer(filters=self.feature_maps)([approx, detail])
 
-        y = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
-        y = tf.squeeze(y, axis=-1)
+        convOutput = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
+        y = tf.squeeze(convOutput, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
 
@@ -263,6 +263,7 @@ class FCNN:
         # todo: restart from here
         # fcnn with 4d input and 3d output works for 3 input and ouput bands
         # todo: train with more bands (and more training samples)
+        # atm fits with 40 bands but not with 224
         # todo: Verschiebungen beim Resamplen fixen!
 
 
