@@ -243,30 +243,26 @@ class FCNN:
         self.create_layers()
 
     def create_layers(self):
-        seed_gen = tf.keras.utils.set_random_seed(42)
-        initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
+        # seed_gen = tf.keras.utils.set_random_seed(42)
+        # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         # first layer
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
-                              activation='relu',
-                              kernel_regularizer=regularizers.l1(0.015))(input3d)
+                              activation='relu')(input3d)
         conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
-                              activation='relu',
-                              kernel_regularizer=regularizers.l1(0.015))(conv1)
+                              activation='relu')(conv1)
         conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
-                              activation='relu',
-                              kernel_regularizer=regularizers.l1(0.015))(conv2)
+                              activation='relu')(conv2)
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear',
-                                kernel_regularizer=regularizers.l1(0.015))(conv3)
+                                activation='linear')(conv3)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=input3d, outputs=y)
 
         # todo: restart from here
         # fcnn with 4d input and 3d output works for 3 input and ouput bands
-        # todo: train with more bands
+        # todo: train with more bands (and more training samples)
         # todo: Verschiebungen beim Resamplen fixen!
 
 
