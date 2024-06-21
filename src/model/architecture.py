@@ -131,7 +131,7 @@ class SFTLayer(layers.Layer):
         gamma_conv_1 = self.gamma_conv(psi)
         gamma = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')(gamma_conv_1)
         beta_conv_1 = self.beta_conv(psi)
-        beta = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')(beta_conv1)
+        beta = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')(beta_conv_1)
         # todo: double conv2d?
         merged = None
 
