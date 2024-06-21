@@ -213,17 +213,18 @@ class TestSaPNN:
 
     def create_layers(self):
         # first layer
-        input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
-        detail_1_pad = ReflectionPadding2D(padding=self.padding2d)(input_detail)
-        detail_1 = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail_1_pad)
+        # input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        # detail_1_pad = ReflectionPadding2D(padding=self.padding2d)(input_detail)
+        # detail_1 = layers.Conv2D(64, self.kernel2d, padding='valid', activation='relu')(detail_1_pad)
 
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         approx_1_pad = ReflectionPadding3D(padding=self.padding3d)(input_approx)
         approx_1 = layers.Conv3D(64, self.kernel3d, padding='valid', activation='relu')(approx_1_pad)
-        merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
+        # merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
 
         # second layer
-        approx_2_pad = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
+        approx_2_pad = ReflectionPadding3D(padding=self.padding3d)(approx_1)
+        # approx_2_pad = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
         approx_2 = layers.Conv3D(32, self.kernel3d, padding='valid', activation='relu')(approx_2_pad)
 
         # third layer
