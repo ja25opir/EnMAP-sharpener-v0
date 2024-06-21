@@ -51,8 +51,8 @@ class Model:
 
         # Test
         # model = TestSaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
-        # model = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
-        model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        model = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
