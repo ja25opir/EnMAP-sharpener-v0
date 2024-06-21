@@ -214,15 +214,23 @@ class TestSaPNN:
     def create_layers(self):
         # first layer
         input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
-        detail = ReflectionPadding2D(padding=self.padding2d)(input_detail)
-        detail = layers.Conv2D(self.feature_maps, self.kernel2d, padding='valid', activation='relu')(detail)
-        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        # approx = tf.expand_dims(input_approx, axis=-1)
-        approx = ReflectionPadding3D(padding=self.padding3d)(input_approx)
-        approx = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx)
-        merged_branches = SFTLayer(filters=self.feature_maps)([approx, detail])
+        detail_1_pad = ReflectionPadding2D(padding=self.padding2d)(input_detail)
+        detail_1 = layers.Conv2D(self.feature_maps, self.kernel2d, padding='valid', activation='relu')(detail_1_pad)
 
-        convOutput = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(merged_branches)
+        input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
+        approx_1_pad = ReflectionPadding3D(padding=self.padding3d)(input_approx)
+        approx_1 = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx_1_pad)
+        merged_branches = SFTLayer(filters=self.feature_maps)([approx_1, detail_1])
+
+        # second layer
+        approx_2_pad = ReflectionPadding3D(padding=self.padding3d)(merged_branches)
+        approx_2 = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx_2_pad)
+
+        # third layer
+        approx_3_pad = ReflectionPadding3D(padding=self.padding3d)(approx_2)
+        approx_3 = layers.Conv3D(self.feature_maps, self.kernel3d, padding='valid', activation='relu')(approx_3_pad)
+
+        convOutput = layers.Conv3D(1, (1, 1, 1), padding='valid', activation='linear')(approx_3)
         y = tf.squeeze(convOutput, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
