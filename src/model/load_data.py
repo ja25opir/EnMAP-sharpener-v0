@@ -86,7 +86,7 @@ class DuoBranchDataGenerator(DataGenerator):
             # x_img = x_img[(50, 100, 150, 225, 226, 227), :, :]
             # x1_img = x1_img[(50,100,150), :, :]
             # y_img = y_img[(50,100,150), :, :]
-            # x_img = x_img[80:120, :, :]
+            x_img = x_img[:224, :, :]
             # x1_img = x1_img[80:120, :, :]
             # y_img = y_img[80:120, :, :]
 
