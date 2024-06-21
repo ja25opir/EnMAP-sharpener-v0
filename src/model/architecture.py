@@ -134,7 +134,6 @@ class SFTLayer(layers.Layer):
         gamma = self.gamma_conv_2(gamma_conv_1)
         beta_conv_1 = self.beta_conv(psi)
         beta = self.beta_conv_2(beta_conv_1)
-        # todo: double conv2d?
         merged = None
 
         for band_no in range(self.x_shape[-2]):
@@ -246,7 +245,8 @@ class TestSaPNN:
         y = tf.squeeze(convOutput, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
-        # todo: stops working when trying with sft layer --> investigate this
+        # todo: starts to fit (a little) with modified sft layer (double conv2d) and 6 input + 3 output bands
+        # todo: test the trained model and add more layers
         # todo: kernel size very important! fcnn doesnt fit with all kernels = (7,7,3)
 
 

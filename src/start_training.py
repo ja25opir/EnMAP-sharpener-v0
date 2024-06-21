@@ -18,7 +18,7 @@ LOSS_FUNCTION = 'mean_squared_error'  # todo: adapt learn rate and momentum, als
 # LEARN_RATE = 0.00001
 # https://www.activeloop.ai/resources/glossary/adaptive-learning-rate-methods/#:~:text=Adaptive%20learning%20rate%20methods%20improve%20deep%20learning%20model%20performance%20by,faster%20convergence%20and%20better%20generalization.
 # https://stats.stackexchange.com/questions/383807/why-we-call-adam-an-a-adaptive-learning-rate-algorithm-if-the-step-size-is-a-con
-TRAIN_EPOCHS = 10
+TRAIN_EPOCHS = 5
 
 @multiple_gpu_distribution
 def train_model(batch_size):
