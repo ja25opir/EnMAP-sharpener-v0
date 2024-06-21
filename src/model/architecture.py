@@ -212,14 +212,15 @@ class TestSaPNN:
         self.create_layers()
 
     def create_layers(self):
-        padding = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
         # first layer
         input_detail = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
+        padding2d = (lambda x: (x[0] // 2, x[1] // 2))
         kernel = (5,5)
-        detail_1_pad = ReflectionPadding2D(padding=padding(kernel))(input_detail)
+        detail_1_pad = ReflectionPadding2D(padding=padding2d(kernel))(input_detail)
         detail_1 = layers.Conv2D(64, kernel, padding='valid', activation='relu')(detail_1_pad)
 
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
+        padding = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
         kernel = (9,9,7)
         approx_1_pad = ReflectionPadding3D(padding=padding(kernel))(input_approx)
         approx_1 = layers.Conv3D(64, kernel, padding='valid', activation='relu')(approx_1_pad)
