@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPnn, TestSaPnn, FCNN, TestFCNN
+from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN
 from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
@@ -15,6 +15,7 @@ from .load_data import DataGenerator, DuoBranchDataGenerator
 class Model:
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size, kernel_size_list,
                  loss_function, train_epochs, output_dir):
+        self.name = None
         self.train_data_dir = train_data_dir
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
@@ -27,6 +28,7 @@ class Model:
         self.train_files = None
         self.test_files = None
         self.learning_rate = None
+        self.history = None
         self.model = self.define_model()
         self.train_test_split()
 
@@ -44,15 +46,19 @@ class Model:
         # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
 
         # Masi
-        # model = Masi(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        architecture = Masi(self.tile_size, self.no_input_bands, self.no_output_bands)
 
         # SaPNN
-        # model = SaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # model = SaPNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
 
         # Test
-        # model = TestSaPnn(self.tile_size, self.no_input_bands, self.no_output_bands).model
-        model = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # model = TestSaPNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # FCNN
+        # architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+
+        model = architecture.model
+        self.name = architecture.name
 
         # todo: this already seems to be set by default
         # initializer = initializers.GlorotUniform()
@@ -81,37 +87,37 @@ class Model:
             staircase=True)
 
     def train_model(self):
-        # train_generator = DataGenerator(self.train_data_dir,
-        #                                 data_list=self.train_files,
-        #                                 batch_size=self.batch_size,
-        #                                 output_size=(self.tile_size, self.tile_size),
-        #                                 no_input_bands=self.no_input_bands,
-        #                                 no_output_bands=self.no_output_bands,
-        #                                 shuffle=False)
+        train_generator = DataGenerator(self.train_data_dir,
+                                        data_list=self.train_files,
+                                        batch_size=self.batch_size,
+                                        output_size=(self.tile_size, self.tile_size),
+                                        no_input_bands=self.no_input_bands,
+                                        no_output_bands=self.no_output_bands,
+                                        shuffle=False)
+
+        test_generator = DataGenerator(self.train_data_dir,
+                                       data_list=self.test_files,
+                                       batch_size=self.batch_size,
+                                       output_size=(self.tile_size, self.tile_size),
+                                       no_input_bands=self.no_input_bands,
+                                       no_output_bands=self.no_output_bands,
+                                       shuffle=False)
+
+        # train_generator = DuoBranchDataGenerator(self.train_data_dir,
+        #                                          data_list=self.train_files,
+        #                                          batch_size=self.batch_size,
+        #                                          output_size=(self.tile_size, self.tile_size),
+        #                                          no_input_bands=self.no_input_bands,
+        #                                          no_output_bands=self.no_output_bands,
+        #                                          shuffle=False)
         #
-        # test_generator = DataGenerator(self.train_data_dir,
-        #                                data_list=self.test_files,
-        #                                batch_size=self.batch_size,
-        #                                output_size=(self.tile_size, self.tile_size),
-        #                                no_input_bands=self.no_input_bands,
-        #                                no_output_bands=self.no_output_bands,
-        #                                shuffle=False)
-
-        train_generator = DuoBranchDataGenerator(self.train_data_dir,
-                                                 data_list=self.train_files,
-                                                 batch_size=self.batch_size,
-                                                 output_size=(self.tile_size, self.tile_size),
-                                                 no_input_bands=self.no_input_bands,
-                                                 no_output_bands=self.no_output_bands,
-                                                 shuffle=False)
-
-        test_generator = DuoBranchDataGenerator(self.train_data_dir,
-                                                data_list=self.test_files,
-                                                batch_size=self.batch_size,
-                                                output_size=(self.tile_size, self.tile_size),
-                                                no_input_bands=self.no_input_bands,
-                                                no_output_bands=self.no_output_bands,
-                                                shuffle=False)
+        # test_generator = DuoBranchDataGenerator(self.train_data_dir,
+        #                                         data_list=self.test_files,
+        #                                         batch_size=self.batch_size,
+        #                                         output_size=(self.tile_size, self.tile_size),
+        #                                         no_input_bands=self.no_input_bands,
+        #                                         no_output_bands=self.no_output_bands,
+        #                                         shuffle=False)
 
         self.learning_rate = self.set_lr_schedule()
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
@@ -121,15 +127,35 @@ class Model:
 
         history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
 
-        plt.plot(history.history['accuracy'])
-        plt.title('model accuracy')
-        # plt.show()
-        plt.savefig(self.output_dir + 'models/first_model_accuracy.png')
-        plt.plot(history.history['loss'])
-        plt.title('model loss')
-        plt.savefig(self.output_dir + 'models/first_model_loss.png')
-        # todo: add training time measurement
+        self.history = history.history
 
-        print('Saving model to:', self.output_dir + 'models/first_model.keras')
-        self.model.save(self.output_dir + 'models/first_model.keras')
         return self.model
+
+    def plot_history(self):
+        history = self.history
+        acc = history['accuracy']
+        val_acc = history['val_accuracy']
+        loss = history['loss']
+        val_loss = history['val_loss']
+
+        epochs = range(1, len(acc) + 1)
+
+        plt.plot(epochs, acc, color='royalblue', linewidth=2, label='Training accuracy')
+        plt.plot(epochs, val_acc, color='mediumpurple', linewidth=2, linestyle='dashed', label='Validation accuracy')
+        plt.title('Training and validation accuracy')
+        plt.xlabel('Epoch')
+        plt.ylabel('Accuracy')
+        plt.legend()
+        plt.savefig(self.output_dir + 'figures/' + self.name + '_accuracy.png')
+
+        plt.figure()
+        plt.plot(epochs, loss, color='firebrick', linewidth=2, label='Training loss')
+        plt.plot(epochs, val_loss, color='tomato', linewidth=2, linestyle='dashed', label='Validation loss')
+        plt.title('Training and validation loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.savefig(self.output_dir + 'figures/' + self.name + '_loss.png')
+
+        print('Saving model to:', self.output_dir + 'models/' + self.name + '.keras')
+        self.model.save(self.output_dir + 'models/' + self.name + '.keras')

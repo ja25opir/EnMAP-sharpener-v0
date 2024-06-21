@@ -25,6 +25,7 @@ class ReflectionPadding2D(layers.Layer):
 
 class Masi:
     def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.name = 'Masi'
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
@@ -149,8 +150,9 @@ class SFTLayer(layers.Layer):
         return merged
 
 
-class SaPnn:
+class SaPNN:
     def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.name = 'SaPNN'
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
@@ -195,8 +197,9 @@ class SaPnn:
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
 
 
-class TestSaPnn:
+class TestSaPNN:
     def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.name = 'TestSaPNN'
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
@@ -232,6 +235,7 @@ class FCNN:
     """
 
     def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.name = 'FCNN'
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
@@ -254,15 +258,21 @@ class FCNN:
                               activation='relu',
                               kernel_regularizer=regularizers.l1(0.015))(conv2)
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                          activation='linear',
-                          kernel_regularizer=regularizers.l1(0.015))(conv3)
+                                activation='linear',
+                                kernel_regularizer=regularizers.l1(0.015))(conv3)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=input3d, outputs=y)
 
+        # todo: restart from here
+        # fcnn with 4d input and 3d output works for 3 input and ouput bands
+        # todo: train with more bands
+        # todo: Verschiebungen beim Resamplen fixen!
+
 
 class TestFCNN:
     def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.name = 'TestFCNN'
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
@@ -293,16 +303,5 @@ class TestFCNN:
         y = layers.Conv2D(self.no_output_bands, kernel, padding='valid',
                           activation='linear',
                           kernel_regularizer=regularizers.l1(0.015))(reflect_pad_2)
-        # y = tf.expand_dims(conv3, axis=-1)
-
-        # todo: vgl mit Masi mit 6+3 Bändern --> tf api syntax könnte das Problem sein
-        # --> funktioniert aber mit DataGenerator, vielleicht DuoBranchGenerator das Problem?
-        # --> DuoBranchGen funktioniert auch, jetzt Model schrittweise ändern (expand_dims, etc.)
-        # --> conclusion 18.06.: funktioniert nicht mit 4d Input!!! --> s. scratch2.py
-        # --> vielleicht y nur 3d (W x H x C) angeben (trotz 4d input) --> THIS WORKS todo: restart from here
-        # --> todo: FCNN mit 4d input und 3d output testen
-        #
-        # Masi hat eine accuracy von 0.9385!!!
-        # todo: Verschiebungen beim Resamplen fixen!
 
         self.model = Model(inputs=input3d, outputs=y)

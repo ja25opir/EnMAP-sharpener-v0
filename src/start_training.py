@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 from model.model import Model
 
 from config.resource_limiter import limit_gpu_memory_usage, multiple_gpu_distribution
@@ -26,6 +27,7 @@ def train_model(batch_size):
 
     print('Starting training...')
     cnn_model.train_model()
+    return cnn_model
 
 
 if __name__ == '__main__':
@@ -44,4 +46,9 @@ if __name__ == '__main__':
 
     limit_gpu_memory_usage(args.gpus, args.mem_limit)
 
-    train_model(args.batch_size)
+    start = time.time()
+    model = train_model(args.batch_size)
+    end = time.time()
+
+    model.plot_history()
+    print("---ModelTraining---Elapsed time: %.2fs seconds ---" % (end - start))
