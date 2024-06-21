@@ -120,7 +120,9 @@ class SFTLayer(layers.Layer):
         self.kernel = kernel_size
         # todo: are those weights trainable? https://www.tensorflow.org/guide/keras/making_new_layers_and_models_via_subclassing
         self.gamma_conv = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')
+        self.gamma_conv_2 = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')
         self.beta_conv = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')
+        self.beta_conv_2 = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')
         self.x_shape = None
 
     def build(self, input_shape):
@@ -129,9 +131,9 @@ class SFTLayer(layers.Layer):
     def call(self, inputs):
         x, psi = inputs  # psi is input from detail branch; x is input approx branch
         gamma_conv_1 = self.gamma_conv(psi)
-        gamma = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')(gamma_conv_1)
+        gamma = self.gamma_conv_2(gamma_conv_1)
         beta_conv_1 = self.beta_conv(psi)
-        beta = layers.Conv2D(self.filters, self.kernel, activation=layers.LeakyReLU(), padding='same')(beta_conv_1)
+        beta = self.beta_conv_2(beta_conv_1)
         # todo: double conv2d?
         merged = None
 
