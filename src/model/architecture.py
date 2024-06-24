@@ -272,6 +272,21 @@ class MMSRes:
         self.model = None
         self.create_layers()
 
+    @staticmethod
+    def inject_edges(x, edges):
+        merged = None
+
+        for band_no in range(x.shape[-2]):
+            x_band = x[:, :, :, band_no, :]
+            x_band = layers.Add()([x_band, edges])
+            x_band = tf.expand_dims(x_band, axis=-2)
+            if merged is None:
+                merged = x_band
+            else:
+                merged = tf.concat([merged, x_band], axis=-2)
+
+        return merged
+
     def create_layers(self):
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
@@ -283,13 +298,13 @@ class MMSRes:
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
                               activation='relu')(input3d)
-        injection1 = layers.Add()([conv1, edges])
+        injection1 = self.inject_edges(conv1, edges)
         conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
                               activation='relu')(injection1)
-        injection2 = layers.Add()([conv2, edges])
+        injection2 = self.inject_edges(conv2, edges)
         conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
                               activation='relu')(injection2)
-        injection3 = layers.Add()([conv3, edges])
+        injection3 = self.inject_edges(conv3, edges)
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
                                 activation='linear')(injection3)
         y = tf.squeeze(convOut, axis=-1)
