@@ -49,10 +49,9 @@ class Model:
         # architecture = Masi(self.tile_size, self.no_input_bands, self.no_output_bands)
 
         # SaPNN
-        # model = SaPNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
-
+        architecture = SaPNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # Test
-        architecture = TestSaPNN(self.tile_size, self.no_input_bands, self.no_output_bands)
+        # architecture = TestSaPNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # FCNN
         # architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
