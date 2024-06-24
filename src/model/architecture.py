@@ -231,7 +231,7 @@ class TestSaPNN:
         merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
 
         # second layer
-        kernel = (5, 5, 3)
+        kernel = (1, 1, 1)
         approx_2_pad = ReflectionPadding3D(padding=padding3d(kernel))(merged_branches)
         approx_2 = layers.Conv3D(32, kernel, padding='valid', activation='relu')(approx_2_pad)
 
