@@ -258,6 +258,45 @@ class TestSaPNN:
         # todo: kernel size very important! fcnn doesnt fit with all kernels = (7,7,3)
 
 
+class MMSRes:
+    """
+    https://www.mdpi.com/2072-4292/9/11/1139#
+    Repo: https://github.com/MeiShaohui/Hyperspectral-Image-Spatial-Super-Resolution-via-3D-Full-Convolutional-Neural-Network/blob/master/network3d.py
+    """
+
+    def __init__(self, tile_size, no_input_bands, no_output_bands):
+        self.name = 'MMSRes'
+        self.tile_size = tile_size
+        self.no_input_bands = no_input_bands
+        self.no_output_bands = no_output_bands
+        self.model = None
+        self.create_layers()
+
+    def create_layers(self):
+        # seed_gen = tf.keras.utils.set_random_seed(42)
+        # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
+
+        input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
+        edges = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(input2d)
+
+        # first layer
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
+        conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
+                              activation='relu')(input3d)
+        injection1 = layers.Add()([conv1, edges])
+        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
+                              activation='relu')(injection1)
+        injection2 = layers.Add()([conv2, edges])
+        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
+                              activation='relu')(injection2)
+        injection3 = layers.Add()([conv3, edges])
+        convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
+                                activation='linear')(injection3)
+        y = tf.squeeze(convOut, axis=-1)
+
+        self.model = Model(inputs=input3d, outputs=y)
+
+
 class FCNN:
     """
     https://www.mdpi.com/2072-4292/9/11/1139#

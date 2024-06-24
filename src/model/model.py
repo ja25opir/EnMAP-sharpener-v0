@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN
+from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes
 from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
@@ -53,8 +53,10 @@ class Model:
         # Test
         # architecture = TestSaPNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # FCNN
-        architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
+        # architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
+        # MMSRes
+        architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands)
 
         model = architecture.model
         self.name = architecture.name
