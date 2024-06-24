@@ -30,17 +30,18 @@ y_raster = np.load(y_data_path + random_file)
 custom_objects = {'ReflectionPadding2D': ReflectionPadding2D,
                   'ReflectionPadding3D': ReflectionPadding3D,
                   'SFTLayer': SFTLayer}
-model = tf.keras.models.load_model(model_path + 'FCNN_3.keras', custom_objects=custom_objects)
+model = tf.keras.models.load_model(model_path + 'TestSaPNN_3_3.keras', custom_objects=custom_objects)
 
 print(model.summary())
 
-# x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :] # 6 bands only
-x_raster = x_raster[(50, 100, 150), :, :] # 3 bands only
-model_input = x_raster.T.reshape(1, 32, 32, 3)
-predicted_raster = model.predict(model_input).reshape(32, 32, 3).T
-# x = x_raster.T.reshape(1, 32, 32, 228)
-# x1 = x1_raster.T.reshape(1, 32, 32, 224)
-# predicted_raster = model.predict([x, x1]).reshape(32, 32, 224).T
+x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :] # 6 bands only
+# x_raster = x_raster[(50, 100, 150), :, :] # 3 bands only
+x1_raster = x1_raster[(50, 100, 150), :, :] # 3 bands only
+# model_input = x_raster.T.reshape(1, 32, 32, 6)
+# predicted_raster = model.predict(model_input).reshape(32, 32, 3).T
+x = x_raster.T.reshape(1, 32, 32, 6)
+x1 = x1_raster.T.reshape(1, 32, 32, 3, 1)
+predicted_raster = model.predict([x, x1]).reshape(32, 32, 3).T
 # predicted_raster = model.predict(x1).reshape(32, 32, 224).T
 
 # bands = [50, 100, 150]
@@ -55,6 +56,30 @@ y_rgb = get_bands_from_array(y_raster, [50,100,150])
 plot_3_band_image(y_rgb, title='Original Image')
 
 # tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)
+
+for i in range(len(model.layers)):
+    print(model.layers[i].name, i)
+
+print(model.trainable_variables)
+print(model.weights)
+
+# get_layer_output = (lambda i: K.function(inputs=model.layers[i].input, outputs=model.layers[i].output))
+# input_2d_pad = get_layer_output(3)(x)
+# arr = get_bands_from_array(input_2d_pad[0, :, :, :].T, bands)
+# plot_3_band_image(arr, title='Layer 2d pad')
+# output_2d_conv = get_layer_output(5)(input_2d_pad)
+# arr = get_bands_from_array(output_2d_conv[0, :, :, :].T, bands)
+# plot_3_band_image(arr, title='Layer 2d conv')
+#
+# input_3d_pad = get_layer_output(2)([x1])
+# output_3d_conv = get_layer_output(4)([input_3d_pad])
+# arr = get_bands_from_array(output_3d_conv[0, :, :, :, 15].T, bands)
+# plot_3_band_image(arr, title='Layer 3d conv')
+# todo: layer outputs are empty but predicted image has values
+
+# output_3d_final = get_layer_output(7)(output_3d_conv)
+# arr = get_bands_from_array(output_3d_final[0, :, :, :, 0].T, bands)
+# plot_3_band_image(arr, title='Layer 3d final')
 
 # get_layer_output = K.function(inputs=model.layers[0].input, outputs=model.layers[0].output)
 # input_l = get_layer_output([x1])

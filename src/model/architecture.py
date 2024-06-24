@@ -224,17 +224,22 @@ class TestSaPNN:
         detail_1 = layers.Conv2D(64, kernel, padding='valid', activation='relu')(detail_1_pad)
 
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        padding = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
+        padding3d = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
         kernel = (9, 9, 7)
-        approx_1_pad = ReflectionPadding3D(padding=padding(kernel))(input_approx)
+        approx_1_pad = ReflectionPadding3D(padding=padding3d(kernel))(input_approx)
         approx_1 = layers.Conv3D(64, kernel, padding='valid', activation='relu')(approx_1_pad)
         merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
 
-        # # second layer
-        # kernel = (1, 1, 1)
-        # approx_2_pad = ReflectionPadding3D(padding=padding(kernel))(merged_branches)
-        # approx_2 = layers.Conv3D(32, kernel, padding='valid', activation='relu')(approx_2_pad)
-        #
+        # second layer
+        kernel = (1, 1, 1)
+        approx_2_pad = ReflectionPadding3D(padding=padding3d(kernel))(merged_branches)
+        approx_2 = layers.Conv3D(32, kernel, padding='valid', activation='relu')(approx_2_pad)
+
+        kernel = (3, 3)
+        detail_2_pad = ReflectionPadding2D(padding=padding2d(kernel))(detail_1)
+        detail_2 = layers.Conv2D(32, kernel, padding='valid', activation='relu')(detail_2_pad)
+        merged_branches = SFTLayer(filters=32)([approx_2, detail_2])
+
         # # third layer
         # kernel = (1, 1, 1)
         # approx_3_pad = ReflectionPadding3D(padding=padding(kernel))(approx_2)
