@@ -235,7 +235,7 @@ class TestSaPNN:
         approx_2_pad = ReflectionPadding3D(padding=padding3d(kernel))(merged_branches)
         approx_2 = layers.Conv3D(32, kernel, padding='valid', activation='relu')(approx_2_pad)
 
-        kernel = (7, 7)
+        kernel = (3, 3)
         detail_2_pad = ReflectionPadding2D(padding=padding2d(kernel))(detail_1)
         detail_2 = layers.Conv2D(32, kernel, padding='valid', activation='relu')(detail_2_pad)
         merged_branches = SFTLayer(filters=32)([approx_2, detail_2])
@@ -252,6 +252,7 @@ class TestSaPNN:
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
         # todo: starts to fit (a little) with modified sft layer (double conv2d) and 6 input + 3 output bands
         # todo: test the trained model and add more layers
+        # atm with a second layer it doesnt fit anymore
         # todo: kernel size very important! fcnn doesnt fit with all kernels = (7,7,3)
 
 

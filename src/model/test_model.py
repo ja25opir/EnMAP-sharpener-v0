@@ -34,9 +34,9 @@ model = tf.keras.models.load_model(model_path + 'TestSaPNN_3_3.keras', custom_ob
 
 print(model.summary())
 
-x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :] # 6 bands only
+x_raster = x_raster[(50, 100, 150, 225, 226, 227), :, :]  # 6 bands only
 # x_raster = x_raster[(50, 100, 150), :, :] # 3 bands only
-x1_raster = x1_raster[(50, 100, 150), :, :] # 3 bands only
+x1_raster = x1_raster[(50, 100, 150), :, :]  # 3 bands only
 # model_input = x_raster.T.reshape(1, 32, 32, 6)
 # predicted_raster = model.predict(model_input).reshape(32, 32, 3).T
 x = x_raster.T.reshape(1, 32, 32, 6)
@@ -45,14 +45,14 @@ predicted_raster = model.predict([x, x1]).reshape(32, 32, 3).T
 # predicted_raster = model.predict(x1).reshape(32, 32, 224).T
 
 # bands = [50, 100, 150]
-bands = [0,1,2]
+bands = [0, 1, 2]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 
 x_rgb = get_bands_from_array(x_raster, bands)
 plot_3_band_image(x_rgb, title='Input Image')
 
-y_rgb = get_bands_from_array(y_raster, [50,100,150])
+y_rgb = get_bands_from_array(y_raster, [50, 100, 150])
 plot_3_band_image(y_rgb, title='Original Image')
 
 # tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)
@@ -60,22 +60,26 @@ plot_3_band_image(y_rgb, title='Original Image')
 for i in range(len(model.layers)):
     print(model.layers[i].name, i)
 
-print(model.trainable_variables)
-print(model.weights)
-
-# get_layer_output = (lambda i: K.function(inputs=model.layers[i].input, outputs=model.layers[i].output))
-# input_2d_pad = get_layer_output(3)(x)
+get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=model.layers[j].output))
+input_2d_pad = get_layer_output(3)(x)
 # arr = get_bands_from_array(input_2d_pad[0, :, :, :].T, bands)
 # plot_3_band_image(arr, title='Layer 2d pad')
-# output_2d_conv = get_layer_output(5)(input_2d_pad)
+output_2d_conv = get_layer_output(5)(input_2d_pad)
 # arr = get_bands_from_array(output_2d_conv[0, :, :, :].T, bands)
 # plot_3_band_image(arr, title='Layer 2d conv')
 #
-# input_3d_pad = get_layer_output(2)([x1])
-# output_3d_conv = get_layer_output(4)([input_3d_pad])
-# arr = get_bands_from_array(output_3d_conv[0, :, :, :, 15].T, bands)
+input_3d_pad = get_layer_output(2)([x1])
+# arr = get_bands_from_array(input_3d_pad[0, :, :, :, 0].T, bands)
+# plot_3_band_image(arr, title='Layer 3d pad')
+output_3d_conv = get_layer_output(4)([input_3d_pad])
+# arr = get_bands_from_array(output_3d_conv[0, :, :, :, 0].T, bands)
 # plot_3_band_image(arr, title='Layer 3d conv')
 # todo: layer outputs are empty but predicted image has values
+
+output_sft = get_layer_output(6)([output_3d_conv, output_2d_conv])
+for i in range(output_sft.shape[-1]):
+    arr = get_bands_from_array(output_sft[0, :, :, :, i].T, bands)
+    plot_3_band_image(arr, title='Layer SFT conv %d' %i)
 
 # output_3d_final = get_layer_output(7)(output_3d_conv)
 # arr = get_bands_from_array(output_3d_final[0, :, :, :, 0].T, bands)
