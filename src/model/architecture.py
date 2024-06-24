@@ -272,11 +272,10 @@ class MMSRes:
         self.model = None
         self.create_layers()
 
-    @staticmethod
-    def inject_edges(x, edges):
+    def inject_edges(self, x, edges):
         merged = None
 
-        for band_no in range(x.shape[-2]):
+        for band_no in range(self.no_output_bands):
             x_band = x[:, :, :, band_no, :]
             x_band = layers.Add()([x_band, edges])
             x_band = tf.expand_dims(x_band, axis=-2)
