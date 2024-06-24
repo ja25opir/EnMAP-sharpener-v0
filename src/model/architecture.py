@@ -251,10 +251,10 @@ class TestSaPNN:
         y = tf.squeeze(convOutput, axis=-1)
 
         self.model = Model(inputs=[input_detail, input_approx], outputs=y)
-        # todo: starts to fit (a little) with modified sft layer (double conv2d) and 6 input + 3 output bands
-        # todo: test the trained model and add more layers
+        # todo: starts to fit (a little) with ONE layer and modified sft layer (double conv2d) and 6 input + 3 output bands
+        # todo: more layers --> no fit
+        # todo: 224 bands with SaPNN --> memory exceeds
         # todo: train with a single scene without any clouds (Pavia is also only one scene)
-        # atm with a second layer it doesnt fit anymore
         # todo: kernel size very important! fcnn doesnt fit with all kernels = (7,7,3)
 
 
