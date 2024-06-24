@@ -14,7 +14,7 @@ NO_OUTPUT_BANDS = 224
 KERNEL_SIZES = [(9, 9), (3, 3), (5, 5)]
 
 OUTPUT_DIR = os.getcwd() + '/output/'
-LOSS_FUNCTION = 'mean_squared_error'  # todo: adapt learn rate and momentum, also use other loss function
+LOSS_FUNCTION = 'mean_squared_error'
 # LEARN_RATE = 0.00001
 # https://www.activeloop.ai/resources/glossary/adaptive-learning-rate-methods/#:~:text=Adaptive%20learning%20rate%20methods%20improve%20deep%20learning%20model%20performance%20by,faster%20convergence%20and%20better%20generalization.
 # https://stats.stackexchange.com/questions/383807/why-we-call-adam-an-a-adaptive-learning-rate-algorithm-if-the-step-size-is-a-con
