@@ -229,10 +229,9 @@ class TestSaPNN:
         padding3d = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
         kernel = (9, 9, 7)
         # approx_1_pad = ReflectionPadding3D(padding=padding3d(kernel))(input_approx)
-        approx_1 = layers.Conv3D(64, (1, 9, 7), padding='same', activation='relu')(input_approx)
-        approx_1 = layers.Conv3D(64, (9, 1, 1), padding='same', activation='relu')(approx_1)
-        merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
-        # todo: test double implementation with 1xkxk and kx1x1 kernels for speed up (https://www.mdpi.com/2072-4292/12/10/1660)
+        approx_1 = layers.Conv3D(64, kernel, padding='same', activation='relu')(input_approx)
+        approx_skipped = layers.Add()([input_approx, approx_1])
+        merged_branches = SFTLayer(filters=64)([approx_skipped, detail_1])
 
         # # second layer
         # kernel = (1, 1, 1)
