@@ -223,7 +223,7 @@ class TestSaPNN:
         padding2d = (lambda x: (x[0] // 2, x[1] // 2))
         kernel = (7, 7)
         # detail_1_pad = ReflectionPadding2D(padding=padding2d(kernel))(input_detail)
-        detail_1 = layers.Conv2D(64, kernel, padding='same', activation='relu')(input_detail)
+        # detail_1 = layers.Conv2D(64, kernel, padding='same', activation='relu')(input_detail)
 
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         padding3d = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
@@ -231,7 +231,7 @@ class TestSaPNN:
         # approx_1_pad = ReflectionPadding3D(padding=padding3d(kernel))(input_approx)
         approx_1 = layers.Conv3D(64, kernel, padding='same', activation='relu')(input_approx)
         # approx_skipped = layers.Add()([input_approx, approx_1])
-        merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
+        merged_branches = SFTLayer(filters=64)([approx_1, input_detail])
 
         # # second layer
         # kernel = (1, 1, 1)
