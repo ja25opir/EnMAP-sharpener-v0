@@ -223,7 +223,7 @@ class TestSaPNN:
         padding2d = (lambda x: (x[0] // 2, x[1] // 2))
         kernel = (7, 7)
         # detail_1_pad = ReflectionPadding2D(padding=padding2d(kernel))(input_detail)
-        # detail_1 = layers.Conv2D(64, kernel, padding='same', activation='relu')(input_detail)
+        detail_1 = layers.Conv2D(64, kernel, padding='same', activation='relu')(input_detail)
 
         input_approx = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         padding3d = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
@@ -231,22 +231,26 @@ class TestSaPNN:
         # approx_1_pad = ReflectionPadding3D(padding=padding3d(kernel))(input_approx)
         approx_1 = layers.Conv3D(64, kernel, padding='same', activation='relu')(input_approx)
         # approx_skipped = layers.Add()([input_approx, approx_1])
-        merged_branches = SFTLayer(filters=64)([approx_1, input_detail])
+        merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
 
         # # second layer
-        # kernel = (1, 1, 1)
+        kernel = (1, 1, 1)
         # approx_2_pad = ReflectionPadding3D(padding=padding3d(kernel))(merged_branches)
-        # approx_2 = layers.Conv3D(32, kernel, padding='valid', activation='relu')(approx_2_pad)
-        #
-        # kernel = (3, 3)
+        approx_2 = layers.Conv3D(32, kernel, padding='same', activation='relu')(merged_branches)
+
+        kernel = (3, 3)
         # detail_2_pad = ReflectionPadding2D(padding=padding2d(kernel))(detail_1)
-        # detail_2 = layers.Conv2D(32, kernel, padding='valid', activation='relu')(detail_2_pad)
-        # merged_branches = SFTLayer(filters=32)([approx_2, detail_2])
+        detail_2 = layers.Conv2D(32, kernel, padding='same', activation='relu')(detail_1)
+        merged_branches = SFTLayer(filters=32)([approx_2, detail_2])
 
         # # third layer
-        # kernel = (1, 1, 1)
+        kernel = (1, 1, 1)
         # approx_3_pad = ReflectionPadding3D(padding=padding(kernel))(approx_2)
-        # approx_3 = layers.Conv3D(9, kernel, padding='valid', activation='relu')(approx_3_pad)
+        approx_3 = layers.Conv3D(9, kernel, padding='same', activation='relu')(merged_branches)
+
+        kernel = (5,5)
+        detail_3 = layers.Conv2D(9, kernel, padding='same', activation='relu')(detail_2)
+        merged_branches = SFTLayer(filters=9)([approx_3, detail_3])
 
         # convOutput = layers.Conv3D(1, (5, 5, 3), padding='same', activation='linear')(approx_3)
         convOutput = layers.Conv3D(1, (5, 5, 3), padding='same', activation='linear')(merged_branches)
