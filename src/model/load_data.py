@@ -86,10 +86,10 @@ class DuoBranchDataGenerator(DataGenerator):
             # x_img = x_img[(50, 100, 150, 225, 226, 227), :, :]
             # x1_img = x1_img[(50,100,150), :, :]
             # y_img = y_img[(50,100,150), :, :]
-            indices = np.hstack([np.arange(80, 100), np.arange(224, 228)])
+            indices = np.hstack([np.arange(90, 100), np.arange(224, 228)])
             x_img = np.take(x_img, indices, axis=0)
-            x1_img = x1_img[80:100, :, :]
-            y_img = y_img[80:100, :, :]
+            x1_img = x1_img[90:100, :, :]
+            y_img = y_img[90:100, :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
             # X[i, :, :, :, 0] = x_img.T
