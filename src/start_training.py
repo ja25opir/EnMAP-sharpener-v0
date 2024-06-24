@@ -8,8 +8,8 @@ from config.resource_limiter import limit_gpu_memory_usage, multiple_gpu_distrib
 TILE_SIZE = 32
 # NO_INPUT_BANDS = 224 + 4
 # NO_OUTPUT_BANDS = 224
-NO_INPUT_BANDS = 3 + 3
-NO_OUTPUT_BANDS = 3
+NO_INPUT_BANDS = 20 + 4
+NO_OUTPUT_BANDS = 20
 KERNEL_SIZES = [(9, 9), (3, 3), (5, 5)]
 
 TRAIN_DATA_DIR = os.getcwd() + '/data/preprocessing/model_input/'
@@ -18,7 +18,7 @@ LOSS_FUNCTION = 'mean_squared_error'  # todo: adapt learn rate and momentum, als
 # LEARN_RATE = 0.00001
 # https://www.activeloop.ai/resources/glossary/adaptive-learning-rate-methods/#:~:text=Adaptive%20learning%20rate%20methods%20improve%20deep%20learning%20model%20performance%20by,faster%20convergence%20and%20better%20generalization.
 # https://stats.stackexchange.com/questions/383807/why-we-call-adam-an-a-adaptive-learning-rate-algorithm-if-the-step-size-is-a-con
-TRAIN_EPOCHS = 5
+TRAIN_EPOCHS = 10
 
 @multiple_gpu_distribution
 def train_model(batch_size):
