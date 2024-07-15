@@ -2,6 +2,7 @@ import os, re
 import rasterio
 import time
 from rasterio.io import MemoryFile
+from rasterio.windows import Window
 import numpy as np
 
 
@@ -73,15 +74,18 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
     :param overlap:
     :return: list with filenames of skipped tiles
     """
+    left_edge_margin = 5 # margin from left edge of raster to prevent border effects
     horizontal_tiles = int(raster.width / (tile_size - overlap))
-    vertical_tiles = int(raster.height / (tile_size - overlap))
+    vertical_tiles = int(raster.height / (tile_size - overlap + left_edge_margin))
     skip_list = []
     minimum_values = min_value_ratio * tile_size * tile_size * raster.count
+
     for i_h in range(horizontal_tiles):
         for i_v in range(vertical_tiles):
             file_name = f'{save_name}_{i_h}_{i_v}.npy'
-            w = raster.read(window=((i_v * (tile_size - overlap), (i_v + 1) * tile_size - i_v * overlap),
-                                    (i_h * (tile_size - overlap), (i_h + 1) * tile_size - i_h * overlap)))
+            left_x = i_v * (tile_size - overlap) + left_edge_margin
+            left_y = i_h * (tile_size - overlap)
+            w = raster.read(window=Window(left_x, left_y, tile_size, tile_size))
             if not np.any(w):
                 skip_list.append(file_name)
                 continue
