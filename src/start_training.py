@@ -5,11 +5,11 @@ from model.model import Model
 
 from config.resource_limiter import limit_gpu_memory_usage, multiple_gpu_distribution
 
-# TILE_SIZE = 32
-TILE_SIZE = 10
+TILE_SIZE = 32
+# TILE_SIZE = 10
 # NO_INPUT_BANDS = 224 + 4
 # NO_OUTPUT_BANDS = 224
-NO_INPUT_BANDS = 20
+NO_INPUT_BANDS = 4
 NO_OUTPUT_BANDS = 20
 KERNEL_SIZES = [(9, 9), (3, 3), (5, 5)]
 

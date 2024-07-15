@@ -53,10 +53,10 @@ class Model:
         # Test
         # architecture = TestSaPNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # FCNN
-        # architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
+        architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # model = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands).model
         # MMSRes
-        architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands)
+        # architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands)
 
         model = architecture.model
         self.name = architecture.name

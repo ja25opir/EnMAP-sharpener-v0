@@ -138,7 +138,7 @@ class SFTLayer(layers.Layer):
 
         for band_no in range(self.x_shape[-2]):
             x_band = x[:, :, :, band_no, :]
-            # todo: check if this works as intended
+            # todo: check if this works as intended (operation in every band, but also every feature map?)
             # build a branch that extracts edged (maybe from sentinel input only) and that injects them into the other branch
             # test this and monitor the output with a very small training sample to see if it actually works
             # also rethink the dimensions of each "cube" in a layer. the paper says k*s*s*c where c is the number of bands
@@ -242,7 +242,7 @@ class TestSaPNN:
         # approx_3_pad = ReflectionPadding3D(padding=padding(kernel))(approx_2)
         approx_3 = layers.Conv3D(9, kernel, padding='same', activation='relu')(merged_branches)
 
-        kernel = (5,5)
+        kernel = (5, 5)
         detail_3 = layers.Conv2D(9, kernel, padding='same', activation='relu')(detail_2)
         merged_branches = SFTLayer(filters=9)([approx_3, detail_3])
 
@@ -259,11 +259,7 @@ class TestSaPNN:
 
 
 class MMSRes:
-    """
-    https://www.mdpi.com/2072-4292/9/11/1139#
-    Repo: https://github.com/MeiShaohui/Hyperspectral-Image-Spatial-Super-Resolution-via-3D-Full-Convolutional-Neural-Network/blob/master/network3d.py
-    """
-
+    """full custom network"""
     def __init__(self, tile_size, no_input_bands, no_output_bands):
         self.name = 'MMSRes'
         self.tile_size = tile_size
@@ -290,22 +286,34 @@ class MMSRes:
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
+        # edge detection
         input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
         edges = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(input2d)
 
-        # first layer
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
+        conv1 = layers.Conv3D(4, (9, 9, 7), padding='same',
                               activation='relu')(input3d)
-        injection1 = self.inject_edges(conv1, edges)
-        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
-                              activation='relu')(injection1)
-        injection2 = self.inject_edges(conv2, edges)
-        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
-                              activation='relu')(injection2)
-        injection3 = self.inject_edges(conv3, edges)
+        # injection1 = self.inject_edges(conv1, edges)
+        injection1 = None
+        for band_no in range(self.no_output_bands):
+            x_band = conv1[:, :, :, band_no, :]
+            # for i in range(3): # todo: this does not work
+            #     x_band = layers.Add()([x_band[:, :, :, i], edges[:, :, :, 0]])
+            print(x_band.shape)
+            x_band = tf.expand_dims(x_band, axis=-2)
+            if injection1 is None:
+                injection1 = x_band
+            else:
+                injection1 = tf.concat([injection1, x_band], axis=-2)
+
+        # conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
+        #                       activation='relu')(injection1)
+        # injection2 = self.inject_edges(conv2, edges)
+        # conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
+        #                       activation='relu')(injection2)
+        # injection3 = self.inject_edges(conv3, edges)
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(injection3)
+                                activation='linear')(injection1)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=input3d, outputs=y)
