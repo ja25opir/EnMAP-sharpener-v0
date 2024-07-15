@@ -359,8 +359,8 @@ class PreprocessPipeline:
         input_files = os.listdir(self.masked_scenes_path)
         enmap_files = [x for x in input_files if re.search(".*enmap_masked.tif", x)]
         sentinel_files = [x for x in input_files if re.search(".*sentinel_masked.tif", x)]
-        # tile_size = 32
-        tile_size = 10
+        tile_size = 32
+        # tile_size = 10
 
         i = 1
         for enmap_scene in enmap_files:
