@@ -227,7 +227,7 @@ class TestSaPNN:
         # approx_skipped = layers.Add()([input_approx, approx_1])
         merged_branches = SFTLayer(filters=64)([approx_1, detail_1])
 
-        # # second layer
+        # second layer
         kernel = (1, 1, 1)
         # approx_2_pad = ReflectionPadding3D(padding=padding3d(kernel))(merged_branches)
         approx_2 = layers.Conv3D(32, kernel, padding='same', activation='relu')(merged_branches)
@@ -260,6 +260,7 @@ class TestSaPNN:
 
 class MMSRes:
     """full custom network"""
+
     def __init__(self, tile_size, no_input_bands, no_output_bands):
         self.name = 'MMSRes'
         self.tile_size = tile_size
@@ -287,36 +288,30 @@ class MMSRes:
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         # edge detection
-        input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
-        edges = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(input2d)
+        input2d = Input(shape=(self.tile_size, self.tile_size, 3), name='x')
+        edges1 = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(input2d)
+        edges2 = layers.Conv2D(32, (3, 3), padding='same', activation='relu')(edges1)
+        edges3 = layers.Conv2D(9, (3, 3), padding='same', activation='relu')(edges2)
 
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        conv1 = layers.Conv3D(4, (9, 9, 7), padding='same',
+        conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
                               activation='relu')(input3d)
-        # injection1 = self.inject_edges(conv1, edges)
-        injection1 = None
-        for band_no in range(self.no_output_bands):
-            x_band = conv1[:, :, :, band_no, :]
-            # for i in range(3): # todo: this does not work
-            #     x_band = layers.Add()([x_band[:, :, :, i], edges[:, :, :, 0]])
-            print(x_band.shape)
-            x_band = tf.expand_dims(x_band, axis=-2)
-            if injection1 is None:
-                injection1 = x_band
-            else:
-                injection1 = tf.concat([injection1, x_band], axis=-2)
+        merged1 = self.inject_edges(conv1, edges1)
 
-        # conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
-        #                       activation='relu')(injection1)
-        # injection2 = self.inject_edges(conv2, edges)
-        # conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
-        #                       activation='relu')(injection2)
-        # injection3 = self.inject_edges(conv3, edges)
+        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
+                              activation='relu')(merged1)
+        merged2 = self.inject_edges(conv2, edges2)
+
+        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
+                              activation='relu')(merged2)
+
+        merged3 = self.inject_edges(conv3, edges3)
+
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(injection1)
+                                activation='linear')(merged3)
         y = tf.squeeze(convOut, axis=-1)
 
-        self.model = Model(inputs=input3d, outputs=y)
+        self.model = Model(inputs=[input3d, input2d], outputs=y)
 
 
 class FCNN:
@@ -337,7 +332,6 @@ class FCNN:
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
-        # first layer
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
                               activation='relu')(input3d)
@@ -352,10 +346,9 @@ class FCNN:
         self.model = Model(inputs=input3d, outputs=y)
 
         # todo: restart from here
-        # fcnn with 4d input and 3d output works for 3 input and ouput bands
+        # fcnn with 4d input and 3d output works for 3 input and output bands
         # todo: train with more bands (and more training samples)
         # atm fits with 40 bands but not with 224 --> continue at TestSaPNN
-        # todo: Verschiebungen beim Resamplen fixen!
 
 
 class TestFCNN:
@@ -368,28 +361,24 @@ class TestFCNN:
         self.create_layers()
 
     def create_layers(self):
-        seed_gen = tf.keras.utils.set_random_seed(42)
-        initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
-
-        # first layer
-        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands, 1), name='x')
-        # input2d = Input(shape=(self.tile_size, self.tile_size, self.no_input_bands), name='x')
-        input2d = tf.squeeze(input3d, axis=-1)
-        kernel = (9, 9)
-        padding = (lambda x: (x[0] // 2, x[1] // 2))
-        reflect_pad_1 = ReflectionPadding2D(padding=padding(kernel))(input2d)
-        conv1 = layers.Conv2D(64, kernel, padding='valid',
-                              activation='relu',
-                              kernel_regularizer=regularizers.l1(0.015))(reflect_pad_1)
-        kernel = (3, 3)
-        reflect_pad_2 = ReflectionPadding2D(padding=padding(kernel))(conv1)
-        conv2 = layers.Conv2D(32, kernel, padding='valid',
-                              activation='relu',
-                              kernel_regularizer=regularizers.l1(0.03))(reflect_pad_2)
-        kernel = (3, 3)
-        reflect_pad_2 = ReflectionPadding2D(padding=padding(kernel))(conv2)
-        y = layers.Conv2D(self.no_output_bands, kernel, padding='valid',
-                          activation='linear',
-                          kernel_regularizer=regularizers.l1(0.015))(reflect_pad_2)
+        input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
+        padding3d = (lambda x: (x[0] // 2, x[1] // 2, x[2] // 2))
+        kernel = (9, 9, 7)
+        pad1 = ReflectionPadding3D(padding=padding3d(kernel))(input3d)
+        conv1 = layers.Conv3D(64, kernel, padding='valid',
+                              activation='relu')(pad1)
+        kernel = (1, 1, 1)
+        pad2 = ReflectionPadding3D(padding=padding3d(kernel))(conv1)
+        conv2 = layers.Conv3D(32, kernel, padding='valid',
+                              activation='relu')(pad2)
+        kernel = (1, 1, 1)
+        pad3 = ReflectionPadding3D(padding=padding3d(kernel))(conv2)
+        conv3 = layers.Conv3D(9, kernel, padding='valid',
+                              activation='relu')(pad3)
+        kernel = (5, 5, 3)
+        pad4 = ReflectionPadding3D(padding=padding3d(kernel))(conv3)
+        convOut = layers.Conv3D(1, kernel, padding='valid',
+                                activation='linear')(pad4)
+        y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=input3d, outputs=y)
