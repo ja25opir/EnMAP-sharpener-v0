@@ -1,13 +1,11 @@
 import shutil
-
-import shutil
-
 import rasterio.mask
-from pyproj import Proj
 import xml.etree.ElementTree as ETree
 import os, re, sys
 import numpy as np
+from pyproj import Proj
 
+from .helpers import crop_raster
 from .scrape_sentinel import request_and_save_response, SentinelSession
 from .wald_protocol import start_wald_protocol
 
@@ -77,33 +75,6 @@ def get_inscribed_rect_from_bbox(bbox, origin_crs, max_width=25000, max_height=2
         ll[1] = int(ll[1] + (height - max_height) / 2) + int(margin / 2)
 
     return [[ul[0], ur[1]], [lr[0], ur[1]], [lr[0], ll[1]], [ul[0], ll[1]], [ul[0], ur[1]]]
-
-
-def crop_raster(raster, shape, save=False, output_dir='', save_name=''):
-    """
-    Crops a raster to a given shape.
-    :param raster:
-    :param shape:
-    :param save:
-    :param output_dir:
-    :param save_name:
-    :return:
-    """
-    out_img, out_transform = rasterio.mask.mask(raster, shapes=shape, crop=True)
-    # update metadata
-    out_meta = raster.meta.copy()
-    out_meta.update({"driver": "GTiff",
-                     "height": out_img.shape[1],
-                     "width": out_img.shape[2],
-                     "transform": out_transform,
-                     })
-
-    if save:
-        print('saving to:', output_dir + save_name + '.tif')
-        with rasterio.open(output_dir + save_name + '.tif', "w", **out_meta) as dest:
-            dest.write(out_img)
-
-    return out_img, out_meta
 
 
 def crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, output_dir):
@@ -219,11 +190,11 @@ class PreprocessPipeline:
                 spectral_img_path = ''
                 cloud_mask_path = ''
                 for filename in directory[2]:
-                    if re.search(".*METADATA.xml$", filename):
+                    if re.search(".*METADATA.xml$", filename, re.IGNORECASE):
                         metadata_path = directory[0] + '/' + filename
-                    if re.search(".*SPECTRAL_IMAGE.tif$", filename):
+                    if re.search(".*SPECTRAL_IMAGE.tif$", filename, re.IGNORECASE):
                         spectral_img_path = directory[0] + '/' + filename
-                    if re.search(".*QL_QUALITY_CLOUD.tif$", filename):
+                    if re.search(".*QL_QUALITY_CLOUD.tif$", filename, re.IGNORECASE):
                         cloud_mask_path = directory[0] + '/' + filename
                 i += 1
                 if metadata_path and spectral_img_path and cloud_mask_path:
