@@ -20,7 +20,7 @@ class ReflectionPadding2D(layers.Layer):
                                    [padding_height, padding_height],
                                    [padding_width, padding_width],
                                    [0, 0]]),
-                      'SYMMETRIC')
+                      'REFLECT')
 
 
 class Masi:
@@ -110,7 +110,7 @@ class ReflectionPadding3D(layers.Layer):
                                    [padding_height, padding_height],
                                    [padding_width, padding_width],
                                    [0, 0]]),
-                      'SYMMETRIC')
+                      'REFLECT')
 
 
 class SFTLayer(layers.Layer):
@@ -258,6 +258,46 @@ class TestSaPNN:
         # todo: kernel size very important! fcnn doesnt fit with all kernels = (7,7,3)
 
 
+class DILayer(layers.Layer):
+    """detail injection layer"""
+
+    def __init__(self, kernel_size=(3, 3), **kwargs):
+        super(DILayer, self).__init__(**kwargs)
+        self.kernel = kernel_size
+        self.x_shape = None
+
+    def build(self, input_shape):
+        self.x_shape = input_shape[0]
+
+    def call(self, inputs):
+        x, edges = inputs
+        merged = None
+
+        """Add() edges to each input feature map"""
+        # for band_no in range(self.x_shape[-2]):
+        #     x_band = x[:, :, :, band_no, :]
+        #     for feature_map in range(x_band.shape[-1]):
+        #         # x_band = layers.Multiply()([x_band, edges])
+        #         x_band = layers.Add()([x_band, edges])
+        #     x_band = tf.expand_dims(x_band, axis=-2) # todo: check this
+        #     if merged is None:
+        #         merged = x_band
+        #     else:
+        #         merged = tf.concat([merged, x_band], axis=-2)
+
+        """stack edges feature map(s) to input feature maps"""
+        for band_no in range(self.x_shape[-2]):
+            x_band = x[:, :, :, band_no, :]
+            x_stacked = tf.concat([x_band, edges], axis=-1)
+            x_stacked = tf.expand_dims(x_stacked, axis=-2)
+            if merged is None:
+                merged = x_stacked
+            else:
+                merged = tf.concat([merged, x_stacked], axis=-2)
+
+        return merged
+
+
 class MMSRes:
     """full custom network"""
 
@@ -266,48 +306,49 @@ class MMSRes:
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
+        self.padding2d = (lambda x: (x[0] // 2, x[1] // 2))
         self.model = None
         self.create_layers()
 
-    def inject_edges(self, x, edges):
-        merged = None
-
-        for band_no in range(self.no_output_bands):
-            x_band = x[:, :, :, band_no, :]
-            for feature_map in range(x_band.shape[-1]):
-                # x_band = layers.Multiply()([x_band, edges])
-                x_band = layers.Add()([x_band, edges])
-            x_band = tf.expand_dims(x_band, axis=-2)
-            if merged is None:
-                merged = x_band
-            else:
-                merged = tf.concat([merged, x_band], axis=-2)
-
-        return merged
-
     def create_layers(self):
+        # todo: restart from here
+        # todo: batch normalization as described in https://www.mdpi.com/2076-3417/11/1/288
+        #  --> this does not help in main branch
+        # todo: increase bands / try other input bands (15,29,47)
+        # todo: increase training samples
+        # todo: concat both branches only at the end
+        # todo: add more layers
+        # todo: alter kernel sizes / feature maps in 3d layers
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         # edge detection
         input2d = Input(shape=(self.tile_size, self.tile_size, 3), name='x')
-        edges1 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(input2d)
-        edges2 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(edges1)
-        edges3 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(edges2)
+        kernel = (3, 3)
+        leakyRelu = layers.LeakyReLU()
+        padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)
+        edges1 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        edges1 = layers.BatchNormalization()(edges1)
+        edges1 = layers.Activation(leakyRelu)(edges1)
+        padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges1)
+        edges2 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        edges2 = layers.BatchNormalization()(edges2)
+        edges2 = layers.Activation(leakyRelu)(edges2)
+        padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
+        edges3 = layers.Conv2D(3, kernel, padding='valid', activation=leakyRelu)(padded)
+        edges3 = layers.BatchNormalization()(edges3)
+        edges3 = layers.Activation(leakyRelu)(edges3)
 
+        # main branch
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
-                              activation='relu')(input3d)
-        merged1 = self.inject_edges(conv1, edges1)
+        conv1 = layers.Conv3D(64, (9, 9, 7), padding='same', activation=leakyRelu)(input3d)
+        merged1 = DILayer()([conv1, edges1])
 
-        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
-                              activation='relu')(merged1)
-        merged2 = self.inject_edges(conv2, edges2)
+        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same', activation=leakyRelu)(merged1)
+        merged2 = DILayer()([conv2, edges2])
 
-        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
-                              activation='relu')(merged2)
-
-        merged3 = self.inject_edges(conv3, edges3)
+        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same', activation=leakyRelu)(merged2)
+        merged3 = DILayer()([conv3, edges3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
                                 activation='linear')(merged3)

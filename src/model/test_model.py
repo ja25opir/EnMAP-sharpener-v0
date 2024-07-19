@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 import keras.backend as K
 
-from src.model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFTLayer
+from src.model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFTLayer, DILayer
 from src.visualization.helpers import get_bands_from_array
 from src.visualization.plot_raster import plot_3_band_image
 
@@ -29,14 +29,16 @@ y_raster = np.load(y_data_path + random_file)
 # --> not true: todo: inspect all bands of the hidden layers
 custom_objects = {'ReflectionPadding2D': ReflectionPadding2D,
                   'ReflectionPadding3D': ReflectionPadding3D,
-                  'SFTLayer': SFTLayer}
+                  'SFTLayer': SFTLayer,
+                  'DILayer': DILayer}
 model = tf.keras.models.load_model(model_path + 'MMSRes.keras', custom_objects=custom_objects)
 # model = tf.keras.models.load_model(model_path + 'TestSaPNN_3_3.keras', custom_objects=custom_objects)
 
 print(model.summary())
 
-x_raster = x_raster[(225, 226, 227), :, :]
+x_raster = x_raster[(224, 225, 226), :, :]
 # x_raster = x_raster[(50, 100, 150), :, :] # 3 bands only
+# x1_raster = x1_raster[(15, 29, 47), :, :]  # 3 bands only
 x1_raster = x1_raster[(50, 100, 150), :, :]  # 3 bands only
 # x1_raster = x1_raster[80:100, :, :]  # 20 bands
 # model_input = x_raster.T.reshape(1, 32, 32, 6)
@@ -56,7 +58,7 @@ plot_3_band_image(predicted_rgb, title='Predicted Image')
 x_rgb = get_bands_from_array(x_raster, bands)
 plot_3_band_image(x_rgb, title='Input Image x')
 x_rgb = get_bands_from_array(x1_raster, bands)
-plot_3_band_image(x_rgb, title='Input Image x1') # todo x1 und x zueinander verschoben!
+plot_3_band_image(x_rgb, title='Input Image x1')  # todo x1 und x zueinander verschoben!
 
 y_rgb = get_bands_from_array(y_raster, [50, 100, 150])
 plot_3_band_image(y_rgb, title='Original Image')
@@ -67,14 +69,22 @@ for i in range(len(model.layers)):
     print(model.layers[i].name, i)
 
 get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=model.layers[j].output))
-first_2d = get_layer_output(4)(x)
-second_2d = get_layer_output(206)(first_2d)
-third_2d = get_layer_output(312)(second_2d)
-arr = get_bands_from_array(first_2d[0, :, :, :].T, [0, 0, 0]) # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
+padded = get_layer_output(2)(x)
+first_2d = get_layer_output(4)(padded)
+first_2d_readable = first_2d[0, :, :, :].T
+arr = get_bands_from_array(padded[0, :, :, :].T, [0, 1, 2])
+plot_3_band_image(arr, title='First 2d pad')
+padded = get_layer_output(6)(first_2d)
+second_2d = get_layer_output(8)(padded)
+padded = get_layer_output(10)(second_2d)
+third_2d = get_layer_output(12)(padded)
+
+arr = get_bands_from_array(first_2d[0, :, :, :].T, [0, 1,
+                                                    2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
 plot_3_band_image(arr, title='First 2d conv')
-arr = get_bands_from_array(second_2d[0, :, :, :].T, [0, 0, 0])
+arr = get_bands_from_array(second_2d[0, :, :, :].T, [0, 1, 2])
 plot_3_band_image(arr, title='Second 2d conv')
-arr = get_bands_from_array(third_2d[0, :, :, :].T, [0, 0, 0])
+arr = get_bands_from_array(third_2d[0, :, :, :].T, [0, 1, 2])
 plot_3_band_image(arr, title='Third 2d conv')
 
 # input_2d_pad = get_layer_output(3)(x)
