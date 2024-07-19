@@ -274,7 +274,9 @@ class MMSRes:
 
         for band_no in range(self.no_output_bands):
             x_band = x[:, :, :, band_no, :]
-            x_band = layers.Add()([x_band, edges])
+            for feature_map in range(x_band.shape[-1]):
+                # x_band = layers.Multiply()([x_band, edges])
+                x_band = layers.Add()([x_band, edges])
             x_band = tf.expand_dims(x_band, axis=-2)
             if merged is None:
                 merged = x_band
@@ -289,9 +291,9 @@ class MMSRes:
 
         # edge detection
         input2d = Input(shape=(self.tile_size, self.tile_size, 3), name='x')
-        edges1 = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(input2d)
-        edges2 = layers.Conv2D(32, (3, 3), padding='same', activation='relu')(edges1)
-        edges3 = layers.Conv2D(9, (3, 3), padding='same', activation='relu')(edges2)
+        edges1 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(input2d)
+        edges2 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(edges1)
+        edges3 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(edges2)
 
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',

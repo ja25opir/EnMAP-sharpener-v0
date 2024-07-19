@@ -53,9 +53,10 @@ bands = [0, 1, 2]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 
-# x_rgb = get_bands_from_array(x_raster, bands)
+x_rgb = get_bands_from_array(x_raster, bands)
+plot_3_band_image(x_rgb, title='Input Image x')
 x_rgb = get_bands_from_array(x1_raster, bands)
-plot_3_band_image(x_rgb, title='Input Image')
+plot_3_band_image(x_rgb, title='Input Image x1') # todo x1 und x zueinander verschoben!
 
 y_rgb = get_bands_from_array(y_raster, [50, 100, 150])
 plot_3_band_image(y_rgb, title='Original Image')
@@ -66,25 +67,35 @@ for i in range(len(model.layers)):
     print(model.layers[i].name, i)
 
 get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=model.layers[j].output))
-input_2d_pad = get_layer_output(3)(x)
+first_2d = get_layer_output(4)(x)
+second_2d = get_layer_output(206)(first_2d)
+third_2d = get_layer_output(312)(second_2d)
+arr = get_bands_from_array(first_2d[0, :, :, :].T, [0, 0, 0]) # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
+plot_3_band_image(arr, title='First 2d conv')
+arr = get_bands_from_array(second_2d[0, :, :, :].T, [0, 0, 0])
+plot_3_band_image(arr, title='Second 2d conv')
+arr = get_bands_from_array(third_2d[0, :, :, :].T, [0, 0, 0])
+plot_3_band_image(arr, title='Third 2d conv')
+
+# input_2d_pad = get_layer_output(3)(x)
 # arr = get_bands_from_array(input_2d_pad[0, :, :, :].T, bands)
 # plot_3_band_image(arr, title='Layer 2d pad')
-output_2d_conv = get_layer_output(5)(input_2d_pad)
+# output_2d_conv = get_layer_output(5)(input_2d_pad)
 # arr = get_bands_from_array(output_2d_conv[0, :, :, :].T, bands)
 # plot_3_band_image(arr, title='Layer 2d conv')
 #
-input_3d_pad = get_layer_output(2)([x1])
+# input_3d_pad = get_layer_output(2)([x1])
 # arr = get_bands_from_array(input_3d_pad[0, :, :, :, 0].T, bands)
 # plot_3_band_image(arr, title='Layer 3d pad')
-output_3d_conv = get_layer_output(4)([input_3d_pad])
+# output_3d_conv = get_layer_output(4)([input_3d_pad])
 # arr = get_bands_from_array(output_3d_conv[0, :, :, :, 0].T, bands)
 # plot_3_band_image(arr, title='Layer 3d conv')
 # todo: layer outputs are empty but predicted image has values
 
-output_sft = get_layer_output(6)([output_3d_conv, output_2d_conv])
-for i in range(output_sft.shape[-1]):
-    arr = get_bands_from_array(output_sft[0, :, :, :, i].T, bands)
-    plot_3_band_image(arr, title='Layer SFT conv %d' %i)
+# output_sft = get_layer_output(6)([output_3d_conv, output_2d_conv])
+# for i in range(output_sft.shape[-1]):
+#     arr = get_bands_from_array(output_sft[0, :, :, :, i].T, bands)
+#     plot_3_band_image(arr, title='Layer SFT conv %d' %i)
 
 # output_3d_final = get_layer_output(7)(output_3d_conv)
 # arr = get_bands_from_array(output_3d_final[0, :, :, :, 0].T, bands)
