@@ -46,8 +46,58 @@ class DataGenerator(Sequence):
             y_path = os.path.join(self.data_dir, 'y', self.data_list[data_index])
             y_img = np.load(y_path)
 
+            # todo: WIP testing with 6 bands
+            x_img = x_img[(50,100,150,225,226,227), :, :]
+            y_img = y_img[(50,100,150), :, :]
+
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
             X[i,] = x_img.T
             Y[i,] = y_img.T
 
         return X, Y
+
+
+class DuoBranchDataGenerator(DataGenerator):
+    def __getitem__(self, idx):
+        # (batch_size, w, h, no_input_bands)
+        # X = np.empty((self.batch_size, *self.output_size, self.no_input_bands, 1))
+        X1 = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
+        # Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands, 1))
+        X = np.empty((self.batch_size, *self.output_size, self.no_input_bands))
+        # X1 = np.empty((self.batch_size, *self.output_size, self.no_output_bands))
+        Y = np.empty((self.batch_size, *self.output_size, self.no_output_bands))
+
+        # get the indices of the requested batch
+        indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
+
+        for i, data_index in enumerate(indices):
+            # find img path
+            x_path = os.path.join(self.data_dir, 'x', self.data_list[data_index])
+            # read img
+            x_img = np.load(x_path)
+
+            x1_path = os.path.join(self.data_dir, 'x1', self.data_list[data_index])
+            x1_img = np.load(x1_path)
+
+            y_path = os.path.join(self.data_dir, 'y', self.data_list[data_index])
+            y_img = np.load(y_path)
+
+            # todo: testing with c bands
+            x_img = x_img[(225, 226, 227), :, :]
+            x1_img = x1_img[(50,100,150), :, :]
+            y_img = y_img[(50,100,150), :, :]
+            # indices = np.hstack([np.arange(80, 100), np.arange(224, 228)])
+            # indices = np.hstack([np.arange(224, 228)])
+            # x_img = np.take(x_img, indices, axis=0)
+            # x1_img = x1_img[80:100, :, :]
+            # y_img = y_img[80:100, :, :]
+
+            # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
+            # X[i, :, :, :, 0] = x_img.T
+            X1[i, :, :, :, 0] = x1_img.T
+            # Y[i, :, :, :, 0] = y_img.T
+            X[i,] = x_img.T
+            # X1[i,] = x1_img.T
+            Y[i,] = y_img.T
+
+        return {'x': X, 'x1': X1}, Y

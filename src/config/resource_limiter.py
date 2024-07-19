@@ -1,6 +1,4 @@
-from time import sleep
 import os, resource
-
 
 def limit_logical_cpus(logical_cpus):
     """Set process CPU affinity to the first max_cpus CPUs"""
@@ -15,32 +13,32 @@ def limit_memory_usage(max_memory_limit_gb):
     print('Using following memory limit: ', resource.getrlimit(resource.RLIMIT_AS)[1] / 1024 / 1024 / 1024, 'GB')
 
 
-def limit_tf_gpu_usage(gpu_list, max_memory_limit_gb):
-    """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on the first GPU"""
+def limit_gpu_memory_usage(gpu_list, max_memory_limit_gb):
+    """Restrict TensorFlow to only allocate max_memory_limit_gb of memory on all given GPUs"""
     import tensorflow as tf
+
+    # set GPUs
+    CUDA_VISIBLE_DEVICES = ','.join([str(gpu) for gpu in gpu_list])
+    os.environ["CUDA_VISIBLE_DEVICES"] = CUDA_VISIBLE_DEVICES
     gpus = tf.config.list_physical_devices('GPU')
 
-    for gpu in gpu_list:
-        try:
-            tf.config.set_logical_device_configuration(
-                gpus[gpu],
-                [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
-            print('Using GPU', gpu, 'with memory limit of', max_memory_limit_gb, 'GB')
-        except RuntimeError as e:
-            # Virtual devices must be set before GPUs have been initialized
-            print(e)
+    # set mem limit for each GPU
+    for device in gpus:
+        tf.config.set_logical_device_configuration(
+            device,
+            [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
 
-
-def flexible_tf_gpu_memory_growth():
+def multiple_gpu_distribution(func):
+    """Decorator to distribute a function across multiple GPUs"""
     import tensorflow as tf
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    if gpus:
-        try:
-            # Currently, memory growth needs to be the same across GPUs
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-        except RuntimeError as e:
-            # Memory growth must be set before GPUs have been initialized
-            print(e)
+
+    def wrapper(*args, **kwargs):
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        # no distributed training if only one GPU is available
+        if len(logical_gpus) < 2:
+            return func(*args, **kwargs)
+        # distribute across all GPUs with mirrored strategy
+        strategy = tf.distribute.MirroredStrategy(logical_gpus)
+        with strategy.scope():
+            return func(*args, **kwargs)
+    return wrapper
