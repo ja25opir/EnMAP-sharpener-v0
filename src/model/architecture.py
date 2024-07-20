@@ -313,12 +313,16 @@ class MMSRes:
     def create_layers(self):
         # todo: restart from here
         # todo: batch normalization as described in https://www.mdpi.com/2076-3417/11/1/288
-        #  --> this does not help in main branch
-        # todo: increase bands / try other input bands (15,29,47)
-        # todo: increase training samples
-        # todo: concat both branches only at the end
+        #  --> this does not help in main branch (but looks reasonable in 2d branch)
+        # todo: (0) implement evaluation method besides plotting
+        # todo: (1) increase training samples
+        # todo: (2) increase bands / try other input bands (15,29,47)
+        # todo: (3) add skip connections
+        # todo: (4) add reflection padding for 3d layers
         # todo: add more layers
         # todo: alter kernel sizes / feature maps in 3d layers
+        # todo: concat both branches only at the end
+        # todo: (use grayscaled msi image)
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
@@ -349,9 +353,10 @@ class MMSRes:
 
         conv3 = layers.Conv3D(9, (1, 1, 1), padding='same', activation=leakyRelu)(merged2)
         merged3 = DILayer()([conv3, edges3])
+        skip_connection = layers.Add()([input3d, merged3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(merged3)
+                                activation='linear')(skip_connection)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)

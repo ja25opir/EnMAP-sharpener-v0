@@ -69,15 +69,15 @@ for i in range(len(model.layers)):
     print(model.layers[i].name, i)
 
 get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=model.layers[j].output))
-padded = get_layer_output(2)(x)
-first_2d = get_layer_output(4)(padded)
+padded = get_layer_output(1)(x)
+first_2d = get_layer_output(2)(padded)
 first_2d_readable = first_2d[0, :, :, :].T
 arr = get_bands_from_array(padded[0, :, :, :].T, [0, 1, 2])
 plot_3_band_image(arr, title='First 2d pad')
-padded = get_layer_output(6)(first_2d)
-second_2d = get_layer_output(8)(padded)
-padded = get_layer_output(10)(second_2d)
-third_2d = get_layer_output(12)(padded)
+padded = get_layer_output(5)(first_2d)
+second_2d = get_layer_output(6)(padded)
+padded = get_layer_output(12)(second_2d)
+third_2d = get_layer_output(14)(padded)
 
 arr = get_bands_from_array(first_2d[0, :, :, :].T, [0, 1,
                                                     2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
