@@ -206,6 +206,7 @@ class PreprocessPipeline:
                 metadata_path = ''
                 spectral_img_path = ''
                 cloud_mask_path = ''
+                cloudshadow_mask_path = '' # todo: added this line
                 for filename in directory[2]:
                     if re.search(".*METADATA.xml$", filename, re.IGNORECASE):
                         metadata_path = directory[0] + '/' + filename
