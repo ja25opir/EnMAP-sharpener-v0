@@ -1,19 +1,15 @@
-import os
-from scipy import stats
+import os, re
 from matplotlib import pyplot as plt
 import rasterio
-import pandas as pd
 import numpy as np
 
-from src.visualization.helpers import get_bands_from_raster
-from src.visualization.plot_raster import plot_3_band_image, create_rgb_norm
+from .plot_raster import create_rgb_norm
 
 
-def plot_size_histogram(df, quant=0.05):
+def plot_size_histogram(df, figures_dir, quant=0.05):
     """plot histogram of file sizes and mark outliers with red color"""
     quantile_size = df['size'].quantile(quant)
     outlier = df[df['size'] < quantile_size]
-    print(len(outlier))
     plt.xlabel('File size in MB')
     plt.ylabel('Number of files')
     plt.hist(outlier['size'] / 1024 / 1024, bins=50, density=False, alpha=0.75, color='r')
@@ -23,24 +19,27 @@ def plot_size_histogram(df, quant=0.05):
 
     plt.hist(lower_df['size'] / 1024 / 1024, bins=20, density=False, alpha=0.75, color='b')
     plt.hist(upper_df['size'] / 1024 / 1024, bins=12, density=False, alpha=0.75, color='r')
-    print(len(upper_df))
-    plt.savefig(os.getcwd() + '/../../output/file_size_histogram.png')
+    plt.savefig(figures_dir + 'file_size_histogram.png')
     plt.show()
 
 
-def plot_corresponding_scenes(s_dir, e_dir, output_dir):
-    """plot sentinel outliers and corresponding enmap files"""
-    s_bands = [2, 3, 4]
-    e_bands = [30, 48, 74]
-    s_file_list = os.listdir(s_dir)
-    e_file_list = os.listdir(e_dir)
-    for s_file in s_file_list:
+def plot_corresponding_scenes(input_dir, output_dir, outlier='sentinel', corresponding='enmap'):
+    """plot outliers and corresponding files"""
+    s_bands = [1, 2, 3]
+    e_bands = [16, 30, 48]
+    if outlier == 'enmap':
+        s_bands = [16, 30, 48]
+        e_bands = [1, 2, 3]
+    file_list = os.listdir(input_dir)
+    for s_file in file_list:
+        if not re.search('_' + outlier + '_spectral.tif', s_file):
+            continue
         figure, axis = plt.subplots(2, 2, figsize=(10, 8),
                                     gridspec_kw={'width_ratios': [1, 1], 'height_ratios': [1, 1]})
         timestamp = s_file.split('_')[0]
-        e_file = [x for x in e_file_list if timestamp in x][0]
-        s_raster = rasterio.open(s_dir + s_file)
-        e_raster = rasterio.open(e_dir + e_file)
+        s_raster = rasterio.open(input_dir + s_file)
+        e_file = timestamp + '_' + corresponding + '_spectral.tif'
+        e_raster = rasterio.open(input_dir + e_file)
         rgb_norm = create_rgb_norm((s_raster.read(s_bands[0]), s_raster.read(s_bands[1]), s_raster.read(s_bands[2])))
 
         # plot rgb images
@@ -66,24 +65,3 @@ def plot_corresponding_scenes(s_dir, e_dir, output_dir):
         figure.tight_layout()
         plt.savefig(output_dir + timestamp + '.png')
         plt.show()
-
-
-# size_df = pd.read_pickle(os.getcwd() + '/../../output/figures/broken_files/Sentinel/file_size_df.pkl')
-# size_df = pd.read_pickle(os.getcwd() + '/../../output/figures/broken_files/EnMAP/file_size_df.pkl')
-# size_df = size_df[size_df['file'].str.contains('_spectral.tif')]
-# plot_size_histogram(size_df, 0.05) # Sentinel
-# plot_size_histogram(size_df, 0.04) # EnMAP
-
-# Sentinel outlier
-# sentinel_dir = os.getcwd() + '/../../data/preprocessing/Sentinel2_outlier/sentinel/'
-# enmap_dir = os.getcwd() + '/../../data/preprocessing/Sentinel2_outlier/enmap/'
-# save_dir = os.getcwd() + '/../../output/figures/broken_files/Sentinel/'
-# plot_corresponding_scenes(sentinel_dir, enmap_dir, output_dir=save_dir)
-
-# EnMAP outlier
-sentinel_dir = os.getcwd() + '/../../data/preprocessing/EnMAP_outlier/sentinel/'
-enmap_dir = os.getcwd() + '/../../data/preprocessing/EnMAP_outlier/enmap/'
-save_dir = os.getcwd() + '/../../output/figures/broken_files/EnMAP/'
-plot_corresponding_scenes(sentinel_dir, enmap_dir, output_dir=save_dir)
-
-# todo: plotting looks very blue (green missing)
