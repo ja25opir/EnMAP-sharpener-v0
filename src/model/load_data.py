@@ -47,8 +47,8 @@ class DataGenerator(Sequence):
             y_img = np.load(y_path)
 
             # todo: WIP testing with 6 bands
-            x_img = x_img[(50,100,150,225,226,227), :, :]
-            y_img = y_img[(50,100,150), :, :]
+            x_img = x_img[(50, 100, 150, 225, 226, 227), :, :]
+            y_img = y_img[(50, 100, 150), :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
             X[i,] = x_img.T
@@ -83,9 +83,9 @@ class DuoBranchDataGenerator(DataGenerator):
             y_img = np.load(y_path)
 
             # todo: testing with c bands
-            x_img = x_img[(225, 226, 227), :, :]
-            x1_img = x1_img[(50,100,150), :, :]
-            y_img = y_img[(50,100,150), :, :]
+            x_img = x_img[(224, 225, 226, 227), :, :]
+            x1_img = x1_img[(15, 29, 47, 71), :, :]
+            y_img = y_img[(15, 29, 47, 71), :, :]
             # indices = np.hstack([np.arange(80, 100), np.arange(224, 228)])
             # indices = np.hstack([np.arange(224, 228)])
             # x_img = np.take(x_img, indices, axis=0)

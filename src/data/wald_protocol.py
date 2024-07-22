@@ -231,7 +231,7 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
     for file in sparse_y_tiles:
         remove_tile(x_tiles_path, file)
 
-    # save resampled EnMAP raster as x1 files
+    # save resampled EnMAP raster as x1 files # todo: maybe not even necessary, can be handled in DataLoader
     if save_lr_enmap:
         x1_tiles_path = output_dir_path + 'x1/'
         sparse_x1_tiles = tile_raster(enmap_rescaled, tile_size, x1_tiles_path, save_name,

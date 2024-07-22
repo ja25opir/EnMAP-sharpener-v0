@@ -327,7 +327,7 @@ class MMSRes:
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         # edge detection
-        input2d = Input(shape=(self.tile_size, self.tile_size, 3), name='x')
+        input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
         kernel = (3, 3)
         leakyRelu = layers.LeakyReLU()
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)

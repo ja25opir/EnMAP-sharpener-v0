@@ -36,16 +36,16 @@ model = tf.keras.models.load_model(model_path + 'MMSRes.keras', custom_objects=c
 
 print(model.summary())
 
-x_raster = x_raster[(224, 225, 226), :, :]
+x_raster = x_raster[(224, 225, 226, 227), :, :]
 # x_raster = x_raster[(50, 100, 150), :, :] # 3 bands only
 # x1_raster = x1_raster[(15, 29, 47), :, :]  # 3 bands only
-x1_raster = x1_raster[(50, 100, 150), :, :]  # 3 bands only
+x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 3 bands only
 # x1_raster = x1_raster[80:100, :, :]  # 20 bands
 # model_input = x_raster.T.reshape(1, 32, 32, 6)
 # predicted_raster = model.predict(model_input).reshape(32, 32, 3).T
-x = x_raster.T.reshape(1, 32, 32, 3)
-x1 = x1_raster.T.reshape(1, 32, 32, 3, 1)
-predicted_raster = model.predict([x, x1]).reshape(32, 32, 3).T
+x = x_raster.T.reshape(1, 32, 32, 4)
+x1 = x1_raster.T.reshape(1, 32, 32, 4, 1)
+predicted_raster = model.predict([x, x1]).reshape(32, 32, 4).T
 # predicted_raster = model.predict(x1).reshape(32, 32, 3).T
 # predicted_raster = model.predict(x).reshape(32, 32, 3).T
 # predicted_raster = model.predict(x1).reshape(32, 32, 224).T
@@ -60,7 +60,7 @@ plot_3_band_image(x_rgb, title='Input Image x')
 x_rgb = get_bands_from_array(x1_raster, bands)
 plot_3_band_image(x_rgb, title='Input Image x1')  # todo x1 und x zueinander verschoben!
 
-y_rgb = get_bands_from_array(y_raster, [50, 100, 150])
+y_rgb = get_bands_from_array(y_raster, [15, 29, 47])
 plot_3_band_image(y_rgb, title='Original Image')
 
 # tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)
