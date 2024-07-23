@@ -51,6 +51,15 @@ def resample_raster_in_memory(input_raster, resample_size):
         return memfile.open()
 
 
+def get_gradient(img):
+    # calculate x and y gradients using Sobel operator
+    grad_x = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=3)
+    grad_y = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=3)
+    # combine gradients
+    grad = cv2.addWeighted(np.absolute(grad_x), 0.5, np.absolute(grad_y), 0.5, 0)
+    return grad
+
+
 def align_sentinel(enmap_raster, sentinel_raster_downscaled):
     """align Sentinel Raster to EnMAP Raster with ECC algorithm and openCV"""
     # read 4 enmap bands near to sentinel bands as array
@@ -58,23 +67,34 @@ def align_sentinel(enmap_raster, sentinel_raster_downscaled):
     # downscale sentinel to enmap shape and read as array
     sentinel_array = sentinel_raster_downscaled.read((1, 2, 3, 4)).T.astype(np.uint8)
 
-    # convert to grayscale
-    e_gray = cv2.cvtColor(enmap_array, cv2.COLOR_BGR2GRAY)
-    s_gray = cv2.cvtColor(sentinel_array, cv2.COLOR_BGR2GRAY)
-
     # ECC algorithm parameters
     warp_mode = cv2.MOTION_TRANSLATION  # translation only (no rotation or scaling)
-    warp_matrix = np.eye(2, 3, dtype=np.float32)
+    warp_mat = np.eye(2, 3, dtype=np.float32)
     number_of_iterations = 5000
     termination_eps = 1e-10
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, number_of_iterations, termination_eps)
 
-    # find warp matrix with ECC and grayscaled 4-band images
-    (cc, warp_matrix) = cv2.findTransformECC(e_gray, s_gray, warp_matrix, warp_mode, criteria)
-    # only use integer values for translation (no interpolation)
+    warp_matrices = []
+    # find warp matrices with ECC and gradients of four bands
+    for band in range(4):
+        e_gradient = get_gradient(enmap_array[:, :, band])
+        s_gradient = get_gradient(sentinel_array[:, :, band])
+
+        (cc, warp_mat) = cv2.findTransformECC(e_gradient, s_gradient, warp_mat, warp_mode, criteria)
+        # only use integer values for translation (no interpolation)
+        if not len(warp_matrices):
+            warp_matrices = [warp_mat]
+        else:
+            warp_matrices.append(warp_mat)
+
+    # average matrix of all gradient warp matrices
+    sum_matrix = np.sum(warp_matrices, axis=0)
+    warp_matrix = sum_matrix / len(warp_matrices)
+
+    # round to integer values to avoid interpolation
     warp_matrix = np.round(warp_matrix).astype(np.float32)
 
-    # apply warp matrix to original sentinel image
+    # apply affine transformation to original sentinel image
     sentinel_original = sentinel_raster_downscaled.read((1, 2, 3, 4)).T
     sentinel_aligned = cv2.warpAffine(sentinel_original, warp_matrix, (enmap_array.shape[1], enmap_array.shape[0]),
                                       flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)

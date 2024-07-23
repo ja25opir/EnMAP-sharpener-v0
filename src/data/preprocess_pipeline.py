@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ETree
 import os, re, sys
 import numpy as np
 from pyproj import Proj
+from rasterio.io import MemoryFile
 
 from .helpers import crop_raster
 from .scrape_sentinel import request_and_save_response, SentinelSession
@@ -77,15 +78,18 @@ def get_inscribed_rect_from_bbox(bbox, origin_crs, max_width=25000, max_height=2
     return [[ul[0], ur[1]], [lr[0], ur[1]], [lr[0], ll[1]], [ul[0], ll[1]], [ul[0], ur[1]]]
 
 
-def crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, output_dir):
+def crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, cloudshadow_mask_path, output_dir):
     """
-    Crops an EnMAP image and its cloud mask to the spatial coverage of the EnMAP metadata.
+    Crops an EnMAP image and its cloud masks to the spatial coverage of the EnMAP metadata.
+    Cloudmask is beforehand combined with the cloudshadow mask.
+    :param cloudshadow_mask_path:
     :param metadata_path:
     :param spectral_img_path:
     :param cloud_mask_path:
     :param output_dir:
     :return:
     """
+    # calculate inscribed rectangle from original bounding box
     bbox = get_bounding_box_from_xml(metadata_path)
     origin = rasterio.open(spectral_img_path)
     ir_bbox = get_inscribed_rect_from_bbox(bbox, origin.crs)
@@ -94,9 +98,22 @@ def crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, output_dir):
     timestamp = re.search('\d{4}\d{2}\d{2}T\d{6}Z', spectral_img_path)
     save_name = timestamp.group() + '_enmap'
     origin_raster = rasterio.open(spectral_img_path)
+
+    # crop spectral raster to axis parallel rectangle
     crop_raster(origin_raster, crop_shape, save=True, output_dir=output_dir, save_name=save_name + '_spectral')
+
+    # combine cloud and cloudshadow mask in memory
     origin_cloud_raster = rasterio.open(cloud_mask_path)
-    crop_raster(origin_cloud_raster, crop_shape, save=True, output_dir=output_dir, save_name=save_name + '_cloud_mask')
+    origin_cloudshadow_raster = rasterio.open(cloudshadow_mask_path)
+    merged_cloud_mask = np.logical_or(origin_cloud_raster.read(1), origin_cloudshadow_raster.read(1))
+    meta = origin_cloud_raster.meta.copy()
+    with MemoryFile() as memfile:
+        with memfile.open(**meta) as dataset:
+            dataset.write(merged_cloud_mask, indexes=1)
+        merged_cloud_raster = memfile.open()
+
+    # crop combined mask to same rectangle
+    crop_raster(merged_cloud_raster, crop_shape, save=True, output_dir=output_dir, save_name=save_name + '_cloud_mask')
 
 
 def get_time_from_enmap(enmap_path):
@@ -150,7 +167,7 @@ def mask_raster(masked_scenes_path, raster, mask, save_name, value_range=None):
 
     for band in range(1, raster.count + 1):
         raster_np = np.array(raster.read(band), dtype=np.uint16)
-        raster_np = np.clip(raster_np, value_range[0], value_range[1])  # todo: check if this works as intended
+        raster_np = np.clip(raster_np, value_range[0], value_range[1])
         raster_np[mask == 1] = 0
         raster_np_stack.append(raster_np)
 
@@ -189,6 +206,7 @@ class PreprocessPipeline:
                 metadata_path = ''
                 spectral_img_path = ''
                 cloud_mask_path = ''
+                cloudshadow_mask_path = ''
                 for filename in directory[2]:
                     if re.search(".*METADATA.xml$", filename, re.IGNORECASE):
                         metadata_path = directory[0] + '/' + filename
@@ -196,13 +214,15 @@ class PreprocessPipeline:
                         spectral_img_path = directory[0] + '/' + filename
                     if re.search(".*QL_QUALITY_CLOUD.tif$", filename, re.IGNORECASE):
                         cloud_mask_path = directory[0] + '/' + filename
+                    if re.search(".*QL_QUALITY_CLOUDSHADOW.tif$", filename, re.IGNORECASE):
+                        cloudshadow_mask_path = directory[0] + '/' + filename
                 i += 1
-                if metadata_path and spectral_img_path and cloud_mask_path:
+                if metadata_path and spectral_img_path and cloud_mask_path and cloud_mask_path:
                     print('Cropping image', i, 'of', no_enmap_dirs, '...')
                     output_dir = self.output_enmap_dir_path
-                    crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, output_dir)
+                    crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, cloudshadow_mask_path, output_dir)
                 else:
-                    print('No metadata or spectral image or cloud mask found in', directory[0])
+                    print('No metadata, spectral image, cloud mask or cloud shadow mask found in', directory[0])
         print('Cropping done.')
 
     def scrape_all(self):

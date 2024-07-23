@@ -112,6 +112,13 @@ class EnMAP:
                     print('404 file not found. Skipping this scene.')
                     shutil.rmtree(scene_dir)
                     continue
+                # download quality cloud shadow, skip on 404
+                quality_cloud_shadow_href = item['assets']['quality_cloud_shadow']['href']
+                status = download_file(session, quality_cloud_shadow_href, scene_dir)
+                if status == 404:
+                    print('404 file not found. Skipping this scene.')
+                    shutil.rmtree(scene_dir)
+                    continue
                 self.downloaded_scenes += 1
                 print('Done!')
             else:
