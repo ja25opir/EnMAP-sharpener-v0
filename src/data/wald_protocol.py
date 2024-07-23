@@ -70,7 +70,7 @@ def align_sentinel(enmap_raster, sentinel_raster_downscaled):
     # ECC algorithm parameters
     warp_mode = cv2.MOTION_TRANSLATION  # translation only (no rotation or scaling)
     warp_mat = np.eye(2, 3, dtype=np.float32)
-    number_of_iterations = 10000
+    number_of_iterations = 5000
     termination_eps = 1e-10
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, number_of_iterations, termination_eps)
 
@@ -225,7 +225,8 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
 
     print('Aligning Sentinel raster to EnMAP raster...')
     start_time = time.time()
-    (sentinel_aligned, warp_dictionary) = align_sentinel(enmap_rescaled, sentinel_downscaled)
+    # align downscaled sentinel raster to original enmap raster
+    (sentinel_aligned, warp_dictionary) = align_sentinel(enmap_raster, sentinel_downscaled)
     print("Alignment time: %.4fs" % (time.time() - start_time))
 
     print('Stacking resampled EnMAP and downsampled Sentinel rasters...')
