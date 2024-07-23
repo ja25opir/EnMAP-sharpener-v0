@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 from data.find_outlier import copy_outliers
-from visualization.plot_outlier import plot_size_histogram, plot_corresponding_scenes
+# from visualization.plot_outlier import plot_size_histogram, plot_corresponding_scenes
 
 SENTINEL_DIR = os.getcwd() + '/data/preprocessing/Sentinel2/'
 ENMAP_DIR = os.getcwd() + '/data/preprocessing/EnMAP/'
