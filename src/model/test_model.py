@@ -58,7 +58,7 @@ plot_3_band_image(predicted_rgb, title='Predicted Image')
 x_rgb = get_bands_from_array(x_raster, bands)
 plot_3_band_image(x_rgb, title='Input Image x')
 x_rgb = get_bands_from_array(x1_raster, bands)
-plot_3_band_image(x_rgb, title='Input Image x1')  # todo x1 und x zueinander verschoben!
+plot_3_band_image(x_rgb, title='Input Image x1')
 
 y_rgb = get_bands_from_array(y_raster, [15, 29, 47])
 plot_3_band_image(y_rgb, title='Original Image')

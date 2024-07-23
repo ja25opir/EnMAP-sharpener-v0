@@ -70,7 +70,7 @@ def align_sentinel(enmap_raster, sentinel_raster_downscaled):
     # ECC algorithm parameters
     warp_mode = cv2.MOTION_TRANSLATION  # translation only (no rotation or scaling)
     warp_mat = np.eye(2, 3, dtype=np.float32)
-    number_of_iterations = 5000
+    number_of_iterations = 10000
     termination_eps = 1e-10
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, number_of_iterations, termination_eps)
 

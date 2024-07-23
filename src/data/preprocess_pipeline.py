@@ -246,6 +246,9 @@ class PreprocessPipeline:
                                               save_name=timestamp)
 
     def check_and_harmonize_scene_directories(self):
+        """
+        Checks if all EnMAP scenes have a corresponding cloud mask, a corresponding Sentinel scene and vice versa.
+        """
         enmap_files = os.listdir(self.output_enmap_dir_path)
         sentinel_files = os.listdir(self.output_sentinel_dir_path)
         enmap_timestamps = set([re.search('\d{4}\d{2}\d{2}T\d{6}Z', x).group() for x in enmap_files])
@@ -357,6 +360,7 @@ class PreprocessPipeline:
         for enmap_scene in enmap_files:
             print('Wald processing scene', i, 'of', len(enmap_files), '...')
             timestamp = enmap_scene.split('_')[0]
+            print('Timestamp:', timestamp)
             for sentinel_scene in sentinel_files:
                 if re.search(timestamp, sentinel_scene):
                     start_wald_protocol(self.masked_scenes_path, tile_size, enmap_scene, sentinel_scene, timestamp,
