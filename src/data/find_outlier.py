@@ -21,6 +21,7 @@ def get_size_df(path, figures_path):
 
 def get_outliers(df, quantile):
     quantile_size = df['size'].quantile(quantile)
+    print('Quantile size:', quantile_size)
     return df[df['size'] < quantile_size]
 
 def copy_outliers(target_dir, corresponding_dir, output_dir, figures_dir, corr_suffix='_enmap_spectral.tif', quantile=0.05):
