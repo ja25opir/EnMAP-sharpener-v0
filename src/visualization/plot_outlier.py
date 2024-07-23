@@ -3,24 +3,30 @@ from matplotlib import pyplot as plt
 import rasterio
 import numpy as np
 
-from .plot_raster import create_rgb_norm
-
 
 def plot_size_histogram(df, figures_dir, quant=0.05):
     """plot histogram of file sizes and mark outliers with red color"""
     quantile_size = df['size'].quantile(quant)
     outlier = df[df['size'] < quantile_size]
-    plt.xlabel('File size in MB')
-    plt.ylabel('Number of files')
-    plt.hist(outlier['size'] / 1024 / 1024, bins=50, density=False, alpha=0.75, color='r')
     lower_df = df[df['size'] > quantile_size]
     lower_df = lower_df[lower_df['size'] < lower_df['size'].quantile(0.99)]
     upper_df = df[df['size'] > df['size'].quantile(0.99)]
 
-    plt.hist(lower_df['size'] / 1024 / 1024, bins=20, density=False, alpha=0.75, color='b')
-    plt.hist(upper_df['size'] / 1024 / 1024, bins=12, density=False, alpha=0.75, color='r')
+    bins = np.histogram(
+        np.hstack((outlier['size'] / 1024 / 1024, lower_df['size'] / 1024 / 1024, upper_df['size'] / 1024 / 1024)),
+        bins=100)[1]
+    fig, ax = plt.subplots()
+    ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
+    ax.yaxis.set_major_locator(plt.MultipleLocator(1))
+
+    plt.xlabel('File size in MB')
+    plt.ylabel('Number of files')
+    plt.hist(lower_df['size'] / 1024 / 1024, bins=bins, density=False, alpha=0.75, color='b')
+    plt.hist(outlier['size'] / 1024 / 1024, bins=bins, density=False, alpha=0.75, color='r')
+    # plt.hist(upper_df['size'] / 1024 / 1024, bins=bins, density=False, alpha=0.75, color='r')
+
     plt.savefig(figures_dir + 'file_size_histogram.png')
-    plt.show()
+    # plt.show()
 
 
 def plot_corresponding_scenes(input_dir, output_dir, outlier='sentinel', corresponding='enmap'):
@@ -40,12 +46,16 @@ def plot_corresponding_scenes(input_dir, output_dir, outlier='sentinel', corresp
         s_raster = rasterio.open(input_dir + s_file)
         e_file = timestamp + '_' + corresponding + '_spectral.tif'
         e_raster = rasterio.open(input_dir + e_file)
-        rgb_norm = create_rgb_norm((s_raster.read(s_bands[0]), s_raster.read(s_bands[1]), s_raster.read(s_bands[2])))
 
         # plot rgb images
-        axis[0][0].imshow(rgb_norm, cmap='viridis')
+        max_reflectance = 1000
+        norm_band = (lambda x: np.clip(x, 0, max_reflectance) / max_reflectance * 255)
+        rgb = [s_raster.read(s_bands[0]), s_raster.read(s_bands[1]), s_raster.read(s_bands[2])]
+        rgb_norm = np.dstack((norm_band(rgb[0]), norm_band(rgb[1]), norm_band(rgb[2]))).astype(np.uint8)
+        axis[0][0].imshow(rgb_norm, cmap='viridis', vmin=0, vmax=255)
         axis[0][0].set_title(s_file, pad=20)
-        rgb_norm = create_rgb_norm((e_raster.read(e_bands[0]), e_raster.read(e_bands[1]), e_raster.read(e_bands[2])))
+        rgb = [e_raster.read(e_bands[0]), e_raster.read(e_bands[1]), e_raster.read(e_bands[2])]
+        rgb_norm = np.dstack((norm_band(rgb[0]), norm_band(rgb[1]), norm_band(rgb[2]))).astype(np.uint8)
         axis[0][1].imshow(rgb_norm, cmap='viridis')
         axis[0][1].set_title(e_file, pad=20)
 
@@ -64,4 +74,4 @@ def plot_corresponding_scenes(input_dir, output_dir, outlier='sentinel', corresp
 
         figure.tight_layout()
         plt.savefig(output_dir + timestamp + '.png')
-        plt.show()
+        # plt.show()

@@ -23,9 +23,9 @@ def get_outliers(df, quantile):
     quantile_size = df['size'].quantile(quantile)
     return df[df['size'] < quantile_size]
 
-def copy_outliers(target_dir, corresponding_dir, output_dir, figures_dir, corr_suffix='_enmap_spectral.tif'):
+def copy_outliers(target_dir, corresponding_dir, output_dir, figures_dir, corr_suffix='_enmap_spectral.tif', quantile=0.05):
     size_df = get_size_df(target_dir, figures_dir)
-    outlier_df = get_outliers(size_df, 0.05)
+    outlier_df = get_outliers(size_df, quantile)
     for index, row in outlier_df.iterrows():
         shutil.copyfile(target_dir + row['file'], output_dir + row['file'])
         timestamp = row['file'].split('_')[0]
