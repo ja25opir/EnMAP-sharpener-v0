@@ -341,7 +341,7 @@ class MMSRes:
         edges2 = layers.BatchNormalization()(edges2)
         edges2 = layers.Activation(leakyRelu)(edges2)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
-        edges3 = layers.Conv2D(3, kernel, padding='valid', activation=leakyRelu)(padded)
+        edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
         edges3 = layers.Activation(leakyRelu)(edges3)
 
