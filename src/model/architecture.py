@@ -325,9 +325,9 @@ class MMSRes:
         # todo: alter kernel sizes / feature maps in 3d layers
         # todo: concat both branches only at the end
         # todo: (use grayscaled msi image)
-        # todo: atm best loss ~29k (30 epochs) (3,3,1 inner kernels, leakyRelu, skip connection)
-        # todo: relu instead leakyRelu for last layers does not fully prevent negative values??? (maybe cause of skip connection)
-        # todo: skip connection improves loss a lot but makes 2d conv layers look worse
+        # todo: atm best config: 9fb725fab3cdddb7b4b5d1a747863dfb6465bc69
+        # todo: with skip connection: sharper image; without: lower loss
+        # todo: relu instead leakyRelu for last layers does not fully prevent negative values??? (even without skip connection)
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
@@ -346,8 +346,8 @@ class MMSRes:
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
         edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
-        # edges3 = layers.Activation(leakyRelu)(edges3)
-        edges3 = layers.Activation('relu')(edges3)
+        edges3 = layers.Activation(leakyRelu)(edges3)
+        # edges3 = layers.Activation('relu')(edges3)
 
         # main branch
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
@@ -359,15 +359,16 @@ class MMSRes:
         conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(merged1)
         merged2 = DILayer()([conv2, edges2])
 
-        # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
-        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
+        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
+        # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
 
-        # skip connection improves loss a lot atm
+        conv4 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged3)
+
         # skip_connection = layers.Add()([input3d, merged3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(merged3)
+                                activation='linear')(conv4)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
