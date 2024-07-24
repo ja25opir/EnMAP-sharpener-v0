@@ -360,10 +360,10 @@ class MMSRes:
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
         conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
-        # skip_connection = layers.Add()([input3d, merged3])
+        skip_connection = layers.Add()([input3d, merged3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(merged3)
+                                activation='linear')(skip_connection)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
