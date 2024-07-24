@@ -315,6 +315,7 @@ class MMSRes:
         # todo: batch normalization as described in https://www.mdpi.com/2076-3417/11/1/288
         #  --> this does not help in main branch (but looks reasonable in 2d branch)
         # todo: (0) implement evaluation method besides plotting
+        # todo: (0.1) prevent negative prediction values
         # todo: (1) increase training samples
         # todo: (2) increase bands / try other input bands (15,29,47)
         # todo: (2.1) use relu for last but one layer to avoid negative values
@@ -356,10 +357,10 @@ class MMSRes:
 
         conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
         merged3 = DILayer()([conv3, edges3])
-        skip_connection = layers.Add()([input3d, merged3])
+        # skip_connection = layers.Add()([input3d, merged3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(skip_connection)
+                                activation='linear')(merged3)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
