@@ -325,7 +325,8 @@ class MMSRes:
         # todo: alter kernel sizes / feature maps in 3d layers
         # todo: concat both branches only at the end
         # todo: (use grayscaled msi image)
-        # todo: atm best config: 9fb725fab3cdddb7b4b5d1a747863dfb6465bc69
+        # ---
+        # todo: atm best config: d23dda2f2837eebaf0d6c84dcfcdac247d86665e OR 9fb725fab3cdddb7b4b5d1a747863dfb6465bc69
         # todo: with skip connection: sharper img
         # todo: negative values possible as long as last layer has a linear activation function https://stats.stackexchange.com/questions/362588/how-can-a-network-with-only-relu-nodes-output-negative-values
         # seed_gen = tf.keras.utils.set_random_seed(42)
