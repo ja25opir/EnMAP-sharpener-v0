@@ -365,8 +365,8 @@ class MMSRes:
 
         skip_connection = layers.Add()([input3d, merged3])
 
-        convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='relu')(skip_connection)
+        convOut = layers.Conv3D(1, (5, 5, 3), padding='same')(skip_connection)
+        convOut = layers.Activation(layers.ReLU)(convOut)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
