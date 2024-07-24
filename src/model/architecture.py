@@ -317,6 +317,7 @@ class MMSRes:
         # todo: (0) implement evaluation method besides plotting
         # todo: (1) increase training samples
         # todo: (2) increase bands / try other input bands (15,29,47)
+        # todo: (2.1) use relu for last but one layer to avoid negative values
         # todo: (3) add skip connections
         # todo: (4) add reflection padding for 3d layers
         # todo: add more layers
@@ -348,10 +349,12 @@ class MMSRes:
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same', activation=leakyRelu)(input3d)
         merged1 = DILayer()([conv1, edges1])
 
-        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same', activation=leakyRelu)(merged1)
+        # todo: restart (currently changing inner kernel sizes)
+        # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look better with (1,1,1) tho
+        conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(merged1)
         merged2 = DILayer()([conv2, edges2])
 
-        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same', activation=leakyRelu)(merged2)
+        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
         merged3 = DILayer()([conv3, edges3])
         skip_connection = layers.Add()([input3d, merged3])
 
