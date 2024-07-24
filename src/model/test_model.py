@@ -72,20 +72,28 @@ get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=m
 padded = get_layer_output(1)(x)
 first_2d = get_layer_output(2)(padded)
 first_2d_readable = first_2d[0, :, :, :].T
-arr = get_bands_from_array(padded[0, :, :, :].T, [0, 1, 2])
-plot_3_band_image(arr, title='First 2d pad')
+first_2d_batch = get_layer_output(3)(first_2d)
+first_2d_activation = get_layer_output(4)(first_2d_batch)
+
+arr = get_bands_from_array(first_2d_activation[0, :, :, :].T, [0, 1,
+                                                    2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
+plot_3_band_image(arr, title='First 2d conv + batch + activation')
+
+
 padded = get_layer_output(5)(first_2d)
 second_2d = get_layer_output(6)(padded)
+second_2d_batch = get_layer_output(8)(second_2d)
+second_2d_activation = get_layer_output(10)(second_2d_batch)
+arr = get_bands_from_array(second_2d_activation[0, :, :, :].T, [0, 1, 2])
+plot_3_band_image(arr, title='Second 2d conv + batch + activation')
+
 padded = get_layer_output(12)(second_2d)
 third_2d = get_layer_output(14)(padded)
+third_2d_batch = get_layer_output(16)(third_2d)
+third_2d_activation = get_layer_output(18)(third_2d_batch)
 
-arr = get_bands_from_array(first_2d[0, :, :, :].T, [0, 1,
-                                                    2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
-plot_3_band_image(arr, title='First 2d conv')
-arr = get_bands_from_array(second_2d[0, :, :, :].T, [0, 1, 2])
-plot_3_band_image(arr, title='Second 2d conv')
-arr = get_bands_from_array(third_2d[0, :, :, :].T, [0, 1, 2])
-plot_3_band_image(arr, title='Third 2d conv')
+arr = get_bands_from_array(third_2d_activation[0, :, :, :].T, [0, 1, 2])
+plot_3_band_image(arr, title='Third 2d conv + batch + activation')
 
 # input_2d_pad = get_layer_output(3)(x)
 # arr = get_bands_from_array(input_2d_pad[0, :, :, :].T, bands)
