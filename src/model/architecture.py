@@ -325,7 +325,9 @@ class MMSRes:
         # todo: alter kernel sizes / feature maps in 3d layers
         # todo: concat both branches only at the end
         # todo: (use grayscaled msi image)
-        # todo: atm best loss ~29k (30 epochs)
+        # todo: atm best loss ~29k (30 epochs) (3,3,1 inner kernels, leakyRelu, skip connection)
+        # todo: relu instead leakyRelu for last layers does not fully prevent negative values??? (maybe cause of skip connection)
+        # todo: skip connection improves loss a lot but makes 2d conv layers look worse
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
@@ -360,10 +362,12 @@ class MMSRes:
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
         conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
-        skip_connection = layers.Add()([input3d, merged3])
+
+        # skip connection improves loss a lot atm
+        # skip_connection = layers.Add()([input3d, merged3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(skip_connection)
+                                activation='linear')(merged3)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
