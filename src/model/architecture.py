@@ -363,13 +363,16 @@ class MMSRes:
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
 
-        conv4 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged3)
+        conv4 = layers.Conv3D(1, (3, 3, 1), padding='same', activation='relu')(merged3)
 
         # skip_connection = layers.Add()([input3d, merged3])
 
-        convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(conv4)
-        y = tf.squeeze(convOut, axis=-1)
+        squeeze = tf.squeeze(conv4, axis=-1)
+        y = layers.Conv2D(1, (5, 5), padding='same', activation='linear')(squeeze)
+
+        # convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
+        #                         activation='linear')(conv4)
+        # y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
 
