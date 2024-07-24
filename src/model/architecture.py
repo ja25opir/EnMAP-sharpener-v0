@@ -325,6 +325,7 @@ class MMSRes:
         # todo: alter kernel sizes / feature maps in 3d layers
         # todo: concat both branches only at the end
         # todo: (use grayscaled msi image)
+        # todo: atm best loss ~29k (30 epochs)
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
@@ -343,7 +344,8 @@ class MMSRes:
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
         edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
-        edges3 = layers.Activation(leakyRelu)(edges3)
+        # edges3 = layers.Activation(leakyRelu)(edges3)
+        edges3 = layers.Activation('relu')(edges3)
 
         # main branch
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
@@ -351,11 +353,12 @@ class MMSRes:
         merged1 = DILayer()([conv1, edges1])
 
         # todo: restart (currently changing inner kernel sizes)
-        # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look better with (1,1,1) tho
+        # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look more reasonable with (1,1,1) tho
         conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(merged1)
         merged2 = DILayer()([conv2, edges2])
 
-        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
+        # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
+        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
         # skip_connection = layers.Add()([input3d, merged3])
 
