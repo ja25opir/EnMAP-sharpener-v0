@@ -76,9 +76,8 @@ first_2d_batch = get_layer_output(3)(first_2d)
 first_2d_activation = get_layer_output(4)(first_2d_batch)
 
 arr = get_bands_from_array(first_2d_activation[0, :, :, :].T, [0, 1,
-                                                    2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
+                                                               2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
 plot_3_band_image(arr, title='First 2d conv + batch + activation')
-
 
 padded = get_layer_output(5)(first_2d)
 second_2d = get_layer_output(6)(padded)

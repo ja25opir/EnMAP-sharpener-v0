@@ -326,8 +326,8 @@ class MMSRes:
         # todo: concat both branches only at the end
         # todo: (use grayscaled msi image)
         # todo: atm best config: 9fb725fab3cdddb7b4b5d1a747863dfb6465bc69
-        # todo: with skip connection: sharper image; without: lower loss
-        # todo: relu instead leakyRelu for last layers does not fully prevent negative values??? (even without skip connection)
+        # todo: with skip connection: sharper img
+        # todo: negative values possible as long as last layer has a linear activation function https://stats.stackexchange.com/questions/362588/how-can-a-network-with-only-relu-nodes-output-negative-values
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
@@ -336,15 +336,15 @@ class MMSRes:
         kernel = (3, 3)
         leakyRelu = layers.LeakyReLU()
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)
-        edges1 = layers.Conv2D(2, kernel, padding='valid')(padded)
+        edges1 = layers.Conv2D(3, kernel, padding='valid')(padded)
         edges1 = layers.BatchNormalization()(edges1)
         edges1 = layers.Activation(leakyRelu)(edges1)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges1)
-        edges2 = layers.Conv2D(2, kernel, padding='valid')(padded)
+        edges2 = layers.Conv2D(3, kernel, padding='valid')(padded)
         edges2 = layers.BatchNormalization()(edges2)
         edges2 = layers.Activation(leakyRelu)(edges2)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
-        edges3 = layers.Conv2D(2, kernel, padding='valid')(padded)
+        edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
         edges3 = layers.Activation(leakyRelu)(edges3)
         # edges3 = layers.Activation('relu')(edges3)
