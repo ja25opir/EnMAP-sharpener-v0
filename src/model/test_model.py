@@ -39,13 +39,14 @@ print(model.summary())
 x_raster = x_raster[(224, 225, 226, 227), :, :]
 # x_raster = x_raster[(50, 100, 150), :, :] # 3 bands only
 # x1_raster = x1_raster[(15, 29, 47), :, :]  # 3 bands only
-x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 3 bands only
+# x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
+x1_raster = x1_raster[20:40, :, :]  # 20 bands only
 # x1_raster = x1_raster[80:100, :, :]  # 20 bands
 # model_input = x_raster.T.reshape(1, 32, 32, 6)
 # predicted_raster = model.predict(model_input).reshape(32, 32, 3).T
 x = x_raster.T.reshape(1, 32, 32, 4)
-x1 = x1_raster.T.reshape(1, 32, 32, 4, 1)
-predicted_raster = model.predict([x, x1]).reshape(32, 32, 4).T
+x1 = x1_raster.T.reshape(1, 32, 32, 20, 1)
+predicted_raster = model.predict({'x': x, 'x1': x1}).reshape(32, 32, 20).T
 # predicted_raster = model.predict(x1).reshape(32, 32, 3).T
 # predicted_raster = model.predict(x).reshape(32, 32, 3).T
 # predicted_raster = model.predict(x1).reshape(32, 32, 224).T
@@ -69,7 +70,7 @@ for i in range(len(model.layers)):
     print(model.layers[i].name, i)
 
 get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=model.layers[j].output))
-padded = get_layer_output(1)(x)
+padded = get_layer_output(1)(x) # TODO: is this the wrong input lol?
 first_2d = get_layer_output(2)(padded)
 first_2d_readable = first_2d[0, :, :, :].T
 first_2d_batch = get_layer_output(3)(first_2d)
