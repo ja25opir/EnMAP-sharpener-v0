@@ -8,50 +8,39 @@ from src.model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFT
 from src.visualization.helpers import get_bands_from_array
 from src.visualization.plot_raster import plot_3_band_image
 
-x_data_path = os.getcwd() + '/../../data/preprocessing/model_input/x/'
-x1_data_path = os.getcwd() + '/../../data/preprocessing/model_input/x1/'
-y_data_path = os.getcwd() + '/../../data/preprocessing/model_input/y/'
-model_path = os.getcwd() + '/../../output/models/'
-
-x_data = os.listdir(x_data_path)
-y_data = os.listdir(y_data_path)
-
-# get random file from data
-# random_file = random.choice(y_data)
-random_file = '20220627T104548Z_0_0.npy'
-
-x_raster = np.load(x_data_path + random_file)
-x1_raster = np.load(x1_data_path + random_file)
-y_raster = np.load(y_data_path + random_file)
-
-# model = tf.keras.models.load_model(model_path + 'first_model.keras')
-# all hidden layers in a deep model only filter cloud + cloud edges
-# --> not true: todo: inspect all bands of the hidden layers
-custom_objects = {'ReflectionPadding2D': ReflectionPadding2D,
+CUSTOM_LAYERS = {'ReflectionPadding2D': ReflectionPadding2D,
                   'ReflectionPadding3D': ReflectionPadding3D,
                   'SFTLayer': SFTLayer,
                   'DILayer': DILayer}
-model = tf.keras.models.load_model(model_path + 'MMSRes.keras', custom_objects=custom_objects)
-# model = tf.keras.models.load_model(model_path + 'TestSaPNN_3_3.keras', custom_objects=custom_objects)
+
+X_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x/'
+X1_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x1/'
+Y_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/y/'
+MODEL_PATH = os.getcwd() + '/../../output/models/'
+
+x_data = os.listdir(X_DATA_PATH)
+y_data = os.listdir(Y_DATA_PATH)
+
+# get random file from data
+# test_file = random.choice(y_data)
+test_file = '20220627T104548Z_0_0.npy'
+
+x_raster = np.load(X_DATA_PATH + test_file)
+x1_raster = np.load(X1_DATA_PATH + test_file)
+y_raster = np.load(Y_DATA_PATH + test_file)
+
+model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes.keras', custom_objects=CUSTOM_LAYERS)
 
 print(model.summary())
 
+NO_OUTPUT_BANDS = 80
 x_raster = x_raster[(224, 225, 226, 227), :, :]
-# x_raster = x_raster[(50, 100, 150), :, :] # 3 bands only
-# x1_raster = x1_raster[(15, 29, 47), :, :]  # 3 bands only
 # x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
 x1_raster = x1_raster[20:40, :, :]  # 20 bands only
-# x1_raster = x1_raster[80:100, :, :]  # 20 bands
-# model_input = x_raster.T.reshape(1, 32, 32, 6)
-# predicted_raster = model.predict(model_input).reshape(32, 32, 3).T
 x = x_raster.T.reshape(1, 32, 32, 4)
-x1 = x1_raster.T.reshape(1, 32, 32, 20, 1)
-predicted_raster = model.predict({'x': x, 'x1': x1}).reshape(32, 32, 20).T
-# predicted_raster = model.predict(x1).reshape(32, 32, 3).T
-# predicted_raster = model.predict(x).reshape(32, 32, 3).T
-# predicted_raster = model.predict(x1).reshape(32, 32, 224).T
+x1 = x1_raster.T.reshape(1, 32, 32, NO_OUTPUT_BANDS, 1)
+predicted_raster = model.predict({'x': x, 'x1': x1}).reshape(32, 32, NO_OUTPUT_BANDS).T
 
-# bands = [50, 100, 150]
 bands = [0, 1, 2]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
