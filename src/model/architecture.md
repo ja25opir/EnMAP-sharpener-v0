@@ -25,4 +25,13 @@ SSIM: 0.87 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
 SAM: 1.55 (predicted) vs. 1.43 (input) | 0 is perfect similarity
 --> worse
 
-### 
+### detail branch kernels (9,9) (6,6) (3,3):
+loss: 13555, acc: 0.59
+MSE: 12.83 (predicted) vs. 15.31 (input) | 0 is perfect similarity
+PSNR: 37.05 (predicted) vs. 36.28 (input) | 100 is perfect similarity
+SSIM: 0.87 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
+SAM: 1.70 (predicted) vs. 1.43 (input) | 0 is perfect similarity
+--> worse
+
+### skip connections before feature injection, normal detail branch:
+loss:
