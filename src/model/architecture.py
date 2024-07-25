@@ -316,6 +316,7 @@ class MMSRes:
         #  --> this does not help in main branch (but looks reasonable in 2d branch)
         # todo: (0) implement evaluation method besides plotting
         # todo: (0.1) prevent negative prediction values
+        # todo: (0.2) test different loss functions (see 5.1 https://www.mdpi.com/2072-4292/12/10/1660)
         # todo: (1) increase training samples
         # todo: (2) increase bands / try other input bands (15,29,47)
         # todo: (2.1) use relu for last but one layer to avoid negative values
@@ -337,12 +338,12 @@ class MMSRes:
         kernel = (3, 3)
         leakyRelu = layers.LeakyReLU()
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)
-        edges1 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        edges1 = layers.Conv2D(9, kernel, padding='valid')(padded)
         edges1 = layers.BatchNormalization()(edges1)
         # edges1 = layers.Activation(leakyRelu)(edges1)
         edges1 = layers.Activation('relu')(edges1)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges1)
-        edges2 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        edges2 = layers.Conv2D(6, kernel, padding='valid')(padded)
         edges2 = layers.BatchNormalization()(edges2)
         # edges2 = layers.Activation(leakyRelu)(edges2)
         edges2 = layers.Activation('relu')(edges2)
