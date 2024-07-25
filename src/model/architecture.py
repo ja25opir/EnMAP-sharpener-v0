@@ -314,6 +314,7 @@ class MMSRes:
         # todo: restart from here
         # todo: batch normalization as described in https://www.mdpi.com/2076-3417/11/1/288
         #  --> this does not help in main branch (but looks reasonable in 2d branch)
+        # todo: test SaPNN (or others) with current data
         # todo: (0) implement evaluation method besides plotting
         # todo: (0.1) prevent negative prediction values
         # todo: (0.2) test different loss functions (see 5.1 https://www.mdpi.com/2072-4292/12/10/1660)
@@ -335,18 +336,20 @@ class MMSRes:
 
         # edge detection
         input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
-        kernel = (3, 3)
+        kernel = (9, 9)
         leakyRelu = layers.LeakyReLU()
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)
         edges1 = layers.Conv2D(9, kernel, padding='valid')(padded)
         edges1 = layers.BatchNormalization()(edges1)
         # edges1 = layers.Activation(leakyRelu)(edges1)
         edges1 = layers.Activation('relu')(edges1)
+        kernel = (3, 3)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges1)
         edges2 = layers.Conv2D(6, kernel, padding='valid')(padded)
         edges2 = layers.BatchNormalization()(edges2)
         # edges2 = layers.Activation(leakyRelu)(edges2)
         edges2 = layers.Activation('relu')(edges2)
+        kernel = (5, 5)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
         edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)

@@ -141,19 +141,19 @@ mse_predicted = get_mse(predicted_raster * 255, y_raster * 255) # todo: which fa
 mse_input = get_mse(x1_raster * 255, y_raster * 255)
 print(f'MSE: {mse_predicted:.2f} (predicted) vs. {mse_input:.2f} (input) | 0 is perfect similarity')
 
-psnr_predicted = get_psnr(predicted_raster, y_raster)
-psnr_input = get_psnr(x1_raster, y_raster)
-print(f'PSNR: {psnr_predicted:.2f} (predicted) vs. {psnr_input:.2f} (input) | 100 is perfect similarity')
+# psnr_predicted = get_psnr(predicted_raster, y_raster)
+# psnr_input = get_psnr(x1_raster, y_raster)
+# print(f'PSNR: {psnr_predicted:.2f} (predicted) vs. {psnr_input:.2f} (input) | 100 is perfect similarity')
 psnr_predicted = psnr(predicted_raster, y_raster, max_p=1)
 psnr_input = psnr(x1_raster, y_raster, max_p=1)
 print(f'PSNR: {psnr_predicted:.2f} (predicted) vs. {psnr_input:.2f} (input) | 100 is perfect similarity')
 
 # todo: SSIM data range [0, 1] or prediction.max() - prediction.min()?
-ssim_predicted = structural_similarity(predicted_raster, y_raster, multichannel=True,
-                                       data_range=1)
-ssim_input = structural_similarity(x1_raster, y_raster, multichannel=True,
-                                   data_range=1)
-print(f'SSIM: {ssim_predicted:.2f} (predicted) vs. {ssim_input:.2f} (input) | 1.0 is perfect similarity')
+# ssim_predicted = structural_similarity(predicted_raster, y_raster, multichannel=True,
+#                                        data_range=1)
+# ssim_input = structural_similarity(x1_raster, y_raster, multichannel=True,
+#                                    data_range=1)
+# print(f'SSIM: {ssim_predicted:.2f} (predicted) vs. {ssim_input:.2f} (input) | 1.0 is perfect similarity')
 ssim_predicted = ssim(predicted_raster, y_raster, max_p=1)
 ssim_input = ssim(x1_raster, y_raster, max_p=1)
 print(f'SSIM: {ssim_predicted:.2f} (predicted) vs. {ssim_input:.2f} (input) | 1.0 is perfect similarity')
