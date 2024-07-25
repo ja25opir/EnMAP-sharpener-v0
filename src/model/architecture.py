@@ -357,12 +357,16 @@ class MMSRes:
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same', activation=leakyRelu)(input3d)
         merged1 = DILayer()([conv1, edges1])
 
+        skip_connection = layers.Add()([input3d, merged1])
+
         # todo: restart (currently changing inner kernel sizes)
         # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look more reasonable with (1,1,1) tho
-        conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(merged1)
+        conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(skip_connection)
         merged2 = DILayer()([conv2, edges2])
 
-        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
+        skip_connection = layers.Add()([input3d, merged2])
+
+        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(skip_connection)
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
 
