@@ -90,7 +90,7 @@ class Model:
             staircase=True)
 
     @staticmethod
-    @tf.keras.saving.register_keras_serializable()
+    @tf.keras.utils.register_keras_serializable()
     def ms_ssim_l1_loss(y_true, y_pred):
         # loss layer that calculates alpha*(1-MSSSIM)+(1-alpha)*L1 loss
         # https://github.com/NVlabs/PL4NN/blob/master/src/loss.py
