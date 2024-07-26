@@ -79,11 +79,18 @@ SAM: 4.02 (predicted) vs. 4.33 (input) | 0 is perfect similarity
 
 ### WITHOUT usage of the detail branch:
 
-loss:
+loss: 21.36, acc: 0.68
+MSE: 34.01 (predicted) vs. 40.49 (input) | 0 is perfect similarity
+PSNR: 32.81 (predicted) vs. 32.06 (input) | 100 is perfect similarity
+SSIM: 0.82 (predicted) vs. 0.76 (input) | 1.0 is perfect similarity
+SAM: 3.98 (predicted) vs. 4.33 (input) | 0 is perfect similarity
+--> slightly better than with detail branch
 
 ### detail branch with ADD instead of STACK:
 
 loss:
+
+
 
 ## training with 20 bands (20:40)
 

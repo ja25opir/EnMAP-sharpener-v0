@@ -294,14 +294,22 @@ class DILayer(layers.Layer):
         """Add() edges to each input feature map"""
         for band_no in range(self.x_shape[-2]):
             x_band = x[:, :, :, band_no, :]
-            for feature_map in range(x_band.shape[-1]):
-                # x_band = layers.Multiply()([x_band, edges])
-                x_band = layers.Add()([x_band, edges])
-            x_band = tf.expand_dims(x_band, axis=-2)
+            x_band_merged = None
+
+            for feature_map in range(self.x_shape[-1]):
+                x_map = x_band[:, :, :, feature_map]
+                x_map = layers.Add()([x_map, edges[:, :, :, 0]])
+                x_map = layers.Add()([x_map, edges[:, :, :, 1]])
+                x_map = layers.Add()([x_map, edges[:, :, :, 2]])
+                x_map = tf.expand_dims(x_map, axis=-1)
+
+                x_band_merged = tf.concat([x_band_merged, x_map], axis=-1) if x_band_merged is not None else x_map
+
+            x_band_merged = tf.expand_dims(x_band_merged, axis=-2)
             if merged is None:
-                merged = x_band
+                merged = x_band_merged
             else:
-                merged = tf.concat([merged, x_band], axis=-2)
+                merged = tf.concat([merged, x_band_merged], axis=-2)
 
         # """stack edges feature map(s) to input feature maps"""
         # for band_no in range(self.x_shape[-2]):

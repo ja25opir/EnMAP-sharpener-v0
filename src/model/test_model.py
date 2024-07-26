@@ -143,7 +143,7 @@ for i in range(len(sr_model.layers)):
     print(sr_model.layers[i].name, i)
 print('----------')
 
-plot_detail_branch(sr_model)
+# plot_detail_branch(sr_model)
 
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
@@ -158,3 +158,4 @@ x1_raster = (x1_raster / MAX_REFLECTANCE).T
 y_raster = (y_raster / MAX_REFLECTANCE).T
 
 evaluate_prediction(predicted_raster, x1_raster, y_raster)
+# TODO implement NIQE
