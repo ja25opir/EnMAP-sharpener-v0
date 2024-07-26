@@ -90,10 +90,29 @@ def evaluate_prediction(prediction, input_x, ground_truth):
     print(f'SAM: {sam_predicted:.2f} (predicted) vs. {sam_input:.2f} (input) | 0 is perfect similarity')
 
 
+def ms_ssim_l1_loss(y_true, y_pred):
+    # loss layer that calculates alpha*(1-MSSSIM)+(1-alpha)*L1 loss
+    # https://github.com/NVlabs/PL4NN/blob/master/src/loss.py
+    # paper: https://arxiv.org/pdf/1511.08861
+    # max_picture_value = 10000
+    # alpha = 0.84
+    #
+    # mae_loss = tf.reduce_mean(tf.abs(y_true - y_pred))
+    # msssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_picture_value))
+    #
+    # loss = (alpha * msssim_loss + (1 - alpha) * mae_loss)
+    #
+    # return tf.reduce_mean(loss)
+
+    # l1 only
+    return tf.reduce_mean(tf.abs(y_true - y_pred))
+
+
 CUSTOM_LAYERS = {'ReflectionPadding2D': ReflectionPadding2D,
                  'ReflectionPadding3D': ReflectionPadding3D,
                  'SFTLayer': SFTLayer,
-                 'DILayer': DILayer}
+                 'DILayer': DILayer,
+                 'ms_ssim_l1_loss': ms_ssim_l1_loss}
 
 X_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x/'
 X1_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x1/'

@@ -95,18 +95,18 @@ class Model:
         # loss layer that calculates alpha*(1-MSSSIM)+(1-alpha)*L1 loss
         # https://github.com/NVlabs/PL4NN/blob/master/src/loss.py
         # paper: https://arxiv.org/pdf/1511.08861
-        # max_picture_value = 10000
-        # alpha = 0.84
-        #
-        # mae_loss = tf.reduce_mean(tf.abs(y_true - y_pred))
-        # msssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_picture_value))
-        #
-        # loss = (alpha * msssim_loss + (1 - alpha) * mae_loss)
-        #
-        # return tf.reduce_mean(loss)
+        max_picture_value = 10000
+        alpha = 0.84
+
+        mae_loss = tf.reduce_mean(tf.abs(y_true - y_pred))
+        msssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_picture_value))
+
+        loss = (alpha * msssim_loss + (1 - alpha) * mae_loss)
+
+        return tf.reduce_mean(loss)
 
         # l1 only
-        return tf.reduce_mean(tf.abs(y_true - y_pred))
+        # return tf.reduce_mean(tf.abs(y_true - y_pred))
 
     def train_model(self):
         train_args = {'data_dir': self.train_data_dir,
