@@ -352,7 +352,7 @@ class MMSRes:
         # seed_gen = tf.keras.utils.set_random_seed(42)
         # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
-        # edge detection
+        """detail detection"""
         input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
         kernel = (3, 3)
         leakyRelu = layers.LeakyReLU()
@@ -372,7 +372,7 @@ class MMSRes:
         # edges3 = layers.Activation(leakyRelu)(edges3)
         edges3 = layers.Activation('relu')(edges3)
 
-        # main branch
+        """main branch"""
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same', activation=leakyRelu)(input3d)
         merged1 = DILayer()([conv1, edges1])

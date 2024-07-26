@@ -84,15 +84,20 @@ class DuoBranchDataGenerator(DataGenerator):
 
             # todo: testing with c bands
             x_img = x_img[(224, 225, 226, 227), :, :]
+            x1_img = x_img[:224, :, :]
             # x1_img = x1_img[(15, 29, 47, 71), :, :]
             # y_img = y_img[(15, 29, 47, 71), :, :]
-            x1_img = x1_img[20:40, :, :]
-            y_img = y_img[20:40, :, :]
+            # x1_img = x1_img[:, :, :]
+            y_img = y_img[:, :, :]
+            # sort and stack sentinel bands into enmap image (use only one input file)
+            # x1_img = np.insert(x1_img, 15, x_img[0,:,:], axis=0)
+            # x1_img = np.insert(x1_img, 29, x_img[0,:,:], axis=0)
+            # x1_img = np.insert(x1_img, 47, x_img[0,:,:], axis=0)
+            # x1_img = np.insert(x1_img, 72, x_img[0,:,:], axis=0)
+
             # indices = np.hstack([np.arange(80, 100), np.arange(224, 228)])
             # indices = np.hstack([np.arange(224, 228)])
             # x_img = np.take(x_img, indices, axis=0)
-            # x1_img = x1_img[80:100, :, :]
-            # y_img = y_img[80:100, :, :]
 
             # transpose img as model expects (w, h, no_bands) and img has shape (no_bands, h, w)
             # X[i, :, :, :, 0] = x_img.T
