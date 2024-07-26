@@ -3,7 +3,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
-from image_similarity_measures.quality_metrics import ssim
 
 from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes
 from .load_data import DataGenerator, DuoBranchDataGenerator
