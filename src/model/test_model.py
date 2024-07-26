@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from skimage.metrics import structural_similarity
 from image_similarity_measures.quality_metrics import psnr, ssim, sam
 
-from src.model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFTLayer, DILayer
+from src.model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFTLayer, DILayer, ms_ssim_l1_loss
 from src.visualization.helpers import get_bands_from_array
 from src.visualization.plot_raster import plot_3_band_image
 
@@ -88,24 +88,6 @@ def evaluate_prediction(prediction, input_x, ground_truth):
     sam_predicted = sam(prediction, ground_truth)
     sam_input = sam(input_x, ground_truth)
     print(f'SAM: {sam_predicted:.2f} (predicted) vs. {sam_input:.2f} (input) | 0 is perfect similarity')
-
-
-def ms_ssim_l1_loss(y_true, y_pred):
-    # loss layer that calculates alpha*(1-MSSSIM)+(1-alpha)*L1 loss
-    # https://github.com/NVlabs/PL4NN/blob/master/src/loss.py
-    # paper: https://arxiv.org/pdf/1511.08861
-    # max_picture_value = 10000
-    # alpha = 0.84
-    #
-    # mae_loss = tf.reduce_mean(tf.abs(y_true - y_pred))
-    # msssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_picture_value))
-    #
-    # loss = (alpha * msssim_loss + (1 - alpha) * mae_loss)
-    #
-    # return tf.reduce_mean(loss)
-
-    # l1 only
-    return tf.reduce_mean(tf.abs(y_true - y_pred))
 
 
 CUSTOM_LAYERS = {'ReflectionPadding2D': ReflectionPadding2D,

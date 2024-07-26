@@ -53,3 +53,14 @@ best atm:
 - 3, 3, 3 feature maps in detail branch
 - (3, 3) kernels in detail branch
 - 1 skip connection (at the end)
+
+## loss function:
+### MS SSIM L1 loss:
+https://arxiv.org/pdf/1511.08861
+loss: 8.45, acc: 0.64
+MSE: 12.41 (predicted) vs. 15.31 (input) | 0 is perfect similarity
+PSNR: 37.19 (predicted) vs. 36.28 (input) | 100 is perfect similarity
+SSIM: 0.87 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
+SAM: 1.30 (predicted) vs. 1.43 (input) | 0 is perfect similarity
+--> better SAM than with MSE loss
+

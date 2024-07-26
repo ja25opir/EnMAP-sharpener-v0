@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes
+from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss
 from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
@@ -89,25 +89,6 @@ class Model:
             decay_rate=learning_rate_decay_factor,
             staircase=True)
 
-    @staticmethod
-    @tf.keras.utils.register_keras_serializable()
-    def ms_ssim_l1_loss(y_true, y_pred):
-        # loss layer that calculates alpha*(1-MSSSIM)+(1-alpha)*L1 loss
-        # https://github.com/NVlabs/PL4NN/blob/master/src/loss.py
-        # paper: https://arxiv.org/pdf/1511.08861
-        max_picture_value = 10000
-        alpha = 0.84
-
-        mae_loss = tf.reduce_mean(tf.abs(y_true - y_pred))
-        msssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_picture_value))
-
-        loss = (alpha * msssim_loss + (1 - alpha) * mae_loss)
-
-        return tf.reduce_mean(loss)
-
-        # l1 only
-        # return tf.reduce_mean(tf.abs(y_true - y_pred))
-
     def train_model(self):
         train_args = {'data_dir': self.train_data_dir,
                       'data_list': self.train_files,
@@ -133,7 +114,7 @@ class Model:
 
         self.learning_rate = self.set_lr_schedule()
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
-        loss = self.ms_ssim_l1_loss  # self.loss_function
+        loss = ms_ssim_l1_loss  # self.loss_function
         self.model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
         self.model.summary()
 
