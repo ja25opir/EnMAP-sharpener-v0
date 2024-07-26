@@ -24,17 +24,17 @@ def plot_detail_branch(model):
                                                                    2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
     plot_3_band_image(arr, title='First 2d conv + batch + activation')
 
-    padded = get_layer_output(5)(first_2d)
-    second_2d = get_layer_output(6)(padded)
-    second_2d_batch = get_layer_output(8)(second_2d)
-    second_2d_activation = get_layer_output(10)(second_2d_batch)
+    padded = get_layer_output(6)(first_2d)
+    second_2d = get_layer_output(8)(padded)
+    second_2d_batch = get_layer_output(10)(second_2d)
+    second_2d_activation = get_layer_output(12)(second_2d_batch)
     arr = get_bands_from_array(second_2d_activation[0, :, :, :].T, [0, 1, 2])
     plot_3_band_image(arr, title='Second 2d conv + batch + activation')
 
-    padded = get_layer_output(12)(second_2d)
-    third_2d = get_layer_output(14)(padded)
-    third_2d_batch = get_layer_output(16)(third_2d)
-    third_2d_activation = get_layer_output(18)(third_2d_batch)
+    padded = get_layer_output(14)(second_2d)
+    third_2d = get_layer_output(16)(padded)
+    third_2d_batch = get_layer_output(18)(third_2d)
+    third_2d_activation = get_layer_output(20)(third_2d_batch)
 
     arr = get_bands_from_array(third_2d_activation[0, :, :, :].T, [0, 1, 2])
     plot_3_band_image(arr, title='Third 2d conv + batch + activation')
@@ -68,6 +68,26 @@ def get_psnr(prediction, ground_truth, max_p=1):
 
 def get_mse(prediction, ground_truth):
     return np.mean((ground_truth - prediction) ** 2)
+
+
+def evaluate_prediction(prediction, input_x, ground_truth):
+    mse_predicted = get_mse(prediction * 255, ground_truth * 255)  # todo: which factor?
+    mse_input = get_mse(input_x * 255, ground_truth * 255)
+    print(f'MSE: {mse_predicted:.2f} (predicted) vs. {mse_input:.2f} (input) | 0 is perfect similarity')
+
+    psnr_predicted = psnr(prediction, ground_truth, max_p=1)
+    psnr_input = psnr(input_x, ground_truth, max_p=1)
+    print(f'PSNR: {psnr_predicted:.2f} (predicted) vs. {psnr_input:.2f} (input) | 100 is perfect similarity')
+
+    # todo: SSIM data range [0, 1] or prediction.max() - prediction.min()?
+    ssim_predicted = ssim(prediction, ground_truth, max_p=1)
+    ssim_input = ssim(input_x, ground_truth, max_p=1)
+    print(f'SSIM: {ssim_predicted:.2f} (predicted) vs. {ssim_input:.2f} (input) | 1.0 is perfect similarity')
+
+    # SAM: https://ntrs.nasa.gov/citations/19940012238
+    sam_predicted = sam(prediction, ground_truth)
+    sam_input = sam(input_x, ground_truth)
+    print(f'SAM: {sam_predicted:.2f} (predicted) vs. {sam_input:.2f} (input) | 0 is perfect similarity')
 
 
 CUSTOM_LAYERS = {'ReflectionPadding2D': ReflectionPadding2D,
@@ -122,13 +142,13 @@ for i in range(len(sr_model.layers)):
     print(sr_model.layers[i].name, i)
 print('----------')
 
-# plot_detail_branch(sr_model)
+plot_detail_branch(sr_model)
 
-# plot_band_values(predicted_raster, x1_raster, y_raster[20:40], observed_pixel=(5, 5))
-# plot_band_values(predicted_raster, x1_raster, y_raster[20:40], observed_pixel=(10, 10))
-# plot_band_values(predicted_raster, x1_raster, y_raster[20:40], observed_pixel=(15, 15))
-# plot_band_values(predicted_raster, x1_raster, y_raster[20:40], observed_pixel=(20, 20))
-# plot_band_values(predicted_raster, x1_raster, y_raster[20:40], observed_pixel=(25, 25))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(15, 15))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
 
 # shift data range to [0, 1] and move channels to last dimension
 MAX_REFLECTANCE = 10000
@@ -136,29 +156,4 @@ predicted_raster = (predicted_raster / MAX_REFLECTANCE).T
 x1_raster = (x1_raster / MAX_REFLECTANCE).T
 y_raster = (y_raster / MAX_REFLECTANCE).T
 
-# todo: evaluation metrics: MSE, PSNR, SSIM, SAM
-mse_predicted = get_mse(predicted_raster * 255, y_raster * 255) # todo: which factor?
-mse_input = get_mse(x1_raster * 255, y_raster * 255)
-print(f'MSE: {mse_predicted:.2f} (predicted) vs. {mse_input:.2f} (input) | 0 is perfect similarity')
-
-# psnr_predicted = get_psnr(predicted_raster, y_raster)
-# psnr_input = get_psnr(x1_raster, y_raster)
-# print(f'PSNR: {psnr_predicted:.2f} (predicted) vs. {psnr_input:.2f} (input) | 100 is perfect similarity')
-psnr_predicted = psnr(predicted_raster, y_raster, max_p=1)
-psnr_input = psnr(x1_raster, y_raster, max_p=1)
-print(f'PSNR: {psnr_predicted:.2f} (predicted) vs. {psnr_input:.2f} (input) | 100 is perfect similarity')
-
-# todo: SSIM data range [0, 1] or prediction.max() - prediction.min()?
-# ssim_predicted = structural_similarity(predicted_raster, y_raster, multichannel=True,
-#                                        data_range=1)
-# ssim_input = structural_similarity(x1_raster, y_raster, multichannel=True,
-#                                    data_range=1)
-# print(f'SSIM: {ssim_predicted:.2f} (predicted) vs. {ssim_input:.2f} (input) | 1.0 is perfect similarity')
-ssim_predicted = ssim(predicted_raster, y_raster, max_p=1)
-ssim_input = ssim(x1_raster, y_raster, max_p=1)
-print(f'SSIM: {ssim_predicted:.2f} (predicted) vs. {ssim_input:.2f} (input) | 1.0 is perfect similarity')
-
-# SAM: https://ntrs.nasa.gov/citations/19940012238
-sam_predicted = sam(predicted_raster, y_raster)
-sam_input = sam(x1_raster, y_raster)
-print(f'SAM: {sam_predicted:.2f} (predicted) vs. {sam_input:.2f} (input) | 0 is perfect similarity')
+evaluate_prediction(predicted_raster, x1_raster, y_raster)
