@@ -375,8 +375,8 @@ class MMSRes:
         # main branch
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same', activation=leakyRelu)(input3d)
+        edges1 = tf.concat([edges1, edges1], axis=-1)
         merged1 = DILayer()([conv1, edges1])
-        merged1 = DILayer()([edges1, merged1])
 
         skip_connection = layers.Add()([input3d, merged1])
 
