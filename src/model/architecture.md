@@ -86,7 +86,7 @@ SSIM: 0.82 (predicted) vs. 0.76 (input) | 1.0 is perfect similarity
 SAM: 3.98 (predicted) vs. 4.33 (input) | 0 is perfect similarity
 --> slightly better than with detail branch
 
-### detail branch with ADD instead of STACK:
+### detail branch with 32,16,8 neurons:
 
 loss:
 

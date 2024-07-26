@@ -292,34 +292,35 @@ class DILayer(layers.Layer):
         merged = None
 
         """Add() edges to each input feature map"""
-        for band_no in range(self.x_shape[-2]):
-            x_band = x[:, :, :, band_no, :]
-            x_band_merged = None
-
-            for feature_map in range(self.x_shape[-1]):
-                x_map = x_band[:, :, :, feature_map]
-                x_map = layers.Add()([x_map, edges[:, :, :, 0]])
-                x_map = layers.Add()([x_map, edges[:, :, :, 1]])
-                x_map = layers.Add()([x_map, edges[:, :, :, 2]])
-                x_map = tf.expand_dims(x_map, axis=-1)
-
-                x_band_merged = tf.concat([x_band_merged, x_map], axis=-1) if x_band_merged is not None else x_map
-
-            x_band_merged = tf.expand_dims(x_band_merged, axis=-2)
-            if merged is None:
-                merged = x_band_merged
-            else:
-                merged = tf.concat([merged, x_band_merged], axis=-2)
-
-        # """stack edges feature map(s) to input feature maps"""
+        # learning doesnt start
         # for band_no in range(self.x_shape[-2]):
         #     x_band = x[:, :, :, band_no, :]
-        #     x_stacked = tf.concat([x_band, edges], axis=-1)
-        #     x_stacked = tf.expand_dims(x_stacked, axis=-2)
+        #     x_band_merged = None
+        #
+        #     for feature_map in range(self.x_shape[-1]):
+        #         x_map = x_band[:, :, :, feature_map]
+        #         x_map = layers.Add()([x_map, edges[:, :, :, 0]])
+        #         x_map = layers.Add()([x_map, edges[:, :, :, 1]])
+        #         x_map = layers.Add()([x_map, edges[:, :, :, 2]])
+        #         x_map = tf.expand_dims(x_map, axis=-1)
+        #
+        #         x_band_merged = tf.concat([x_band_merged, x_map], axis=-1) if x_band_merged is not None else x_map
+        #
+        #     x_band_merged = tf.expand_dims(x_band_merged, axis=-2)
         #     if merged is None:
-        #         merged = x_stacked
+        #         merged = x_band_merged
         #     else:
-        #         merged = tf.concat([merged, x_stacked], axis=-2)
+        #         merged = tf.concat([merged, x_band_merged], axis=-2)
+
+        """stack edges feature map(s) to input feature maps"""
+        for band_no in range(self.x_shape[-2]):
+            x_band = x[:, :, :, band_no, :]
+            x_stacked = tf.concat([x_band, edges], axis=-1)
+            x_stacked = tf.expand_dims(x_stacked, axis=-2)
+            if merged is None:
+                merged = x_stacked
+            else:
+                merged = tf.concat([merged, x_stacked], axis=-2)
 
         return merged
 
@@ -364,17 +365,17 @@ class MMSRes:
         kernel = (3, 3)
         leakyRelu = layers.LeakyReLU()
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)
-        edges1 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        edges1 = layers.Conv2D(32, kernel, padding='valid')(padded)
         edges1 = layers.BatchNormalization()(edges1)
         # edges1 = layers.Activation(leakyRelu)(edges1)
         edges1 = layers.Activation('relu')(edges1)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges1)
-        edges2 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        edges2 = layers.Conv2D(16, kernel, padding='valid')(padded)
         edges2 = layers.BatchNormalization()(edges2)
         # edges2 = layers.Activation(leakyRelu)(edges2)
         edges2 = layers.Activation('relu')(edges2)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
-        edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        edges3 = layers.Conv2D(8, kernel, padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
         # edges3 = layers.Activation(leakyRelu)(edges3)
         edges3 = layers.Activation('relu')(edges3)
