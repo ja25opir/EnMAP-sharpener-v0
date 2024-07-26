@@ -9,7 +9,7 @@ def ms_ssim_l1_loss(y_true, y_pred):
     max_raster_value = 10000
     alpha = 0.84
 
-    l1_loss = tf.reduce_mean(tf.abs(y_true - y_pred)) # == mean absolute error
+    l1_loss = tf.reduce_mean(tf.abs(y_true - y_pred))  # == mean absolute error
     ms_ssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_raster_value))
 
     loss = (alpha * ms_ssim_loss + (1 - alpha) * l1_loss)
@@ -292,26 +292,26 @@ class DILayer(layers.Layer):
         merged = None
 
         """Add() edges to each input feature map"""
-        # for band_no in range(self.x_shape[-2]):
-        #     x_band = x[:, :, :, band_no, :]
-        #     for feature_map in range(x_band.shape[-1]):
-        #         # x_band = layers.Multiply()([x_band, edges])
-        #         x_band = layers.Add()([x_band, edges])
-        #     x_band = tf.expand_dims(x_band, axis=-2) # todo: check this
-        #     if merged is None:
-        #         merged = x_band
-        #     else:
-        #         merged = tf.concat([merged, x_band], axis=-2)
-
-        """stack edges feature map(s) to input feature maps"""
         for band_no in range(self.x_shape[-2]):
             x_band = x[:, :, :, band_no, :]
-            x_stacked = tf.concat([x_band, edges], axis=-1)
-            x_stacked = tf.expand_dims(x_stacked, axis=-2)
+            for feature_map in range(x_band.shape[-1]):
+                # x_band = layers.Multiply()([x_band, edges])
+                x_band = layers.Add()([x_band, edges])
+            x_band = tf.expand_dims(x_band, axis=-2)
             if merged is None:
-                merged = x_stacked
+                merged = x_band
             else:
-                merged = tf.concat([merged, x_stacked], axis=-2)
+                merged = tf.concat([merged, x_band], axis=-2)
+
+        # """stack edges feature map(s) to input feature maps"""
+        # for band_no in range(self.x_shape[-2]):
+        #     x_band = x[:, :, :, band_no, :]
+        #     x_stacked = tf.concat([x_band, edges], axis=-1)
+        #     x_stacked = tf.expand_dims(x_stacked, axis=-2)
+        #     if merged is None:
+        #         merged = x_stacked
+        #     else:
+        #         merged = tf.concat([merged, x_stacked], axis=-2)
 
         return merged
 
@@ -333,7 +333,6 @@ class MMSRes:
         # todo: batch normalization as described in https://www.mdpi.com/2076-3417/11/1/288
         #  --> this does not help in main branch (but looks reasonable in 2d branch)
         # todo: test SaPNN (or others) with current data
-        # todo: (0) implement evaluation method besides plotting
         # todo: (0.1) prevent negative prediction values
         # todo: (0.2) test different loss functions (see 5.1 https://www.mdpi.com/2072-4292/12/10/1660)
         # todo: (1) increase training samples
@@ -375,22 +374,22 @@ class MMSRes:
         """main branch"""
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same', activation=leakyRelu)(input3d)
-        # merged1 = DILayer()([conv1, edges1])
+        merged1 = DILayer()([conv1, edges1])
 
-        skip_connection = layers.Add()([input3d, conv1])
+        skip_connection = layers.Add()([input3d, merged1])
 
         # todo: restart (currently changing inner kernel sizes)
         # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look more reasonable with (1,1,1) tho
         conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(skip_connection)
-        # merged2 = DILayer()([conv2, edges2])
+        merged2 = DILayer()([conv2, edges2])
 
-        skip_connection = layers.Add()([input3d, conv2])
+        skip_connection = layers.Add()([input3d, merged2])
 
         conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(skip_connection)
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
-        # merged3 = DILayer()([conv3, edges3])
+        merged3 = DILayer()([conv3, edges3])
 
-        skip_connection = layers.Add()([input3d, conv3])
+        skip_connection = layers.Add()([input3d, merged3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
                                 activation='linear')(skip_connection)

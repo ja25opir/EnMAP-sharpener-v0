@@ -49,13 +49,16 @@ SSIM: 0.87 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
 SAM: 1.70 (predicted) vs. 1.43 (input) | 0 is perfect similarity
 --> worse
 
-best atm: 
+best atm:
+
 - 3, 3, 3 feature maps in detail branch
 - (3, 3) kernels in detail branch
 - 1 skip connection (at the end)
 
 ## loss function:
+
 ### MS SSIM L1 loss:
+
 https://arxiv.org/pdf/1511.08861
 loss: 8.45, acc: 0.64
 MSE: 12.41 (predicted) vs. 15.31 (input) | 0 is perfect similarity
@@ -64,3 +67,30 @@ SSIM: 0.87 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
 SAM: 1.30 (predicted) vs. 1.43 (input) | 0 is perfect similarity
 --> better SAM than with MSE loss
 
+## training with 60 bands (20:80)
+
+### detail branch (3,3,3), main branch (64,32,9,1), 3 skip connections, MS SSIM L1 loss:
+
+loss: 21.77, acc: 0.67
+MSE: 34.02 (predicted) vs. 40.49 (input) | 0 is perfect similarity
+PSNR: 32.81 (predicted) vs. 32.06 (input) | 100 is perfect similarity
+SSIM: 0.82 (predicted) vs. 0.76 (input) | 1.0 is perfect similarity
+SAM: 4.02 (predicted) vs. 4.33 (input) | 0 is perfect similarity
+
+### WITHOUT usage of the detail branch:
+
+loss:
+
+### detail branch with ADD instead of STACK:
+
+loss:
+
+## training with 20 bands (20:40)
+
+loss:
+
+## training with 20 bands (200:220)
+
+loss:
+
+## residual learning see: https://openaccess.thecvf.com/content_cvpr_2016/papers/Kim_Accurate_Image_Super-Resolution_CVPR_2016_paper.pdf
