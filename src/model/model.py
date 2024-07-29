@@ -4,7 +4,8 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss
+from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss, \
+    residual_loss
 from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
@@ -115,6 +116,7 @@ class Model:
         self.learning_rate = self.set_lr_schedule()
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         loss = ms_ssim_l1_loss  # self.loss_function
+        # loss = residual_loss
         self.model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
         self.model.summary()
 

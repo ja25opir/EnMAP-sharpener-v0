@@ -143,6 +143,7 @@ if residual_leaning:
     residual = y_raster - x1_raster
     residual_rgb = get_bands_from_array(residual, bands)
     plot_3_band_image(residual_rgb, title='Residual between y and x1')
+
     residual_added = x1_raster + predicted_raster
     residual_added_rgb = get_bands_from_array(residual_added, bands)
     plot_3_band_image(residual_added_rgb, title='Residual added to x1')

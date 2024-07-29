@@ -5,20 +5,24 @@ from tensorflow.keras import models, layers, regularizers, Input, Model
 @tf.keras.utils.register_keras_serializable()
 def ms_ssim_l1_loss(y_true, y_pred):
     # alpha * (1 - MS_SSIM) + (1 - alpha) * L1_loss
-    # paper: https://arxiv.org/pdf/1511.08861
-    # max_raster_value = 10000
-    # alpha = 0.84
-    #
-    # l1_loss = tf.reduce_mean(tf.abs(y_true - y_pred))  # == mean absolute error
-    # ms_ssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_raster_value))
-    #
-    # loss = (alpha * ms_ssim_loss + (1 - alpha) * l1_loss)
-    #
-    # return tf.reduce_mean(loss)
+    # source: https://arxiv.org/pdf/1511.08861
+    max_raster_value = 10000
+    alpha = 0.84
 
-    # l1 only
-    # return tf.reduce_mean(tf.abs(y_true - y_pred))
-    # residual loss
+    l1_loss = tf.reduce_mean(tf.abs(y_true - y_pred))  # == mean absolute error
+    ms_ssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_raster_value))
+
+    loss = (alpha * ms_ssim_loss + (1 - alpha) * l1_loss)
+
+    return tf.reduce_mean(loss)
+
+@tf.keras.utils.register_keras_serializable()
+def l1_loss(y_true, y_pred):
+    return tf.reduce_mean(tf.abs(y_true - y_pred))
+
+@tf.keras.utils.register_keras_serializable()
+def residual_loss(y_true, y_pred):
+    # source: https://openaccess.thecvf.com/content_cvpr_2016/papers/Kim_Accurate_Image_Super-Resolution_CVPR_2016_paper.pdf
     return 1 / 2 * tf.square(tf.abs(y_true - y_pred))
 
 
@@ -403,10 +407,10 @@ class MMSRes:
         merged3 = DILayer()([conv3, edges3])
         # merged3 = SFTLayer(filters=9)([conv3, edges3])
 
-        # skip_connection = layers.Add()([input3d, merged3])
+        skip_connection = layers.Add()([input3d, merged3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(merged3)
+                                activation='linear')(skip_connection)
         y = tf.squeeze(convOut, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
