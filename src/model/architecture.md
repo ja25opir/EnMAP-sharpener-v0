@@ -88,7 +88,12 @@ SAM: 3.98 (predicted) vs. 4.33 (input) | 0 is perfect similarity
 
 ### detail branch with 32,16,8 neurons:
 
-loss:
+loss: 21.23, acc: 0.68
+MSE: 33.89 (predicted) vs. 40.49 (input) | 0 is perfect similarity
+PSNR: 32.83 (predicted) vs. 32.06 (input) | 100 is perfect similarity
+SSIM: 0.82 (predicted) vs. 0.76 (input) | 1.0 is perfect similarity
+SAM: 4.01 (predicted) vs. 4.33 (input) | 0 is perfect similarity
+--> detail branch atm nearly no impact
 
 
 
