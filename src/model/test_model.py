@@ -23,17 +23,17 @@ def plot_detail_branch(model, x):
                                                                    2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
     plot_3_band_image(arr, title='First 2d conv + batch + activation')
 
-    padded = get_layer_output(6)(first_2d)
-    second_2d = get_layer_output(8)(padded)
-    second_2d_batch = get_layer_output(10)(second_2d)
-    second_2d_activation = get_layer_output(12)(second_2d_batch)
+    padded = get_layer_output(5)(first_2d)
+    second_2d = get_layer_output(6)(padded)
+    second_2d_batch = get_layer_output(8)(second_2d)
+    second_2d_activation = get_layer_output(10)(second_2d_batch)
     arr = get_bands_from_array(second_2d_activation[0, :, :, :].T, [0, 1, 2])
     plot_3_band_image(arr, title='Second 2d conv + batch + activation')
 
-    padded = get_layer_output(14)(second_2d)
-    third_2d = get_layer_output(16)(padded)
-    third_2d_batch = get_layer_output(18)(third_2d)
-    third_2d_activation = get_layer_output(20)(third_2d_batch)
+    padded = get_layer_output(12)(second_2d)
+    third_2d = get_layer_output(14)(padded)
+    third_2d_batch = get_layer_output(16)(third_2d)
+    third_2d_activation = get_layer_output(18)(third_2d_batch)
 
     arr = get_bands_from_array(third_2d_activation[0, :, :, :].T, [0, 1, 2])
     plot_3_band_image(arr, title='Third 2d conv + batch + activation')
@@ -96,14 +96,6 @@ CUSTOM_LAYERS = {'ReflectionPadding2D': ReflectionPadding2D,
                  'DILayer': DILayer,
                  'ms_ssim_l1_loss': ms_ssim_l1_loss}
 
-X_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x/'
-X1_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x1/'
-Y_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/y/'
-MODEL_PATH = os.getcwd() + '/../../output/models/'
-
-x_data = os.listdir(X_DATA_PATH)
-y_data = os.listdir(Y_DATA_PATH)
-
 
 def load_data(file_name):
     x = np.load(X_DATA_PATH + file_name)
@@ -122,19 +114,18 @@ def make_prediction(x, x1, model, output_bands):
     return model.predict({'x': x, 'x1': x1}, verbose=0).reshape(32, 32, output_bands).T
 
 
-# get random file from data
-# test_file = random.choice(y_data)
-# test_file = '20220627T104548Z_0_0.npy'
-test_file = '20220916T104547Z_13_8.npy'
-
-x_raster, x1_raster, y_raster = load_data(test_file)
+X_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x/'
+X1_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x1/'
+Y_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/y/'
+MODEL_PATH = os.getcwd() + '/../../output/models/'
 
 no_output_bands = 20
-
+residual_leaning = True
+test_file = '20220916T104547Z_13_8.npy'
 sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes.keras', custom_objects=CUSTOM_LAYERS)
 
 print(sr_model.summary())
-
+x_raster, x1_raster, y_raster = load_data(test_file)
 predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
 
 bands = [0, 1, 2]
@@ -143,10 +134,19 @@ plot_3_band_image(predicted_rgb, title='Predicted Image')
 
 x_rgb = get_bands_from_array(x_raster, bands)
 plot_3_band_image(x_rgb, title='Input Image x (Sentinel)')
-x_rgb = get_bands_from_array(x1_raster, bands)
-plot_3_band_image(x_rgb, title='Input Image x1 (EnMAP)')
+x1_rgb = get_bands_from_array(x1_raster, bands)
+plot_3_band_image(x1_rgb, title='Input Image x1 (EnMAP)')
 y_rgb = get_bands_from_array(y_raster, bands)
 plot_3_band_image(y_rgb, title='Original Image')
+
+if residual_leaning:
+    residual = y_raster - x1_raster
+    residual_rgb = get_bands_from_array(residual, bands)
+    plot_3_band_image(residual_rgb, title='Residual between y and x1')
+    residual_added = x1_raster + predicted_raster
+    residual_added_rgb = get_bands_from_array(residual_added, bands)
+    plot_3_band_image(residual_added_rgb, title='Residual added to x1')
+    predicted_raster = residual_added
 
 # tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)
 
@@ -155,14 +155,14 @@ for i in range(len(sr_model.layers)):
     print(sr_model.layers[i].name, i)
 print('----------')
 
-
-# plot_detail_branch(sr_model, x_raster.T.reshape(1, 32, 32, 4))
+plot_detail_branch(sr_model, x_raster.T.reshape(1, 32, 32, 4))
 
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(15, 15))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
+
 
 # shift data range to [0, 1] and move channels to last dimension
 def normalize_rasters(prediction, x1, y):
@@ -186,6 +186,8 @@ with open(test_file_list, 'r') as f:
 for i in range(iterations):
     x_raster, x1_raster, y_raster = load_data(test_files[i])
     predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
+    if residual_leaning:
+        predicted_raster = predicted_raster + x1_raster
     predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
     evaluations.append(evaluate_prediction(predicted_raster, x1_raster, y_raster))
     if (i + 1) % 25 == 0:

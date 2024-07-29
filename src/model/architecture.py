@@ -6,18 +6,20 @@ from tensorflow.keras import models, layers, regularizers, Input, Model
 def ms_ssim_l1_loss(y_true, y_pred):
     # alpha * (1 - MS_SSIM) + (1 - alpha) * L1_loss
     # paper: https://arxiv.org/pdf/1511.08861
-    max_raster_value = 10000
-    alpha = 0.84
-
-    l1_loss = tf.reduce_mean(tf.abs(y_true - y_pred))  # == mean absolute error
-    ms_ssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_raster_value))
-
-    loss = (alpha * ms_ssim_loss + (1 - alpha) * l1_loss)
-
-    return tf.reduce_mean(loss)
+    # max_raster_value = 10000
+    # alpha = 0.84
+    #
+    # l1_loss = tf.reduce_mean(tf.abs(y_true - y_pred))  # == mean absolute error
+    # ms_ssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_raster_value))
+    #
+    # loss = (alpha * ms_ssim_loss + (1 - alpha) * l1_loss)
+    #
+    # return tf.reduce_mean(loss)
 
     # l1 only
     # return tf.reduce_mean(tf.abs(y_true - y_pred))
+    # residual loss
+    return 1 / 2 * tf.square(tf.abs(y_true - y_pred))
 
 
 class ReflectionPadding2D(layers.Layer):

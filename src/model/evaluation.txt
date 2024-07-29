@@ -9,6 +9,7 @@ MSE  p|y: 25.91 | 63.61
 PSNR p|y: 39.45 | 37.41
 SSIM p|y: 0.94 | 0.91
 SAM  p|y: 1.21 | 1.18
+
 -----------
 detail branch 9, 6, 3
 main branch 64, 32, 9
@@ -20,7 +21,27 @@ MSE  p|y: 26.71 | 63.61
 PSNR p|y: 39.24 | 37.41
 SSIM p|y: 0.94 | 0.91
 SAM  p|y: 1.18 | 1.18
------------
+
+-----------deeper network --> WORSE
 detail branch 9, 6, 3
 main branch 64, 64, 64, 32, 32, 32, 9, 9, 9
 3 skip connections
+
+loss: 14.29, acc: 0.53
+Average evaluation metrics:
+MSE  p|y: 45.33 | 63.61
+PSNR p|y: 37.30 | 37.41
+SSIM p|y: 0.92 | 0.91
+SAM  p|y: 1.97 | 1.18
+
+-----------residual learning --> a little better, but weird accuracy (faster tho)
+detail branch 9, 6, 3
+main branch 64, 32, 9
+0 skip connections
+
+loss: 9.57, acc: 0.20 (???)
+Average evaluation metrics:
+MSE  p|y: 25.76 | 63.61
+PSNR p|y: 39.54 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.16 | 1.18
