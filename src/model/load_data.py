@@ -105,7 +105,7 @@ class DuoBranchDataGenerator(DataGenerator):
             # Y[i, :, :, :, 0] = y_img.T
             X[i,] = x_img.T
             # X1[i,] = x1_img.T
-            Y[i,] = y_img.T
+            # Y[i,] = y_img.T
 
             # residual learning
             # Y[i,] = y_img.T - x_img.T

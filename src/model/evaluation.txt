@@ -1,0 +1,15 @@
+detail branch 64, 32, 9
+main branch 64, 32, 9
+3 skip connections
+10 epochs
+
+Average evaluation metrics:
+MSE  p|y: 25.91 | 63.61
+PSNR p|y: 39.45 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.21 | 1.18
+Selected file:
+MSE  p|y: 1.91 | 2.48 | 0 == perfect
+PSNR p|y: 45.33 | 44.19 | 100 == perfect
+SSIM p|y: 0.98 | 0.97 | 1.0 == perfect
+SAM  p|y: 0.69 | 0.54 | 0 == perfect

@@ -76,15 +76,24 @@ MSE: 14.93 (predicted) vs. 15.31 (input) | 0 is perfect similarity
 PSNR: 36.39 (predicted) vs. 36.28 (input) | 100 is perfect similarity
 SSIM: 0.85 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
 SAM: 1.41 (predicted) vs. 1.43 (input) | 0 is perfect similarity
---> worse than DILayer
+--> worse than DILayer and without detail branch
 
 ### without detail branch
 
 loss: 11.02, ac: 0.65
+MSE: 12.43 (predicted) vs. 15.31 (input) | 0 is perfect similarity
+PSNR: 37.19 (predicted) vs. 36.28 (input) | 100 is perfect similarity
+SSIM: 0.87 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
+SAM: 1.36 (predicted) vs. 1.43 (input) | 0 is perfect similarity
 
+### DILayers (64, 32, 9 feature maps)
 
-### DILayers
-
+loss: 9.62, acc: 0.62
+MSE: 13.96 (predicted) vs. 15.31 (input) | 0 is perfect similarity
+PSNR: 36.68 (predicted) vs. 36.28 (input) | 100 is perfect similarity
+SSIM: 0.85 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
+SAM: 1.41 (predicted) vs. 1.43 (input) | 0 is perfect similarity
+--> worse than without detail branch
 
 ## training with 60 bands (20:80)
 
@@ -114,6 +123,25 @@ SSIM: 0.82 (predicted) vs. 0.76 (input) | 1.0 is perfect similarity
 SAM: 4.01 (predicted) vs. 4.33 (input) | 0 is perfect similarity
 --> detail branch atm nearly no impact
 
+
+## other testfile
+### DI Layers (20 bands, 20:40, MS_SSIM_L1 loss, 64, 32, 9 feature maps detail branch):
+loss: 9.62, acc: 0.62
+MSE: 1.91 (predicted) vs. 2.48 (input) | 0 is perfect similarity
+PSNR: 45.33 (predicted) vs. 44.19 (input) | 100 is perfect similarity
+SSIM: 0.98 (predicted) vs. 0.97 (input) | 1.0 is perfect similarity
+SAM: 0.69 (predicted) vs. 0.54 (input) | 0 is perfect similarity
+
+
+## residual learning see: https://openaccess.thecvf.com/content_cvpr_2016/papers/Kim_Accurate_Image_Super-Resolution_CVPR_2016_paper.pdf (20 bands, DILayers, skip connections)
+
+loss:
+
+### without skip connections
+
+loss:
+
+
 ## training with 20 bands (20:40)
 
 loss:
@@ -122,4 +150,4 @@ loss:
 
 loss:
 
-## residual learning see: https://openaccess.thecvf.com/content_cvpr_2016/papers/Kim_Accurate_Image_Super-Resolution_CVPR_2016_paper.pdf
+## new file: see notepad

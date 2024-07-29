@@ -4,7 +4,6 @@ import tensorflow as tf
 import numpy as np
 import keras.backend as K
 from matplotlib import pyplot as plt
-from skimage.metrics import structural_similarity
 from image_similarity_measures.quality_metrics import psnr, ssim, sam
 
 from src.model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFTLayer, DILayer, ms_ssim_l1_loss
@@ -12,7 +11,7 @@ from src.visualization.helpers import get_bands_from_array
 from src.visualization.plot_raster import plot_3_band_image
 
 
-def plot_detail_branch(model):
+def plot_detail_branch(model, x):
     get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=model.layers[j].output))
     padded = get_layer_output(1)(x)  # TODO: is this the wrong input lol?
     first_2d = get_layer_output(2)(padded)
@@ -73,21 +72,22 @@ def get_mse(prediction, ground_truth):
 def evaluate_prediction(prediction, input_x, ground_truth):
     mse_predicted = get_mse(prediction * 255, ground_truth * 255)  # todo: which factor?
     mse_input = get_mse(input_x * 255, ground_truth * 255)
-    print(f'MSE: {mse_predicted:.2f} (predicted) vs. {mse_input:.2f} (input) | 0 is perfect similarity')
 
     psnr_predicted = psnr(prediction, ground_truth, max_p=1)
     psnr_input = psnr(input_x, ground_truth, max_p=1)
-    print(f'PSNR: {psnr_predicted:.2f} (predicted) vs. {psnr_input:.2f} (input) | 100 is perfect similarity')
 
     # todo: SSIM data range [0, 1] or prediction.max() - prediction.min()?
     ssim_predicted = ssim(prediction, ground_truth, max_p=1)
     ssim_input = ssim(input_x, ground_truth, max_p=1)
-    print(f'SSIM: {ssim_predicted:.2f} (predicted) vs. {ssim_input:.2f} (input) | 1.0 is perfect similarity')
 
     # SAM: https://ntrs.nasa.gov/citations/19940012238
     sam_predicted = sam(prediction, ground_truth)
     sam_input = sam(input_x, ground_truth)
-    print(f'SAM: {sam_predicted:.2f} (predicted) vs. {sam_input:.2f} (input) | 0 is perfect similarity')
+
+    return {'mse_predicted': mse_predicted, 'mse_input': mse_input,
+            'psnr_predicted': psnr_predicted, 'psnr_input': psnr_input,
+            'ssim_predicted': ssim_predicted, 'ssim_input': ssim_input,
+            'sam_predicted': sam_predicted, 'sam_input': sam_input}
 
 
 CUSTOM_LAYERS = {'ReflectionPadding2D': ReflectionPadding2D,
@@ -104,26 +104,38 @@ MODEL_PATH = os.getcwd() + '/../../output/models/'
 x_data = os.listdir(X_DATA_PATH)
 y_data = os.listdir(Y_DATA_PATH)
 
+
+def load_data(file_name):
+    x = np.load(X_DATA_PATH + file_name)
+    # x1_raster = np.load(X1_DATA_PATH + test_file)
+    y = np.load(Y_DATA_PATH + file_name)
+    x = x[(224, 225, 226, 227), :, :]
+    # x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
+    x1 = np.load(X_DATA_PATH + file_name)[20:40, :, :]  # 20 bands only
+    y = y[20:40, :, :]  # 20 bands only
+    return x, x1, y
+
+
+def make_prediction(x, x1, model, output_bands):
+    x = x.T.reshape(1, 32, 32, 4)
+    x1 = x1.T.reshape(1, 32, 32, output_bands, 1)
+    return model.predict({'x': x, 'x1': x1}, verbose=0).reshape(32, 32, output_bands).T
+
+
 # get random file from data
 # test_file = random.choice(y_data)
-test_file = '20220627T104548Z_0_0.npy'
+# test_file = '20220627T104548Z_0_0.npy'
+test_file = '20220916T104547Z_13_8.npy'
 
-x_raster = np.load(X_DATA_PATH + test_file)
-x1_raster = np.load(X1_DATA_PATH + test_file)
-y_raster = np.load(Y_DATA_PATH + test_file)
+x_raster, x1_raster, y_raster = load_data(test_file)
+
+no_output_bands = 20
 
 sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes.keras', custom_objects=CUSTOM_LAYERS)
 
 print(sr_model.summary())
 
-NO_OUTPUT_BANDS = 20
-x_raster = x_raster[(224, 225, 226, 227), :, :]
-# x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
-x1_raster = x1_raster[20:40, :, :]  # 20 bands only
-y_raster = y_raster[20:40, :, :]  # 20 bands only
-x = x_raster.T.reshape(1, 32, 32, 4)
-x1 = x1_raster.T.reshape(1, 32, 32, NO_OUTPUT_BANDS, 1)
-predicted_raster = sr_model.predict({'x': x, 'x1': x1}).reshape(32, 32, NO_OUTPUT_BANDS).T
+predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
 
 bands = [0, 1, 2]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
@@ -143,19 +155,59 @@ for i in range(len(sr_model.layers)):
     print(sr_model.layers[i].name, i)
 print('----------')
 
-# plot_detail_branch(sr_model)
 
-plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
-plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
-plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(15, 15))
-plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
-plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
+# plot_detail_branch(sr_model, x_raster.T.reshape(1, 32, 32, 4))
+
+# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
+# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
+# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(15, 15))
+# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
+# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
 
 # shift data range to [0, 1] and move channels to last dimension
-MAX_REFLECTANCE = 10000
-predicted_raster = (predicted_raster / MAX_REFLECTANCE).T
-x1_raster = (x1_raster / MAX_REFLECTANCE).T
-y_raster = (y_raster / MAX_REFLECTANCE).T
+def normalize_rasters(prediction, x1, y):
+    max_reflectance = 10000
+    prediction = (prediction / max_reflectance).T
+    x1 = (x1 / max_reflectance).T
+    y = (y / max_reflectance).T
+    return prediction, x1, y
 
-evaluate_prediction(predicted_raster, x1_raster, y_raster)
+
+predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
+metrics = evaluate_prediction(predicted_raster, x1_raster, y_raster)
+
+evaluations = []
+iterations = 250
+test_file_list = os.getcwd() + '/../../data/test_file_list.txt'
+with open(test_file_list, 'r') as f:
+    test_files = f.readlines()
+    test_files = [f.strip() for f in test_files]
+
+for i in range(iterations):
+    x_raster, x1_raster, y_raster = load_data(test_files[i])
+    predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
+    predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
+    evaluations.append(evaluate_prediction(predicted_raster, x1_raster, y_raster))
+    if (i + 1) % 25 == 0:
+        print(f'Evaluated {i + 1} / {iterations} files')
+
+print('Average evaluation metrics:')
+print(
+    f'MSE  p|y: {np.mean([e["mse_predicted"] for e in evaluations]):.2f} | {np.mean([e["mse_input"] for e in evaluations]):.2f}')
+print(
+    f'PSNR p|y: {np.mean([e["psnr_predicted"] for e in evaluations]):.2f} | {np.mean([e["psnr_input"] for e in evaluations]):.2f}')
+print(
+    f'SSIM p|y: {np.mean([e["ssim_predicted"] for e in evaluations]):.2f} | {np.mean([e["ssim_input"] for e in evaluations]):.2f}')
+print(
+    f'SAM  p|y: {np.mean([e["sam_predicted"] for e in evaluations]):.2f} | {np.mean([e["sam_input"] for e in evaluations]):.2f}')
 # TODO implement NIQE
+
+print('Selected file:')
+print(
+    f'MSE  p|y: {metrics["mse_predicted"]:.2f} | {metrics["mse_input"]:.2f} | 0 == perfect')
+print(
+    f'PSNR p|y: {metrics["psnr_predicted"]:.2f} | {metrics["psnr_input"]:.2f} | 100 == perfect')
+print(
+    f'SSIM p|y: {metrics["ssim_predicted"]:.2f} | {metrics["ssim_input"]:.2f} | 1.0 == perfect')
+print(
+    f'SAM  p|y: {metrics["sam_predicted"]:.2f} | {metrics["sam_input"]:.2f} | 0 == perfect')
