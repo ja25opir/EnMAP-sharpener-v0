@@ -67,6 +67,25 @@ SSIM: 0.87 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
 SAM: 1.30 (predicted) vs. 1.43 (input) | 0 is perfect similarity
 --> better SAM than with MSE loss
 
+## SFTLayers (20 bands, 20:40, MS_SSIM_L1 loss):
+
+### with detail branch
+
+loss: 9.10, ac: 0.65
+MSE: 14.93 (predicted) vs. 15.31 (input) | 0 is perfect similarity
+PSNR: 36.39 (predicted) vs. 36.28 (input) | 100 is perfect similarity
+SSIM: 0.85 (predicted) vs. 0.83 (input) | 1.0 is perfect similarity
+SAM: 1.41 (predicted) vs. 1.43 (input) | 0 is perfect similarity
+--> worse than DILayer
+
+### without detail branch
+
+loss: 11.02, ac: 0.65
+
+
+### DILayers
+
+
 ## training with 60 bands (20:80)
 
 ### detail branch (3,3,3), main branch (64,32,9,1), 3 skip connections, MS SSIM L1 loss:
@@ -94,8 +113,6 @@ PSNR: 32.83 (predicted) vs. 32.06 (input) | 100 is perfect similarity
 SSIM: 0.82 (predicted) vs. 0.76 (input) | 1.0 is perfect similarity
 SAM: 4.01 (predicted) vs. 4.33 (input) | 0 is perfect similarity
 --> detail branch atm nearly no impact
-
-
 
 ## training with 20 bands (20:40)
 

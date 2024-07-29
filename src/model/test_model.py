@@ -116,11 +116,11 @@ sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes.keras', custom_object
 
 print(sr_model.summary())
 
-NO_OUTPUT_BANDS = 60
+NO_OUTPUT_BANDS = 20
 x_raster = x_raster[(224, 225, 226, 227), :, :]
 # x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
-x1_raster = x1_raster[20:80, :, :]  # 20 bands only
-y_raster = y_raster[20:80, :, :]  # 20 bands only
+x1_raster = x1_raster[20:40, :, :]  # 20 bands only
+y_raster = y_raster[20:40, :, :]  # 20 bands only
 x = x_raster.T.reshape(1, 32, 32, 4)
 x1 = x1_raster.T.reshape(1, 32, 32, NO_OUTPUT_BANDS, 1)
 predicted_raster = sr_model.predict({'x': x, 'x1': x1}).reshape(32, 32, NO_OUTPUT_BANDS).T
