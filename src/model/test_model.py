@@ -158,11 +158,11 @@ print('----------')
 
 # plot_detail_branch(sr_model, x_raster.T.reshape(1, 32, 32, 4))
 
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(15, 15))
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(15, 15))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
+plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
 
 # shift data range to [0, 1] and move channels to last dimension
 def normalize_rasters(prediction, x1, y):
