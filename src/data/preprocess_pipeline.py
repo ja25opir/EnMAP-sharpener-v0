@@ -364,7 +364,7 @@ class PreprocessPipeline:
             for sentinel_scene in sentinel_files:
                 if re.search(timestamp, sentinel_scene):
                     start_wald_protocol(self.masked_scenes_path, tile_size, enmap_scene, sentinel_scene, timestamp,
-                                        self.model_input_path, save_lr_enmap=True)
+                                        self.model_input_path, save_lr_enmap=False)
                     sentinel_files.remove(sentinel_scene)
                     break
             i += 1
