@@ -371,17 +371,17 @@ class MMSRes:
         kernel = (3, 3)
         leakyRelu = layers.LeakyReLU()
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)
-        edges1 = layers.Conv2D(9, kernel, padding='valid')(padded)
+        edges1 = layers.Conv2D(64, kernel, padding='valid')(padded)
         edges1 = layers.BatchNormalization()(edges1)
         # edges1 = layers.Activation(leakyRelu)(edges1)
         edges1 = layers.Activation('relu')(edges1)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges1)
-        edges2 = layers.Conv2D(6, kernel, padding='valid')(padded)
+        edges2 = layers.Conv2D(32, kernel, padding='valid')(padded)
         edges2 = layers.BatchNormalization()(edges2)
         # edges2 = layers.Activation(leakyRelu)(edges2)
         edges2 = layers.Activation('relu')(edges2)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
-        edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        edges3 = layers.Conv2D(20, kernel, padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
         # edges3 = layers.Activation(leakyRelu)(edges3)
         edges3 = layers.Activation('relu')(edges3)
@@ -410,11 +410,13 @@ class MMSRes:
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
                                 activation='linear')(conv3)
 
-        skip_connection = layers.Add()([input3d, convOut])
+        # skip_connection = layers.Add()([input3d, convOut])
 
-        y = tf.squeeze(skip_connection, axis=-1)
+        y_main = tf.squeeze(convOut, axis=-1)
 
-        self.model = Model(inputs=[input3d, input2d], outputs=y)
+        y_merged = layers.Add()([y_main, edges3])
+
+        self.model = Model(inputs=[input3d, input2d], outputs=y_merged)
 
 
 class FCNN:
