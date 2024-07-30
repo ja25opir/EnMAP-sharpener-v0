@@ -56,3 +56,29 @@ MSE  p|y: 26.00 | 63.61
 PSNR p|y: 39.48 | 37.41
 SSIM p|y: 0.94 | 0.91
 SAM  p|y: 1.15 | 1.18
+-----------skip connection moved to the very end --> similar results as before
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 9.43, acc: 0.63
+MSE  p|y: 25.81 | 63.61
+PSNR p|y: 39.49 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.17 | 1.18
+-----------no detail branch --> nearly same results as before --> detail branch with no impact
+main branch 64, 32, 9
+1 skip connection
+
+loss: 10.90, acc: 0.64
+MSE  p|y: 25.69 | 63.61
+PSNR p|y: 39.21 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.17 | 1.18
+-----------detail branch: stacked image as input, (64, 32, #ouput bands) neurons, merged before output --> little worse but not a huge impact
+
+loss: 10.50, acc: 0.62
+MSE  p|y: 25.57 | 63.61
+PSNR p|y: 39.29 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.21 | 1.18

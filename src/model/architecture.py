@@ -16,9 +16,11 @@ def ms_ssim_l1_loss(y_true, y_pred):
 
     return tf.reduce_mean(loss)
 
+
 @tf.keras.utils.register_keras_serializable()
 def l1_loss(y_true, y_pred):
     return tf.reduce_mean(tf.abs(y_true - y_pred))
+
 
 @tf.keras.utils.register_keras_serializable()
 def residual_loss(y_true, y_pred):
@@ -389,34 +391,31 @@ class MMSRes:
         """main branch"""
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
         conv1 = layers.Conv3D(64, (9, 9, 7), padding='same', activation=leakyRelu)(input3d)
-        # merged1 = DILayer()([conv1, edges1])
+        merged1 = DILayer()([conv1, edges1])
         # merged1 = SFTLayer(filters=64)([conv1, edges1])
 
         # skip_connection = layers.Add()([input3d, merged1])
 
-        # todo: restart (currently changing inner kernel sizes)
         # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look more reasonable with (1,1,1) tho
-        conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(conv1)
-        # merged2 = DILayer()([conv2, edges2])
+        conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(merged1)
+        merged2 = DILayer()([conv2, edges2])
         # merged2 = SFTLayer(filters=32)([conv2, edges2])
 
         # skip_connection = layers.Add()([input3d, merged2])
 
-        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(conv2)
+        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
-        # merged3 = DILayer()([conv3, edges3])
+        merged3 = DILayer()([conv3, edges3])
         # merged3 = SFTLayer(filters=9)([conv3, edges3])
 
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(conv3)
+                                activation='linear')(merged3)
 
-        # skip_connection = layers.Add()([input3d, convOut])
+        skip_connection = layers.Add()([input3d, convOut])
 
-        y_main = tf.squeeze(convOut, axis=-1)
+        y = tf.squeeze(skip_connection, axis=-1)
 
-        y_merged = layers.Add()([y_main, edges3])
-
-        self.model = Model(inputs=[input3d, input2d], outputs=y_merged)
+        self.model = Model(inputs=[input3d, input2d], outputs=y)
 
 
 class FCNN:
