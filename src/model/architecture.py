@@ -407,11 +407,12 @@ class MMSRes:
         merged3 = DILayer()([conv3, edges3])
         # merged3 = SFTLayer(filters=9)([conv3, edges3])
 
-        skip_connection = layers.Add()([input3d, merged3])
-
         convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
-                                activation='linear')(skip_connection)
-        y = tf.squeeze(convOut, axis=-1)
+                                activation='linear')(merged3)
+
+        skip_connection = layers.Add()([convOut, merged3])
+
+        y = tf.squeeze(skip_connection, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
 

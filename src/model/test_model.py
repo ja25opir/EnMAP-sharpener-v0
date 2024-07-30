@@ -120,7 +120,7 @@ Y_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/y/'
 MODEL_PATH = os.getcwd() + '/../../output/models/'
 
 no_output_bands = 20
-residual_leaning = True
+residual_leaning = False
 test_file = '20220916T104547Z_13_8.npy'
 sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes.keras', custom_objects=CUSTOM_LAYERS)
 
@@ -156,7 +156,7 @@ for i in range(len(sr_model.layers)):
     print(sr_model.layers[i].name, i)
 print('----------')
 
-plot_detail_branch(sr_model, x_raster.T.reshape(1, 32, 32, 4))
+# plot_detail_branch(sr_model, x_raster.T.reshape(1, 32, 32, 4))
 
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
