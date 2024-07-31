@@ -83,7 +83,7 @@ PSNR p|y: 39.29 | 37.41
 SSIM p|y: 0.94 | 0.91
 SAM  p|y: 1.21 | 1.18
 
------------new huge dataset
+-----------new huge dataset --> smaller loss, worse acc, metrics similar
 detail branch 9, 6, 3
 main branch 64, 32, 9
 1 skip connection
@@ -93,3 +93,15 @@ MSE  p|y: 26.05 | 63.61
 PSNR p|y: 39.55 | 37.41
 SSIM p|y: 0.94 | 0.91
 SAM  p|y: 1.19 | 1.18
+
+-----------new small dataset (LE and around, 8 scenes) --> significantly worse (doesnt fit enough)
+--> first dataset is best
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 14.46, acc: 0.58
+MSE  p|y: 59.87 | 63.61
+PSNR p|y: 38.04 | 37.41
+SSIM p|y: 0.92 | 0.91
+SAM  p|y: 1.43 | 1.18
