@@ -84,7 +84,7 @@ class DuoBranchDataGenerator(DataGenerator):
 
             # todo: testing with c bands
             # x1_img = x_img[20:40, :, :]
-            x1_img = x_img[:, :, :]
+            x1_img = x_img[:224, :, :]
             x_img = x_img[(224, 225, 226, 227), :, :]
             # indices = np.hstack([np.arange(20, 40), np.arange(224, 228)])
             # x_img = np.take(x_img, indices, axis=0)
