@@ -9,10 +9,14 @@ def ms_ssim_l1_loss(y_true, y_pred):
     max_raster_value = 10000
     alpha = 0.84
 
-    l1_loss = tf.reduce_mean(tf.abs(y_true - y_pred))  # == mean absolute error
-    ms_ssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_raster_value))
+    l1 = tf.reduce_mean(tf.abs(y_true - y_pred))  # == mean absolute error
+    if l1 <= 4000:
+        ms_ssim_loss = (1 - tf.image.ssim_multiscale(y_true, y_pred, max_val=max_raster_value,
+                                                     filter_size=2))
+    else:
+        ms_ssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_raster_value))
 
-    loss = (alpha * ms_ssim_loss + (1 - alpha) * l1_loss)
+    loss = (alpha * ms_ssim_loss + (1 - alpha) * l1)
 
     return tf.reduce_mean(loss)
 
