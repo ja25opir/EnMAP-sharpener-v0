@@ -82,3 +82,14 @@ MSE  p|y: 25.57 | 63.61
 PSNR p|y: 39.29 | 37.41
 SSIM p|y: 0.94 | 0.91
 SAM  p|y: 1.21 | 1.18
+
+-----------new huge dataset
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 8.80, acc: 0.62
+MSE  p|y: 26.05 | 63.61
+PSNR p|y: 39.55 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.19 | 1.18

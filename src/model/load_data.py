@@ -76,8 +76,8 @@ class DuoBranchDataGenerator(DataGenerator):
             # read img
             x_img = np.load(x_path)
 
-            x1_path = os.path.join(self.data_dir, 'x1', self.data_list[data_index])
-            x1_img = np.load(x1_path)
+            # x1_path = os.path.join(self.data_dir, 'x1', self.data_list[data_index])
+            # x1_img = np.load(x1_path)
 
             y_path = os.path.join(self.data_dir, 'y', self.data_list[data_index])
             y_img = np.load(y_path)
