@@ -401,13 +401,13 @@ class MMSRes:
         # skip_connection = layers.Add()([input3d, merged1])
 
         # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look more reasonable with (1,1,1) tho
-        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same', activation=leakyRelu)(merged1)
+        conv2 = layers.Conv3D(32, (5, 5, 3), padding='same', activation=leakyRelu)(merged1)
         merged2 = DILayer()([conv2, edges2])
         # merged2 = SFTLayer(filters=32)([conv2, edges2])
 
         # skip_connection = layers.Add()([input3d, merged2])
 
-        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
+        conv3 = layers.Conv3D(9, (5, 5, 3), padding='same', activation=leakyRelu)(merged2)
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
         # merged3 = SFTLayer(filters=9)([conv3, edges3])

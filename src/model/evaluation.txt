@@ -127,3 +127,9 @@ MSE  p|y: 197.72 | 230.39
 PSNR p|y: 28.31 | 27.21
 SSIM p|y: 0.87 | 0.82
 SAM  p|y: 3.84 | 4.39
+
+kernels:
+current best: (9,9,7) (3,3,1) (3,3,1) (5,5,3)
+tried: 
+ (9,9,7) (3,3,1) (1,1,1) (5,5,3) --> worse
+ (9,9,7) (1,1,1) (3,3,1) (5,5,3) --> worse (spectral distortion

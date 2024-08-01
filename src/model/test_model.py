@@ -105,8 +105,8 @@ def load_data(file_name):
     y = np.load(Y_DATA_PATH + file_name)
     x = x[(224, 225, 226, 227), :, :]
     # x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
-    x1 = np.load(X_DATA_PATH + file_name)[140:180, :, :]  # 20 bands only
-    y = y[140:180, :, :]  # 20 bands only
+    x1 = np.load(X_DATA_PATH + file_name)[20:60, :, :]  # 20 bands only
+    y = y[20:60, :, :]  # 20 bands only
     return x, x1, y
 
 
@@ -182,40 +182,40 @@ def normalize_rasters(prediction, x1, y):
 predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
 metrics = evaluate_prediction(predicted_raster, x1_raster, y_raster)
 
-# evaluations = []
-# iterations = 250
-# test_file_list = os.getcwd() + '/../../data/test_file_list.txt'
-# with open(test_file_list, 'r') as f:
-#     test_files = f.readlines()
-#     test_files = [f.strip() for f in test_files]
-#
-# for i in range(iterations):
-#     x_raster, x1_raster, y_raster = load_data(test_files[i])
-#     predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
-#     if residual_leaning:
-#         predicted_raster = predicted_raster + x1_raster
-#     predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
-#     evaluations.append(evaluate_prediction(predicted_raster, x1_raster, y_raster))
-#     if (i + 1) % 25 == 0:
-#         print(f'Evaluated {i + 1} / {iterations} files')
-#
-# print('Average evaluation metrics:')
-# print(
-#     f'MSE  p|y: {np.mean([e["mse_predicted"] for e in evaluations]):.2f} | {np.mean([e["mse_input"] for e in evaluations]):.2f}')
-# print(
-#     f'PSNR p|y: {np.mean([e["psnr_predicted"] for e in evaluations]):.2f} | {np.mean([e["psnr_input"] for e in evaluations]):.2f}')
-# print(
-#     f'SSIM p|y: {np.mean([e["ssim_predicted"] for e in evaluations]):.2f} | {np.mean([e["ssim_input"] for e in evaluations]):.2f}')
-# print(
-#     f'SAM  p|y: {np.mean([e["sam_predicted"] for e in evaluations]):.2f} | {np.mean([e["sam_input"] for e in evaluations]):.2f}')
-# # TODO implement NIQE
-#
-# print('Selected file:')
-# print(
-#     f'MSE  p|y: {metrics["mse_predicted"]:.2f} | {metrics["mse_input"]:.2f} | 0 == perfect')
-# print(
-#     f'PSNR p|y: {metrics["psnr_predicted"]:.2f} | {metrics["psnr_input"]:.2f} | 100 == perfect')
-# print(
-#     f'SSIM p|y: {metrics["ssim_predicted"]:.2f} | {metrics["ssim_input"]:.2f} | 1.0 == perfect')
-# print(
-#     f'SAM  p|y: {metrics["sam_predicted"]:.2f} | {metrics["sam_input"]:.2f} | 0 == perfect')
+evaluations = []
+iterations = 250
+test_file_list = os.getcwd() + '/../../data/test_file_list.txt'
+with open(test_file_list, 'r') as f:
+    test_files = f.readlines()
+    test_files = [f.strip() for f in test_files]
+
+for i in range(iterations):
+    x_raster, x1_raster, y_raster = load_data(test_files[i])
+    predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
+    if residual_leaning:
+        predicted_raster = predicted_raster + x1_raster
+    predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
+    evaluations.append(evaluate_prediction(predicted_raster, x1_raster, y_raster))
+    if (i + 1) % 25 == 0:
+        print(f'Evaluated {i + 1} / {iterations} files')
+
+print('Average evaluation metrics:')
+print(
+    f'MSE  p|y: {np.mean([e["mse_predicted"] for e in evaluations]):.2f} | {np.mean([e["mse_input"] for e in evaluations]):.2f}')
+print(
+    f'PSNR p|y: {np.mean([e["psnr_predicted"] for e in evaluations]):.2f} | {np.mean([e["psnr_input"] for e in evaluations]):.2f}')
+print(
+    f'SSIM p|y: {np.mean([e["ssim_predicted"] for e in evaluations]):.2f} | {np.mean([e["ssim_input"] for e in evaluations]):.2f}')
+print(
+    f'SAM  p|y: {np.mean([e["sam_predicted"] for e in evaluations]):.2f} | {np.mean([e["sam_input"] for e in evaluations]):.2f}')
+# TODO implement NIQE
+
+print('Selected file:')
+print(
+    f'MSE  p|y: {metrics["mse_predicted"]:.2f} | {metrics["mse_input"]:.2f} | 0 == perfect')
+print(
+    f'PSNR p|y: {metrics["psnr_predicted"]:.2f} | {metrics["psnr_input"]:.2f} | 100 == perfect')
+print(
+    f'SSIM p|y: {metrics["ssim_predicted"]:.2f} | {metrics["ssim_input"]:.2f} | 1.0 == perfect')
+print(
+    f'SAM  p|y: {metrics["sam_predicted"]:.2f} | {metrics["sam_input"]:.2f} | 0 == perfect')
