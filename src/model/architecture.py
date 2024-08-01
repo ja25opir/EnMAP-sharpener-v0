@@ -407,7 +407,7 @@ class MMSRes:
 
         # skip_connection = layers.Add()([input3d, merged2])
 
-        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
+        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same', activation=leakyRelu)(merged2)
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
         # merged3 = SFTLayer(filters=9)([conv3, edges3])

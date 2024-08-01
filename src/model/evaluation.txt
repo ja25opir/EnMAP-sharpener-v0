@@ -116,3 +116,14 @@ MSE  p|y: 33.47 | 73.73
 PSNR p|y: 37.56 | 35.28
 SSIM p|y: 0.93 | 0.89
 SAM  p|y: 2.49 | 3.10
+
+-----------normal dataset, 40 bands (140:180) --> a bit worse than bands above (looked a bit stuck in local extrema tho)
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 36.03, acc: 0.79
+MSE  p|y: 197.72 | 230.39
+PSNR p|y: 28.31 | 27.21
+SSIM p|y: 0.87 | 0.82
+SAM  p|y: 3.84 | 4.39
