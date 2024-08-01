@@ -103,8 +103,8 @@ def load_data(file_name):
     y = np.load(Y_DATA_PATH + file_name)
     x = x[(224, 225, 226, 227), :, :]
     # x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
-    x1 = np.load(X_DATA_PATH + file_name)[180:220, :, :]  # 20 bands only
-    y = y[180:220, :, :]  # 20 bands only
+    x1 = np.load(X_DATA_PATH + file_name)[20:60, :, :]  # 20 bands only
+    y = y[20:60, :, :]  # 20 bands only
     return x, x1, y
 
 
@@ -129,7 +129,7 @@ print(sr_model.summary())
 x_raster, x1_raster, y_raster = load_data(test_file)
 predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
 
-bands = [10, 20, 30]
+bands = [1,2,3]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 
