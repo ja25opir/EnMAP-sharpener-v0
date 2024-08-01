@@ -103,8 +103,8 @@ def load_data(file_name):
     y = np.load(Y_DATA_PATH + file_name)
     x = x[(224, 225, 226, 227), :, :]
     # x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
-    x1 = np.load(X_DATA_PATH + file_name)[20:40, :, :]  # 20 bands only
-    y = y[20:40, :, :]  # 20 bands only
+    x1 = np.load(X_DATA_PATH + file_name)[180:220, :, :]  # 20 bands only
+    y = y[180:220, :, :]  # 20 bands only
     return x, x1, y
 
 
@@ -119,20 +119,21 @@ X1_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x1/'
 Y_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/y/'
 MODEL_PATH = os.getcwd() + '/../../output/models/'
 
-no_output_bands = 20
+no_output_bands = 40
 residual_leaning = False
-test_file = '20220916T104547Z_13_8.npy'
+test_file = '20220627T104548Z_0_0.npy'
+# test_file = '20220916T104547Z_13_8.npy'
 sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes.keras', custom_objects=CUSTOM_LAYERS)
 
 print(sr_model.summary())
 x_raster, x1_raster, y_raster = load_data(test_file)
 predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
 
-bands = [0, 1, 2]
+bands = [10, 20, 30]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 
-x_rgb = get_bands_from_array(x_raster, bands)
+x_rgb = get_bands_from_array(x_raster, [0,1,2])
 plot_3_band_image(x_rgb, title='Input Image x (Sentinel)')
 x1_rgb = get_bands_from_array(x1_raster, bands)
 plot_3_band_image(x1_rgb, title='Input Image x1 (EnMAP)')

@@ -105,3 +105,14 @@ MSE  p|y: 59.87 | 63.61
 PSNR p|y: 38.04 | 37.41
 SSIM p|y: 0.92 | 0.91
 SAM  p|y: 1.43 | 1.18
+
+-----------normal dataset, 40 bands (20:60) --> crazy acc, sharpening average as usual; works also for bands not included in the training
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 12.60, acc: 0.94(!!!)
+MSE  p|y: 36.37 | 73.73
+PSNR p|y: 36.98 | 35.28
+SSIM p|y: 0.92 | 0.89
+SAM  p|y: 2.63 | 3.10
