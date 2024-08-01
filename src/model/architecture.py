@@ -412,7 +412,7 @@ class MMSRes:
         merged3 = DILayer()([conv3, edges3])
         # merged3 = SFTLayer(filters=9)([conv3, edges3])
 
-        convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
+        convOut = layers.Conv3D(1, (7,7,5), padding='same',
                                 activation='linear')(merged3)
 
         skip_connection = layers.Add()([input3d, convOut])
