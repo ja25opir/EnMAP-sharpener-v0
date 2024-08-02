@@ -129,8 +129,9 @@ class Model:
         history = self.history
         train_ssim = history['ssim']
         val_ssim = history['val_ssim']
-        train_psnr = history['psnr'] / 100
-        val_psnr = history['val_psnr'] / 100
+        # psnr / 100
+        train_psnr = list(map(lambda x: x / 100, history['psnr']))
+        val_psnr = list(map(lambda x: x / 100, history['val_psnr']))
         loss = history['loss']
         val_loss = history['val_loss']
 
