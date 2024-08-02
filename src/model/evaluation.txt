@@ -136,8 +136,12 @@ tried:
  # todo: evaluate the following things again (x1 and y bands were different!!!)
  (9,9,7) (3,3,9) (3,3,1) (5,5,3) --> worse (good acc but metrics are bad --> acc not meaningful)
  loss: 30.36, acc: 0.81
- (9,9,7) (3,3,6) (3,3,6) (5,5,3) --> worse (good acc but metrics are bad --> acc not meaningful)
- loss: 31.31, acc: 0.81
+ (9,9,7) (3,3,6) (3,3,6) (5,5,3) --> similar to 2x (3,3,1), little worse
+	loss: 13.58, ssim: 0.94
+	MSE  p|y: 36.77 | 73.73
+	PSNR p|y: 37.02 | 35.28
+	SSIM p|y: 0.93 | 0.89
+	SAM  p|y: 2.63 | 3.10
  (9,9,7) (3,3,2) (3,3,2) (5,5,3) --> loss still decaying, can be trained further 
  loss: 32.05, acc: 0.82
  

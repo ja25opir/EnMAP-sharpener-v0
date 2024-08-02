@@ -72,9 +72,8 @@ def get_mse(prediction, ground_truth):
 
 
 def evaluate_prediction(prediction, input_x, ground_truth):
-    factor = 255 / 10000
-    mse_predicted = get_mse(prediction * factor, ground_truth * factor)
-    mse_input = get_mse(input_x * factor, ground_truth * factor)
+    mse_predicted = get_mse(prediction * 255, ground_truth * 255)
+    mse_input = get_mse(input_x * 255, ground_truth * 255)
 
     psnr_predicted = psnr(prediction, ground_truth, max_p=1)
     psnr_input = psnr(input_x, ground_truth, max_p=1)

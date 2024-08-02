@@ -137,10 +137,11 @@ class Model:
 
         epochs = range(1, len(train_ssim) + 1)
 
-        plt.plot(epochs, train_ssim, color='royalblue', linewidth=2, label='Training SSIM')
+        # todo: x ticks per integer only
+        plt.plot(epochs, train_ssim, color='tomato', linewidth=2, label='Training SSIM')
         plt.plot(epochs, val_ssim, color='mediumpurple', linewidth=2, linestyle='dashed', label='Validation SSIM')
-        plt.plot(epochs, train_psnr, color='royalblue', linewidth=2, label='Training PSNR / 100')
-        plt.plot(epochs, val_psnr, color='royalblue', linewidth=2, label='Validation PSNR / 100')
+        plt.plot(epochs, train_psnr, color='tomato', linewidth=2, label='Training PSNR / 100')
+        plt.plot(epochs, val_psnr, color='mediumpurple', linewidth=2, linestyle='dashed', label='Validation PSNR / 100')
         plt.title('Training and validation accuracy')
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
@@ -149,7 +150,7 @@ class Model:
 
         plt.figure()
         plt.plot(epochs, loss, color='firebrick', linewidth=2, label='Training loss')
-        plt.plot(epochs, val_loss, color='tomato', linewidth=2, linestyle='dashed', label='Validation loss')
+        plt.plot(epochs, val_loss, color='royalblue', linewidth=2, linestyle='dashed', label='Validation loss')
         plt.title('Training and validation loss')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
