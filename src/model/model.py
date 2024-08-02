@@ -5,7 +5,7 @@ from tensorflow.keras import layers, models, optimizers, initializers, regulariz
 from matplotlib import pyplot as plt
 
 from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss, \
-    residual_loss
+    residual_loss, ssim, mse, variance, psnr
 from .load_data import DataGenerator, DuoBranchDataGenerator
 
 
@@ -116,8 +116,7 @@ class Model:
         self.learning_rate = self.set_lr_schedule()
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         loss = ms_ssim_l1_loss  # self.loss_function
-        # loss = residual_loss
-        self.model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+        self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
         self.model.summary()
 
         history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
@@ -128,15 +127,19 @@ class Model:
 
     def plot_history(self):
         history = self.history
-        acc = history['accuracy']
-        val_acc = history['val_accuracy']
+        train_ssim = history['ssim']
+        val_ssim = history['val_ssim']
+        train_psnr = history['psnr'] / 100
+        val_psnr = history['val_psnr'] / 100
         loss = history['loss']
         val_loss = history['val_loss']
 
-        epochs = range(1, len(acc) + 1)
+        epochs = range(1, len(train_ssim) + 1)
 
-        plt.plot(epochs, acc, color='royalblue', linewidth=2, label='Training accuracy')
-        plt.plot(epochs, val_acc, color='mediumpurple', linewidth=2, linestyle='dashed', label='Validation accuracy')
+        plt.plot(epochs, train_ssim, color='royalblue', linewidth=2, label='Training SSIM')
+        plt.plot(epochs, val_ssim, color='mediumpurple', linewidth=2, linestyle='dashed', label='Validation SSIM')
+        plt.plot(epochs, train_psnr, color='royalblue', linewidth=2, label='Training PSNR / 100')
+        plt.plot(epochs, val_psnr, color='royalblue', linewidth=2, label='Validation PSNR / 100')
         plt.title('Training and validation accuracy')
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')

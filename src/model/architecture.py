@@ -31,6 +31,23 @@ def residual_loss(y_true, y_pred):
     # source: https://openaccess.thecvf.com/content_cvpr_2016/papers/Kim_Accurate_Image_Super-Resolution_CVPR_2016_paper.pdf
     return 1 / 2 * tf.square(tf.abs(y_true - y_pred))
 
+@tf.keras.utils.register_keras_serializable()
+def ssim(y_true, y_pred):
+    max_raster_value = 10000
+    return tf.image.ssim(y_true, y_pred, max_raster_value)
+
+@tf.keras.utils.register_keras_serializable()
+def mse(y_true, y_pred):
+    return tf.reduce_mean(tf.square(y_true - y_pred))
+
+@tf.keras.utils.register_keras_serializable()
+def variance(y_true, y_pred):
+    return tf.math.reduce_variance(y_true - y_pred)
+
+@tf.keras.utils.register_keras_serializable()
+def psnr(y_true, y_pred):
+    max_raster_value = 10000
+    return tf.image.psnr(y_true, y_pred, max_raster_value)
 
 class ReflectionPadding2D(layers.Layer):
     def __init__(self, padding=(1, 1), **kwargs):
@@ -401,13 +418,13 @@ class MMSRes:
         # skip_connection = layers.Add()([input3d, merged1])
 
         # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look more reasonable with (1,1,1) tho
-        conv2 = layers.Conv3D(32, (3, 3, 2), padding='same', activation=leakyRelu)(merged1)
+        conv2 = layers.Conv3D(32, (3, 3, 6), padding='same', activation=leakyRelu)(merged1)
         merged2 = DILayer()([conv2, edges2])
         # merged2 = SFTLayer(filters=32)([conv2, edges2])
 
         # skip_connection = layers.Add()([input3d, merged2])
 
-        conv3 = layers.Conv3D(9, (3, 3, 2), padding='same', activation=leakyRelu)(merged2)
+        conv3 = layers.Conv3D(9, (3, 3, 6), padding='same', activation=leakyRelu)(merged2)
         # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
         merged3 = DILayer()([conv3, edges3])
         # merged3 = SFTLayer(filters=9)([conv3, edges3])

@@ -83,7 +83,7 @@ class DuoBranchDataGenerator(DataGenerator):
             y_img = np.load(y_path)
 
             # todo: testing with c bands
-            x1_img = x_img[140:180, :, :]
+            x1_img = x_img[20:60, :, :]
             # x1_img = x_img[:112, :, :]
             x_img = x_img[(224, 225, 226, 227), :, :]
             # indices = np.hstack([np.arange(20, 40), np.arange(224, 228)])
