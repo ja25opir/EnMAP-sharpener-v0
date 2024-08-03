@@ -67,11 +67,8 @@ class Model:
 
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
-        # todo: shuffle? -> in DataGenerator
-        self.train_files = all_files[:int(len(all_files) * 0.9)]  # todo: WIP
-        self.test_files = all_files[int(len(all_files) * 0.9):]
-        # self.train_files = all_files[:5000]  # todo: WIP
-        # self.test_files = all_files[5001:6000]
+        self.train_files = all_files[:int(len(all_files) * 0.7)]
+        self.test_files = all_files[int(len(all_files) * 0.3):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
@@ -153,7 +150,7 @@ class Model:
                     print('Saved model:', self.name)
 
                 # todo save metrics and hyperparameters
-                # todo do a correct train test split
+                # todo do a correct train test split (and shuffle data)
                 # todo if loss is nan redo training --> custom callbacks: https://www.tensorflow.org/guide/keras/writing_your_own_callbacks
 
         print("Hyperparameter history: \n", history_list)
