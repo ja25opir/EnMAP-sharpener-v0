@@ -383,11 +383,7 @@ class MMSRes:
         # todo: concat both branches only at the end
         # todo: (use grayscaled msi image)
         # ---
-        # todo: atm best config: d23dda2f2837eebaf0d6c84dcfcdac247d86665e OR 9fb725fab3cdddb7b4b5d1a747863dfb6465bc69
-        # todo: with skip connection: sharper img
         # todo: negative values possible as long as last layer has a linear activation function https://stats.stackexchange.com/questions/362588/how-can-a-network-with-only-relu-nodes-output-negative-values
-        # seed_gen = tf.keras.utils.set_random_seed(42)
-        # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
 
         """detail detection"""
         input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
@@ -396,18 +392,18 @@ class MMSRes:
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)
         edges1 = layers.Conv2D(9, kernel, padding='valid')(padded)
         edges1 = layers.BatchNormalization()(edges1)
-        # edges1 = layers.Activation(leakyRelu)(edges1)
-        edges1 = layers.Activation('relu')(edges1)
+        edges1 = layers.Activation(leakyRelu)(edges1)
+        # edges1 = layers.Activation('relu')(edges1)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges1)
         edges2 = layers.Conv2D(6, kernel, padding='valid')(padded)
         edges2 = layers.BatchNormalization()(edges2)
-        # edges2 = layers.Activation(leakyRelu)(edges2)
-        edges2 = layers.Activation('relu')(edges2)
+        edges2 = layers.Activation(leakyRelu)(edges2)
+        # edges2 = layers.Activation('relu')(edges2)
         padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
         edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
-        # edges3 = layers.Activation(leakyRelu)(edges3)
-        edges3 = layers.Activation('relu')(edges3)
+        edges3 = layers.Activation(leakyRelu)(edges3)
+        # edges3 = layers.Activation('relu')(edges3)
 
         """main branch"""
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
