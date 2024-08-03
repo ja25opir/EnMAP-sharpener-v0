@@ -31,23 +31,28 @@ def residual_loss(y_true, y_pred):
     # source: https://openaccess.thecvf.com/content_cvpr_2016/papers/Kim_Accurate_Image_Super-Resolution_CVPR_2016_paper.pdf
     return 1 / 2 * tf.square(tf.abs(y_true - y_pred))
 
+
 @tf.keras.utils.register_keras_serializable()
 def ssim(y_true, y_pred):
     max_raster_value = 10000
     return tf.image.ssim(y_true, y_pred, max_raster_value)
 
+
 @tf.keras.utils.register_keras_serializable()
 def mse(y_true, y_pred):
     return tf.reduce_mean(tf.square(y_true - y_pred))
+
 
 @tf.keras.utils.register_keras_serializable()
 def variance(y_true, y_pred):
     return tf.math.reduce_variance(y_true - y_pred)
 
+
 @tf.keras.utils.register_keras_serializable()
 def psnr(y_true, y_pred):
     max_raster_value = 10000
     return tf.image.psnr(y_true, y_pred, max_raster_value)
+
 
 class ReflectionPadding2D(layers.Layer):
     def __init__(self, padding=(1, 1), **kwargs):
@@ -357,11 +362,13 @@ class DILayer(layers.Layer):
 class MMSRes:
     """full custom network"""
 
-    def __init__(self, tile_size, no_input_bands, no_output_bands):
+    def __init__(self, tile_size, no_input_bands, no_output_bands, kernels_mb, kernels_db):
         self.name = 'MMSRes'
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
+        self.kernels_mb = kernels_mb
+        self.kernels_db = kernels_db
         self.padding2d = (lambda x: (x[0] // 2, x[1] // 2))
         self.model = None
         self.create_layers()
@@ -387,45 +394,36 @@ class MMSRes:
 
         """detail detection"""
         input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
-        kernel = (3, 3)
         leakyRelu = layers.LeakyReLU()
-        padded = ReflectionPadding2D(padding=self.padding2d(kernel))(input2d)
-        edges1 = layers.Conv2D(9, kernel, padding='valid')(padded)
+        padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[0]))(input2d)
+        edges1 = layers.Conv2D(3, self.kernels_db[0], padding='valid')(padded)
         edges1 = layers.BatchNormalization()(edges1)
         edges1 = layers.Activation(leakyRelu)(edges1)
-        # edges1 = layers.Activation('relu')(edges1)
-        padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges1)
-        edges2 = layers.Conv2D(6, kernel, padding='valid')(padded)
+        padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[1]))(edges1)
+        edges2 = layers.Conv2D(3, self.kernels_db[1], padding='valid')(padded)
         edges2 = layers.BatchNormalization()(edges2)
         edges2 = layers.Activation(leakyRelu)(edges2)
-        # edges2 = layers.Activation('relu')(edges2)
-        padded = ReflectionPadding2D(padding=self.padding2d(kernel))(edges2)
-        edges3 = layers.Conv2D(3, kernel, padding='valid')(padded)
+        padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[2]))(edges2)
+        edges3 = layers.Conv2D(3, self.kernels_db[2], padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
         edges3 = layers.Activation(leakyRelu)(edges3)
-        # edges3 = layers.Activation('relu')(edges3)
 
         """main branch"""
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        conv1 = layers.Conv3D(64, (9, 9, 7), padding='same', activation=leakyRelu)(input3d)
+        conv1 = layers.Conv3D(64, self.kernels_mb[0], padding='same', activation=leakyRelu)(input3d)
         merged1 = DILayer()([conv1, edges1])
-        # merged1 = SFTLayer(filters=64)([conv1, edges1])
 
         # skip_connection = layers.Add()([input3d, merged1])
 
-        # (3, 3, 1) > (1, 1, 1) > (3, 3, 3), 2d layer look more reasonable with (1,1,1) tho
-        conv2 = layers.Conv3D(32, (3, 3, 1), padding='same', activation=leakyRelu)(merged1)
+        conv2 = layers.Conv3D(32, self.kernels_mb[1], padding='same', activation=leakyRelu)(merged1)
         merged2 = DILayer()([conv2, edges2])
-        # merged2 = SFTLayer(filters=32)([conv2, edges2])
 
         # skip_connection = layers.Add()([input3d, merged2])
 
-        conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation=leakyRelu)(merged2)
-        # conv3 = layers.Conv3D(9, (3, 3, 1), padding='same', activation='relu')(merged2)
+        conv3 = layers.Conv3D(9, self.kernels_mb[2], padding='same', activation=leakyRelu)(merged2)
         merged3 = DILayer()([conv3, edges3])
-        # merged3 = SFTLayer(filters=9)([conv3, edges3])
 
-        convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
+        convOut = layers.Conv3D(1, self.kernels_mb[3], padding='same',
                                 activation='linear')(merged3)
 
         skip_connection = layers.Add()([input3d, convOut])

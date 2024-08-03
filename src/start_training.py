@@ -11,7 +11,6 @@ TILE_SIZE = 32
 # NO_OUTPUT_BANDS = 224
 NO_INPUT_BANDS = 4
 NO_OUTPUT_BANDS = 40
-KERNEL_SIZES = [(9, 9), (3, 3), (5, 5)]
 
 OUTPUT_DIR = os.getcwd() + '/output/'
 LOSS_FUNCTION = 'mean_squared_error'
@@ -21,7 +20,7 @@ LOSS_FUNCTION = 'mean_squared_error'
 
 @multiple_gpu_distribution
 def train_model(batch_size, epochs, train_data):
-    cnn_model = Model(train_data, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, batch_size, KERNEL_SIZES,
+    cnn_model = Model(train_data, TILE_SIZE, NO_INPUT_BANDS, NO_OUTPUT_BANDS, batch_size,
                       LOSS_FUNCTION, epochs, OUTPUT_DIR)
 
     print('Starting training...')

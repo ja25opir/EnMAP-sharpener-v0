@@ -14,7 +14,7 @@ from .load_data import DataGenerator, DuoBranchDataGenerator
 # SRCNN: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=7115171
 # Sentinel CNN: https://github.com/jensleitloff/CNN-Sentinel/blob/master/py/02_train_rgb_finetuning.py
 class Model:
-    def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size, kernel_size_list,
+    def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size,
                  loss_function, train_epochs, output_dir):
         self.name = None
         self.train_data_dir = train_data_dir
@@ -22,7 +22,6 @@ class Model:
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
         self.batch_size = batch_size
-        self.kernel_size_list = kernel_size_list
         self.loss_function = loss_function
         self.train_epochs = train_epochs
         self.output_dir = output_dir
@@ -33,7 +32,7 @@ class Model:
         self.model = self.define_model()
         self.train_test_split()
 
-    def define_model(self):
+    def define_model(self, hyperparameters=None):
         # padding = same (output size = input size) --> rethink this
         # activation function relu, relu, linear (Masi) --> rethink this
         # maybe leaky relu vs vanishing gradients
@@ -61,11 +60,6 @@ class Model:
 
         model = architecture.model
         self.name = architecture.name
-
-        # todo: this already seems to be set by default
-        # initializer = initializers.GlorotUniform()
-        # for layer in model.layers:
-        #     layer.kernel_initializer = initializer
 
         return model
 
@@ -116,12 +110,49 @@ class Model:
         self.learning_rate = self.set_lr_schedule()
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         loss = ms_ssim_l1_loss  # self.loss_function
-        self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
-        self.model.summary()
 
-        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs, verbose=1)
+        # hyper-parameterize the model
+        kernel_sizes_db = [[(7, 7), (7, 7), (7, 7)],
+                           [(3, 3), (3, 3), (3, 3)],
+                           [(9, 9), (3, 3), (5, 5)],
+                           [(9, 9), (6, 6), (3, 3)]]
+        kernel_sizes_mb = [[(3, 3, 3), (3, 3, 3), (3, 3, 3), (3, 3, 3)],
+                           [(9, 9, 7), (1, 1, 1), (1, 1, 1), (5, 5, 3)],
+                           [(9, 9, 7), (3, 3, 1), (3, 3, 1), (5, 5, 3)],
+                           [(9, 9, 7), (3, 3, 3), (3, 3, 3), (5, 5, 3)],
+                           [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]]
 
-        self.history = history.history
+        best_ssim_psnr = 0
+        best_kernels = None
+        history_list = []
+        for k_mb in kernel_sizes_mb:
+            for k_db in kernel_sizes_db:
+                architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands, kernels_mb=k_mb,
+                                      kernels_db=k_db)
+                self.model = architecture.model
+                self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
+                self.model.summary()
+                history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs,
+                                         verbose=1)
+                self.history = history.history
+                history_list.append({'k_mb': k_mb, 'k_db': k_db, 'hist': self.history})
+
+                ssim_psnr = self.history['val_ssim'][-1] + self.history['val_psnr'][-1] / 100
+
+                # save model if better than previous (metric: ssim + psnr / 100)
+                if ssim_psnr > best_ssim_psnr:
+                    best_ssim_psnr = ssim_psnr
+                    best_kernels = {'k_mb': k_mb, 'k_db': k_db}
+                    self.model.save(self.output_dir + 'models/' + self.name + '.keras')
+                    print('Saved model:', self.name)
+
+                # todo save metrics and hyperparameters
+                # todo do a correct train test split
+                # todo if loss is nan redo training --> custom callbacks: https://www.tensorflow.org/guide/keras/writing_your_own_callbacks
+
+        print("Hyperparameter history: \n", history_list)
+
+        print("Best Kernels: \n", best_kernels)
 
         return self.model
 
@@ -129,28 +160,36 @@ class Model:
         history = self.history
         train_ssim = history['ssim']
         val_ssim = history['val_ssim']
-        # psnr / 100
-        train_psnr = list(map(lambda x: x / 100, history['psnr']))
-        val_psnr = list(map(lambda x: x / 100, history['val_psnr']))
+        train_psnr = history['psnr']
+        val_psnr = history['val_psnr']
         loss = history['loss']
         val_loss = history['val_loss']
 
         epochs = range(1, len(train_ssim) + 1)
 
-        # todo: x ticks per integer only
-        plt.plot(epochs, train_ssim, color='tomato', linewidth=2, label='Training SSIM')
-        plt.plot(epochs, val_ssim, color='mediumpurple', linewidth=2, linestyle='dashed', label='Validation SSIM')
-        plt.plot(epochs, train_psnr, color='tomato', linewidth=2, label='Training PSNR / 100')
-        plt.plot(epochs, val_psnr, color='mediumpurple', linewidth=2, linestyle='dashed', label='Validation PSNR / 100')
-        plt.title('Training and validation accuracy')
+        fig, ax = plt.subplots()
+        ax.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
+        ax.xaxis.set_major_locator(plt.MultipleLocator(1))
+
+        plt.plot(epochs, train_ssim, color='tomato', linewidth=1, label='Training SSIM')
+        plt.plot(epochs, val_ssim, color='mediumpurple', linewidth=1, linestyle='dashed', label='Validation SSIM')
+        plt.title('Training and validation SSIM')
         plt.xlabel('Epoch')
-        plt.ylabel('Accuracy')
+        plt.ylabel('SSIM')
         plt.legend()
-        plt.savefig(self.output_dir + 'figures/' + self.name + '_accuracy.png')
+        plt.savefig(self.output_dir + 'figures/' + self.name + '_SSIM.png')
+
+        plt.plot(epochs, train_psnr, color='tomato', linewidth=1, label='Training PSNR')
+        plt.plot(epochs, val_psnr, color='mediumpurple', linewidth=1, linestyle='dashed', label='Validation PSNR')
+        plt.title('Training and validation PSNR')
+        plt.xlabel('Epoch')
+        plt.ylabel('PSNR')
+        plt.legend()
+        plt.savefig(self.output_dir + 'figures/' + self.name + '_PSNR.png')
 
         plt.figure()
-        plt.plot(epochs, loss, color='firebrick', linewidth=2, label='Training loss')
-        plt.plot(epochs, val_loss, color='royalblue', linewidth=2, linestyle='dashed', label='Validation loss')
+        plt.plot(epochs, loss, color='firebrick', linewidth=1, label='Training loss')
+        plt.plot(epochs, val_loss, color='royalblue', linewidth=1, linestyle='dashed', label='Validation loss')
         plt.title('Training and validation loss')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')

@@ -136,15 +136,30 @@ tried:
  # todo: evaluate the following things again (x1 and y bands were different!!!)
  (9,9,7) (3,3,9) (3,3,1) (5,5,3) --> worse (good acc but metrics are bad --> acc not meaningful)
  loss: 30.36, acc: 0.81
- (9,9,7) (3,3,6) (3,3,6) (5,5,3) --> similar to 2x (3,3,1), little worse
+ (9,9,7) (3,3,6) (3,3,6) (5,5,3)
 	loss: 13.58, ssim: 0.94
 	MSE  p|y: 36.77 | 73.73
 	PSNR p|y: 37.02 | 35.28
 	SSIM p|y: 0.93 | 0.89
 	SAM  p|y: 2.63 | 3.10
- (9,9,7) (3,3,2) (3,3,2) (5,5,3) --> loss still decaying, can be trained further 
- loss: 32.05, acc: 0.82
+ (9,9,7) (3,3,2) (3,3,2) (5,5,3) --> similar to 2x (3,3,6), little worse
+	loss: 13.64, ssim: 0.94
+	MSE  p|y: 37.19 | 73.73
+	PSNR p|y: 36.95 | 35.28
+	SSIM p|y: 0.93 | 0.89
+	SAM  p|y: 2.65 | 3.10
+ (9,9,7) (3,3,1) (3,3,1) (5,5,3) --> better
+	loss: 13.04, ssim: 0.94
+	MSE  p|y: 35.52 | 73.73
+	PSNR p|y: 37.15 | 35.28
+	SSIM p|y: 0.93 | 0.89
+	SAM  p|y: 2.57 | 3.10
  
- 
- todo: implement other acc function (such aus SAM or SSIM and loop over training with different settings)
+leakyReLU in detail branch: --> best atm
+	loss: 12.73, ssim: 0.94
+	MSE  p|y: 35.18 | 73.73
+	PSNR p|y: 37.19 | 35.28
+	SSIM p|y: 0.93 | 0.89
+	SAM  p|y: 2.57 | 3.10
+
  
