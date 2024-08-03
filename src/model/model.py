@@ -67,9 +67,9 @@ class Model:
 
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
-        train_ratio = 0.1
+        train_ratio = 0.7
         self.train_files = all_files[:int(len(all_files) * train_ratio)]
-        self.test_files = all_files[int(len(all_files) * 0.9):]
+        self.test_files = all_files[int(len(all_files) * train_ratio):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
@@ -102,9 +102,9 @@ class Model:
                      'shuffle': False}
 
         # hyper-parameterize the model
-        kernel_sizes_db = [[(9, 9), (3, 3), (5, 5)],
-                           [(7, 7), (7, 7), (7, 7)],
+        kernel_sizes_db = [[(7, 7), (7, 7), (7, 7)],
                            [(3, 3), (3, 3), (3, 3)],
+                           [(9, 9), (3, 3), (5, 5)],
                            [(9, 9), (6, 6), (3, 3)]]
         kernel_sizes_mb = [[(3, 3, 3), (3, 3, 3), (3, 3, 3), (3, 3, 3)],
                            [(9, 9, 7), (1, 1, 1), (1, 1, 1), (5, 5, 3)],
@@ -147,8 +147,12 @@ class Model:
                     self.model.save(self.output_dir + 'models/' + self.name + '.keras')
                     print('Saved model:', self.name)
 
+                tf.keras.backend.clear_session()
+
+                # todo: bugs always after three iterations (layers in tf are not cleared but named consecutively)
                 # todo save metrics and hyperparameters
                 # todo do a correct train test split (and shuffle data)
+                # todo hypertuner by keras: https://www.tensorflow.org/tutorials/keras/keras_tuner
                 # todo if loss is nan redo training --> custom callbacks: https://www.tensorflow.org/guide/keras/writing_your_own_callbacks
 
         print("Hyperparameter history: \n", history_list)
