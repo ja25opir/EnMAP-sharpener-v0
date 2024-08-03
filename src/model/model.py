@@ -110,7 +110,6 @@ class Model:
         test_generator = DuoBranchDataGenerator(**test_args)
 
         self.learning_rate = self.set_lr_schedule()
-        optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         loss = ms_ssim_l1_loss  # self.loss_function
 
         # hyper-parameterize the model
@@ -132,6 +131,7 @@ class Model:
                 architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands, kernels_mb=k_mb,
                                       kernels_db=k_db)
                 self.model = architecture.model
+                optimizer = optimizers.Adam(learning_rate=self.learning_rate)
                 self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
                 self.model.summary()
 
