@@ -56,7 +56,9 @@ class Model:
         # architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # architecture = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # MMSRes
-        architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands)
+        architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands,
+                              kernels_mb=[(3, 3, 3), (3, 3, 3), (3, 3, 3), (3, 3, 3)],
+                              kernels_db=[(3, 3), (3, 3), (3, 3)])
 
         model = architecture.model
         self.name = architecture.name
