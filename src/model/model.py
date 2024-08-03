@@ -134,6 +134,10 @@ class Model:
                 self.model = architecture.model
                 self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
                 self.model.summary()
+
+                print('Main branch kernels: ', k_mb)
+                print('Detail branch kernels: ', k_db)
+
                 history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs,
                                          verbose=1)
                 self.history = history.history
