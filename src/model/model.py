@@ -67,8 +67,9 @@ class Model:
 
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
-        self.train_files = all_files[:int(len(all_files) * 0.7)]
-        self.test_files = all_files[int(len(all_files) * 0.3):]
+        train_ratio = 0.7
+        self.train_files = all_files[:int(len(all_files) * train_ratio)]
+        self.test_files = all_files[int(len(all_files) * train_ratio):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
