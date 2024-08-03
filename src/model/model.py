@@ -113,9 +113,9 @@ class Model:
         loss = ms_ssim_l1_loss  # self.loss_function
 
         # hyper-parameterize the model
-        kernel_sizes_db = [[(7, 7), (7, 7), (7, 7)],
+        kernel_sizes_db = [[(9, 9), (3, 3), (5, 5)],
+                           [(7, 7), (7, 7), (7, 7)],
                            [(3, 3), (3, 3), (3, 3)],
-                           [(9, 9), (3, 3), (5, 5)],
                            [(9, 9), (6, 6), (3, 3)]]
         kernel_sizes_mb = [[(3, 3, 3), (3, 3, 3), (3, 3, 3), (3, 3, 3)],
                            [(9, 9, 7), (1, 1, 1), (1, 1, 1), (5, 5, 3)],
