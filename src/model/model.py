@@ -101,15 +101,6 @@ class Model:
                      'no_output_bands': self.no_output_bands,
                      'shuffle': False}
 
-        # train_generator = DataGenerator(**train_args)
-        # test_generator = DataGenerator(**test_args)
-
-        train_generator = DuoBranchDataGenerator(**train_args)
-        test_generator = DuoBranchDataGenerator(**test_args)
-
-        self.learning_rate = self.set_lr_schedule()
-        loss = ms_ssim_l1_loss  # self.loss_function
-
         # hyper-parameterize the model
         kernel_sizes_db = [[(9, 9), (3, 3), (5, 5)],
                            [(7, 7), (7, 7), (7, 7)],
@@ -126,6 +117,12 @@ class Model:
         history_list = []
         for k_mb in kernel_sizes_mb:
             for k_db in kernel_sizes_db:
+                train_generator = DuoBranchDataGenerator(**train_args)
+                test_generator = DuoBranchDataGenerator(**test_args)
+
+                self.learning_rate = self.set_lr_schedule()
+                loss = ms_ssim_l1_loss  # self.loss_function
+
                 architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands, kernels_mb=k_mb,
                                       kernels_db=k_db)
                 self.model = architecture.model
