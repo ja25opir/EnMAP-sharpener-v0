@@ -150,7 +150,6 @@ class Model:
                 print('Detail branch kernels: ', k_db)
 
                 self.train_model(kernels_mb=k_mb, kernels_db=k_db)
-                tf.python.eager.context._reset_context()
 
                 history_list.append({'k_mb': k_mb, 'k_db': k_db, 'hist': self.history})
 
@@ -163,6 +162,7 @@ class Model:
                     self.model.save(self.output_dir + 'models/' + self.name + '.keras')
                     print('Saved model:', self.name)
 
+                # clear sequential model graph
                 tf.keras.backend.clear_session()
 
                 # todo bugs after some iterations (looks like gpu strategy issue, memory is not cleared?)
