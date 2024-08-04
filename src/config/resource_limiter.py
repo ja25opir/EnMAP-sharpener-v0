@@ -39,6 +39,10 @@ def multiple_gpu_distribution(func):
             return func(*args, **kwargs)
         # distribute across all GPUs with mirrored strategy
         strategy = tf.distribute.MirroredStrategy(logical_gpus)
-        with strategy.scope():
-            return func(*args, **kwargs)
+        try:
+            with strategy.scope():
+                return func(*args, **kwargs)
+        except Exception as e:
+            print('Error during distributed training: ', e)
+            return None
     return wrapper
