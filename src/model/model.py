@@ -153,8 +153,6 @@ class Model:
         history_list = []
         for k_mb in kernel_sizes_mb:
             for k_db in kernel_sizes_db:
-                # clear sequential model graph and delete model to avoid clutter from old models and free memory
-                tf.keras.backend.clear_session()
                 self.model = None
 
                 print('Main branch kernels: ', k_mb)
@@ -175,6 +173,9 @@ class Model:
                     print('Saved model:', self.name)
 
                 print('-' * 98)
+
+                # clear sequential model graph and delete model to avoid clutter from old models and free memory
+                tf.keras.backend.clear_session()
 
                 # todo hypertuner by keras: https://www.tensorflow.org/tutorials/keras/keras_tuner
 
