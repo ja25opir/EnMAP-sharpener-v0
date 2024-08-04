@@ -85,7 +85,6 @@ class Model:
             decay_rate=learning_rate_decay_factor,
             staircase=True)
 
-    @multiple_gpu_distribution
     def train_model(self, kernels_mb: list[tuple[int, int, int]], kernels_db: list[tuple[int, int]]) -> None:
         """
         Train the model with the given hyperparameters.
