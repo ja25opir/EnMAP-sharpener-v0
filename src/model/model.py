@@ -160,7 +160,7 @@ class Model:
 
                 print('-' * 20)
                 # clear sequential model graph and delete model
-                # tf.keras.backend.clear_session()
+                tf.keras.backend.clear_session()
                 self.model = None
 
                 # todo bugs after some iterations (looks like gpu strategy issue, memory is not cleared?)
