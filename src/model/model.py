@@ -86,7 +86,13 @@ class Model:
             staircase=True)
 
     @multiple_gpu_distribution
-    def train_model(self, kernels_mb, kernels_db):
+    def train_model(self, kernels_mb: list[tuple[int, int, int]], kernels_db: list[tuple[int, int]]) -> None:
+        """
+        Train the model with the given hyperparameters.
+        :param kernels_mb: list of kernel sizes for the main branch
+        :param kernels_db: list of kernel sizes for the detail branch
+        :return: None
+        """
         train_args = {'data_dir': self.train_data_dir,
                       'data_list': self.train_files,
                       'batch_size': self.batch_size,
@@ -119,8 +125,11 @@ class Model:
                                  verbose=1)
         self.history = history.history
 
-    def fit_hyperparameter(self):
-        # hyper-parameterize the model
+    def fit_hyperparameter(self) -> models.Model:
+        """
+        Train model with different hyperparameters, compare and save best model.
+        :return: trained model with best accuracy
+        """
         kernel_sizes_db = [[(7, 7), (7, 7), (7, 7)],
                            [(3, 3), (3, 3), (3, 3)],
                            [(9, 9), (3, 3), (5, 5)],
@@ -141,6 +150,8 @@ class Model:
                 print('Detail branch kernels: ', k_db)
 
                 self.train_model(kernels_mb=k_mb, kernels_db=k_db)
+                tf.python.eager.context._reset_context()
+
                 history_list.append({'k_mb': k_mb, 'k_db': k_db, 'hist': self.history})
 
                 ssim_psnr = self.history['val_ssim'][-1] + self.history['val_psnr'][-1] / 100
