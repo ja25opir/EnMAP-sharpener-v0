@@ -54,6 +54,13 @@ def psnr(y_true, y_pred):
     return tf.image.psnr(y_true, y_pred, max_raster_value)
 
 
+class CustomCallback(tf.keras.callbacks.Callback):
+    @staticmethod
+    def on_epoch_end(self, epoch, logs=None):
+        keys = list(logs.keys())
+        print("End epoch {} of training; got log keys: {}".format(epoch, keys))
+
+
 class ReflectionPadding2D(layers.Layer):
     def __init__(self, padding=(1, 1), **kwargs):
         self.padding = tuple(padding)

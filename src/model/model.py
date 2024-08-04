@@ -5,7 +5,7 @@ from tensorflow.keras import layers, models, optimizers, initializers, regulariz
 from matplotlib import pyplot as plt
 
 from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss, \
-    residual_loss, ssim, mse, variance, psnr
+    residual_loss, ssim, mse, variance, psnr, CustomCallback
 from .load_data import DataGenerator, DuoBranchDataGenerator
 from src.config.resource_limiter import multiple_gpu_distribution
 
@@ -116,8 +116,11 @@ class Model:
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
         self.model.summary()
-        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs,
-                                 verbose=1)
+        history = self.model.fit(train_generator,
+                                 validation_data=test_generator,
+                                 epochs=self.train_epochs,
+                                 verbose=1,
+                                 callbacks=[CustomCallback()])
         self.history = history.history
 
     def fit_hyperparameter(self) -> None:
@@ -169,7 +172,7 @@ class Model:
                 # todo if loss is nan redo training --> custom callbacks: https://www.tensorflow.org/guide/keras/writing_your_own_callbacks
 
         # save history list
-        with open(self.output_dir + 'models/' + self.name + 'hyperparam_history.txt', 'w') as f:
+        with open(self.output_dir + 'models/' + self.name + '_hyperparam_history.txt', 'w') as f:
             f.write(str(history_list))
 
         print("Hyperparameter search finished!")
