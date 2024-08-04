@@ -14,6 +14,8 @@ NO_OUTPUT_BANDS = 40
 
 OUTPUT_DIR = os.getcwd() + '/output/'
 LOSS_FUNCTION = 'mean_squared_error'
+
+
 # LEARN_RATE = 0.00001
 # https://www.activeloop.ai/resources/glossary/adaptive-learning-rate-methods/#:~:text=Adaptive%20learning%20rate%20methods%20improve%20deep%20learning%20model%20performance%20by,faster%20convergence%20and%20better%20generalization.
 # https://stats.stackexchange.com/questions/383807/why-we-call-adam-an-a-adaptive-learning-rate-algorithm-if-the-step-size-is-a-con
@@ -24,7 +26,8 @@ def train_model(batch_size, epochs, train_data):
                       LOSS_FUNCTION, epochs, OUTPUT_DIR)
 
     print('Starting training...')
-    cnn_model.train_model() # todo hyperparams
+    # cnn_model.train_model()
+    cnn_model.fit_hyperparameter()
     return cnn_model
 
 
@@ -35,7 +38,8 @@ if __name__ == '__main__':
     parser.add_argument('--mem-limit', type=int, default=10, help='GPU memory limit training in GB (per GPU)')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size for training')
     parser.add_argument('--epochs', type=int, default=10, help='Number of epochs for training')
-    parser.add_argument('--train-data-dir', type=str, default='/data/preprocessing/model_input/', help='Path to the directory with training data')
+    parser.add_argument('--train-data-dir', type=str, default='/data/preprocessing/model_input/',
+                        help='Path to the directory with training data')
 
     args = parser.parse_args()
 
