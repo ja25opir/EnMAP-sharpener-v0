@@ -17,6 +17,7 @@ from src.config.resource_limiter import multiple_gpu_distribution
 class Model:
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size,
                  loss_function, train_epochs, output_dir):
+        self.model = None
         self.name = None
         self.train_data_dir = train_data_dir
         self.tile_size = tile_size
@@ -30,7 +31,6 @@ class Model:
         self.test_files = None
         self.learning_rate = None
         self.history = None
-        self.model = self.define_model()
         self.train_test_split()
 
     def define_model(self, hyperparameters=None):
@@ -58,13 +58,11 @@ class Model:
         # architecture = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # MMSRes
         architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands,
-                              kernels_mb=[(3, 3, 3), (3, 3, 3), (3, 3, 3), (3, 3, 3)],
-                              kernels_db=[(3, 3), (3, 3), (3, 3)])
+                              kernels_mb=hyperparameters['k_mb'],
+                              kernels_db=hyperparameters['k_db'])
 
-        model = architecture.model
         self.name = architecture.name
-
-        return model
+        self.model = architecture.model
 
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
@@ -114,9 +112,7 @@ class Model:
         self.learning_rate = self.set_lr_schedule()
         loss = ms_ssim_l1_loss  # self.loss_function
 
-        architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands, kernels_mb=kernels_mb,
-                              kernels_db=kernels_db)
-        self.model = architecture.model
+        self.define_model(hyperparameters={'k_mb': kernels_mb, 'k_db': kernels_db})
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
         self.model.summary()
