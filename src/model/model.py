@@ -125,8 +125,8 @@ class Model:
         Train model with different hyperparameters, compare and save best model.
         :return: trained model with best accuracy
         """
-        kernel_sizes_db = [[(9, 9), (6, 6), (3, 3)],
-            [(7, 7), (7, 7), (7, 7)],
+        kernel_sizes_db = [[(9, 9), (5, 5), (3, 3)],
+                           [(7, 7), (7, 7), (7, 7)],
                            [(3, 3), (3, 3), (3, 3)],
                            [(9, 9), (3, 3), (5, 5)],
                            ]
