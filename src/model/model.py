@@ -66,9 +66,9 @@ class Model:
 
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
-        train_ratio = 0.1
+        train_ratio = 0.01
         self.train_files = all_files[:int(len(all_files) * train_ratio)]
-        self.test_files = all_files[int(len(all_files) * 0.9):]
+        self.test_files = all_files[int(len(all_files) * 0.09):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
@@ -160,7 +160,7 @@ class Model:
 
                 print('-' * 20)
                 # clear sequential model graph and delete model
-                tf.keras.backend.clear_session()
+                # tf.keras.backend.clear_session()
                 self.model = None
 
                 # todo bugs after some iterations (looks like gpu strategy issue, memory is not cleared?)
