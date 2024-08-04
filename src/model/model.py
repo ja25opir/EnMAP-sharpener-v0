@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss, \
     residual_loss, ssim, mse, variance, psnr
 from .load_data import DataGenerator, DuoBranchDataGenerator
+from ..config.resource_limiter import multiple_gpu_distribution
 
 
 # input shape: https://stackoverflow.com/questions/60157742/convolutional-neural-network-cnn-input-shape
@@ -84,7 +85,8 @@ class Model:
             decay_rate=learning_rate_decay_factor,
             staircase=True)
 
-    def train_model(self):
+    @multiple_gpu_distribution
+    def train_model(self, kernels_mb, kernels_db):
         train_args = {'data_dir': self.train_data_dir,
                       'data_list': self.train_files,
                       'batch_size': self.batch_size,
@@ -101,6 +103,23 @@ class Model:
                      'no_output_bands': self.no_output_bands,
                      'shuffle': False}
 
+        train_generator = DuoBranchDataGenerator(**train_args)
+        test_generator = DuoBranchDataGenerator(**test_args)
+
+        self.learning_rate = self.set_lr_schedule()
+        loss = ms_ssim_l1_loss  # self.loss_function
+
+        architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands, kernels_mb=kernels_mb,
+                              kernels_db=kernels_db)
+        self.model = architecture.model
+        optimizer = optimizers.Adam(learning_rate=self.learning_rate)
+        self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
+        self.model.summary()
+        history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs,
+                                 verbose=1)
+        self.history = history.history
+
+    def fit_hyperparameter(self):
         # hyper-parameterize the model
         kernel_sizes_db = [[(7, 7), (7, 7), (7, 7)],
                            [(3, 3), (3, 3), (3, 3)],
@@ -117,25 +136,11 @@ class Model:
         history_list = []
         for k_mb in kernel_sizes_mb:
             for k_db in kernel_sizes_db:
-                train_generator = DuoBranchDataGenerator(**train_args)
-                test_generator = DuoBranchDataGenerator(**test_args)
-
-                self.learning_rate = self.set_lr_schedule()
-                loss = ms_ssim_l1_loss  # self.loss_function
-
-                architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands, kernels_mb=k_mb,
-                                      kernels_db=k_db)
-                self.model = architecture.model
-                optimizer = optimizers.Adam(learning_rate=self.learning_rate)
-                self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
-                self.model.summary()
 
                 print('Main branch kernels: ', k_mb)
                 print('Detail branch kernels: ', k_db)
 
-                history = self.model.fit(train_generator, validation_data=test_generator, epochs=self.train_epochs,
-                                         verbose=1)
-                self.history = history.history
+                self.train_model(kernels_mb=k_mb, kernels_db=k_db)
                 history_list.append({'k_mb': k_mb, 'k_db': k_db, 'hist': self.history})
 
                 ssim_psnr = self.history['val_ssim'][-1] + self.history['val_psnr'][-1] / 100
@@ -149,7 +154,7 @@ class Model:
 
                 tf.keras.backend.clear_session()
 
-                # todo: bugs always after three iterations (layers in tf are not cleared but named consecutively)
+                # todo bugs after some iterations (looks like gpu strategy issue, memory is not cleared?)
                 # todo save metrics and hyperparameters
                 # todo do a correct train test split (and shuffle data)
                 # todo hypertuner by keras: https://www.tensorflow.org/tutorials/keras/keras_tuner
