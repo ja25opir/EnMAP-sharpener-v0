@@ -65,9 +65,9 @@ class Model:
 
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
-        train_ratio = 0.01
+        train_ratio = 0.75
         self.train_files = all_files[:int(len(all_files) * train_ratio)]
-        self.test_files = all_files[int(len(all_files) * 0.99):]
+        self.test_files = all_files[int(len(all_files) * 0.25):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
@@ -172,9 +172,8 @@ class Model:
                     self.model.save(self.output_dir + 'models/' + self.name + '.keras')
                     print('Saved model:', self.name)
 
-                print('-' * 20)
+                print('-' * 98)
 
-                # todo do a correct train test split (and shuffle data)
                 # todo hypertuner by keras: https://www.tensorflow.org/tutorials/keras/keras_tuner
 
         # save history list

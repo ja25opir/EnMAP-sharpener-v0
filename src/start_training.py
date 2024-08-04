@@ -56,5 +56,5 @@ if __name__ == '__main__':
     model = train_model(args.batch_size, args.epochs, train_data_dir)
     end = time.time()
 
-    model.plot_history()
+    # model.plot_history()
     print("---ModelTraining---Elapsed time: %.2fs seconds ---" % (end - start))
