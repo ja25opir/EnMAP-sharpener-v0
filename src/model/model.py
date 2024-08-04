@@ -72,8 +72,8 @@ class Model:
         print('Test data size:', len(self.test_files))
 
     def set_lr_schedule(self):
-        initial_learning_rate = 0.005  # 0.1
-        final_learning_rate = 0.0001
+        initial_learning_rate = 0.001
+        final_learning_rate = 0.00001
         learning_rate_decay_factor = (final_learning_rate / initial_learning_rate) ** (1 / self.train_epochs)
         steps_per_epoch = int(len(self.train_files) / self.batch_size)
         return optimizers.schedules.ExponentialDecay(
