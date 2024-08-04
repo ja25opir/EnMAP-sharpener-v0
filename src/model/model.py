@@ -68,7 +68,7 @@ class Model:
         all_files = os.listdir(self.train_data_dir + 'x/')
         train_ratio = 0.01
         self.train_files = all_files[:int(len(all_files) * train_ratio)]
-        self.test_files = all_files[int(len(all_files) * 0.09):]
+        self.test_files = all_files[int(len(all_files) * 0.99):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
