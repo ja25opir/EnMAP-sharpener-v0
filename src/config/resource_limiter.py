@@ -1,5 +1,6 @@
 import os, resource
 
+
 def limit_logical_cpus(logical_cpus):
     """Set process CPU affinity to the first max_cpus CPUs"""
     os.sched_setaffinity(os.getpid(), logical_cpus)
@@ -28,6 +29,7 @@ def limit_gpu_memory_usage(gpu_list, max_memory_limit_gb):
             device,
             [tf.config.LogicalDeviceConfiguration(memory_limit=1024 * max_memory_limit_gb)])
 
+
 def multiple_gpu_distribution(func):
     """Decorator to distribute a function across multiple GPUs"""
     import tensorflow as tf
@@ -44,5 +46,6 @@ def multiple_gpu_distribution(func):
                 return func(*args, **kwargs)
         except Exception as e:
             print('Error during distributed training: ', e)
-            return None
+            return func(*args, **kwargs)
+
     return wrapper
