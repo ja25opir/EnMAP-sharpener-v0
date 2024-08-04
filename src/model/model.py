@@ -141,6 +141,9 @@ class Model:
         history_list = []
         for k_mb in kernel_sizes_mb:
             for k_db in kernel_sizes_db:
+                # clear sequential model graph and delete model to avoid clutter from old models and free memory
+                tf.keras.backend.clear_session()
+                self.model = None
 
                 print('Main branch kernels: ', k_mb)
                 print('Detail branch kernels: ', k_db)
@@ -160,17 +163,16 @@ class Model:
                     print('Saved model:', self.name)
 
                 print('-' * 20)
-                # clear sequential model graph and delete model
-                tf.keras.backend.clear_session()
-                self.model = None
 
-                # todo bugs after some iterations (looks like gpu strategy issue, memory is not cleared?)
-                # todo save metrics and hyperparameters
                 # todo do a correct train test split (and shuffle data)
                 # todo hypertuner by keras: https://www.tensorflow.org/tutorials/keras/keras_tuner
                 # todo if loss is nan redo training --> custom callbacks: https://www.tensorflow.org/guide/keras/writing_your_own_callbacks
 
-        print("Hyperparameter history: \n", history_list)
+        # save history list
+        with open(self.output_dir + 'models/' + self.name + 'hyperparam_history.txt', 'w') as f:
+            f.write(str(history_list))
+
+        print("Hyperparameter search finished!")
         print("Best Kernels: \n", best_kernels)
 
     def plot_history(self):
