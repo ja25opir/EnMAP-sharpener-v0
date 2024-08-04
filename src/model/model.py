@@ -120,7 +120,7 @@ class Model:
                                  verbose=1)
         self.history = history.history
 
-    def fit_hyperparameter(self) -> models.Model:
+    def fit_hyperparameter(self) -> None:
         """
         Train model with different hyperparameters, compare and save best model.
         :return: trained model with best accuracy
@@ -152,13 +152,16 @@ class Model:
 
                 # save model if better than previous (metric: ssim + psnr / 100)
                 if ssim_psnr > best_ssim_psnr:
+                    print('New best model found! Saving...')
                     best_ssim_psnr = ssim_psnr
                     best_kernels = {'k_mb': k_mb, 'k_db': k_db}
                     self.model.save(self.output_dir + 'models/' + self.name + '.keras')
                     print('Saved model:', self.name)
 
-                # clear sequential model graph
+                print('-' * 20)
+                # clear sequential model graph and delete model
                 tf.keras.backend.clear_session()
+                self.model = None
 
                 # todo bugs after some iterations (looks like gpu strategy issue, memory is not cleared?)
                 # todo save metrics and hyperparameters
@@ -167,10 +170,7 @@ class Model:
                 # todo if loss is nan redo training --> custom callbacks: https://www.tensorflow.org/guide/keras/writing_your_own_callbacks
 
         print("Hyperparameter history: \n", history_list)
-
         print("Best Kernels: \n", best_kernels)
-
-        return self.model
 
     def plot_history(self):
         history = self.history
