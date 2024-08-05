@@ -412,17 +412,17 @@ class MMSRes:
 
         """main branch"""
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        conv1 = layers.Conv3D(self.filters_db[1], self.kernels_mb[0], padding='same', activation=leakyRelu)(input3d)
+        conv1 = layers.Conv3D(self.filters_mb[0], self.kernels_mb[0], padding='same', activation=leakyRelu)(input3d)
         merged1 = DILayer()([conv1, edges1])
 
         # skip_connection = layers.Add()([input3d, merged1])
 
-        conv2 = layers.Conv3D(self.filters_db[2], self.kernels_mb[1], padding='same', activation=leakyRelu)(merged1)
+        conv2 = layers.Conv3D(self.filters_mb[1], self.kernels_mb[1], padding='same', activation=leakyRelu)(merged1)
         merged2 = DILayer()([conv2, edges2])
 
         # skip_connection = layers.Add()([input3d, merged2])
 
-        conv3 = layers.Conv3D(self.filters_db[3], self.kernels_mb[2], padding='same', activation=leakyRelu)(merged2)
+        conv3 = layers.Conv3D(self.filters_mb[2], self.kernels_mb[2], padding='same', activation=leakyRelu)(merged2)
         merged3 = DILayer()([conv3, edges3])
 
         convOut = layers.Conv3D(1, self.kernels_mb[3], padding='same',
