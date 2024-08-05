@@ -362,13 +362,15 @@ class DILayer(layers.Layer):
 class MMSRes:
     """full custom network"""
 
-    def __init__(self, tile_size, no_input_bands, no_output_bands, kernels_mb, kernels_db):
+    def __init__(self, tile_size, no_input_bands, no_output_bands, kernels_mb, kernels_db, filters_mb, filters_db):
         self.name = 'MMSRes'
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
         self.kernels_mb = kernels_mb
         self.kernels_db = kernels_db
+        self.filters_mb = filters_mb
+        self.filters_db = filters_db
         self.padding2d = (lambda x: (x[0] // 2, x[1] // 2))
         self.model = None
         self.create_layers()
@@ -396,31 +398,31 @@ class MMSRes:
         input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
         leakyRelu = layers.LeakyReLU()
         padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[0]))(input2d)
-        edges1 = layers.Conv2D(3, self.kernels_db[0], padding='valid')(padded)
+        edges1 = layers.Conv2D(self.filters_db[0], self.kernels_db[0], padding='valid')(padded)
         edges1 = layers.BatchNormalization()(edges1)
         edges1 = layers.Activation(leakyRelu)(edges1)
         padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[1]))(edges1)
-        edges2 = layers.Conv2D(3, self.kernels_db[1], padding='valid')(padded)
+        edges2 = layers.Conv2D(self.filters_db[1], self.kernels_db[1], padding='valid')(padded)
         edges2 = layers.BatchNormalization()(edges2)
         edges2 = layers.Activation(leakyRelu)(edges2)
         padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[2]))(edges2)
-        edges3 = layers.Conv2D(3, self.kernels_db[2], padding='valid')(padded)
+        edges3 = layers.Conv2D(self.filters_db[2], self.kernels_db[2], padding='valid')(padded)
         edges3 = layers.BatchNormalization()(edges3)
         edges3 = layers.Activation(leakyRelu)(edges3)
 
         """main branch"""
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        conv1 = layers.Conv3D(64, self.kernels_mb[0], padding='same', activation=leakyRelu)(input3d)
+        conv1 = layers.Conv3D(self.filters_db[1], self.kernels_mb[0], padding='same', activation=leakyRelu)(input3d)
         merged1 = DILayer()([conv1, edges1])
 
         # skip_connection = layers.Add()([input3d, merged1])
 
-        conv2 = layers.Conv3D(32, self.kernels_mb[1], padding='same', activation=leakyRelu)(merged1)
+        conv2 = layers.Conv3D(self.filters_db[2], self.kernels_mb[1], padding='same', activation=leakyRelu)(merged1)
         merged2 = DILayer()([conv2, edges2])
 
         # skip_connection = layers.Add()([input3d, merged2])
 
-        conv3 = layers.Conv3D(9, self.kernels_mb[2], padding='same', activation=leakyRelu)(merged2)
+        conv3 = layers.Conv3D(self.filters_db[3], self.kernels_mb[2], padding='same', activation=leakyRelu)(merged2)
         merged3 = DILayer()([conv3, edges3])
 
         convOut = layers.Conv3D(1, self.kernels_mb[3], padding='same',

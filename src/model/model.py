@@ -59,7 +59,9 @@ class Model:
         # MMSRes
         architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands,
                               kernels_mb=hyperparameters['k_mb'],
-                              kernels_db=hyperparameters['k_db'])
+                              kernels_db=hyperparameters['k_db'],
+                              filters_mb=hyperparameters['f_mb'],
+                              filters_db=hyperparameters['f_db'])
 
         self.name = architecture.name
         self.model = architecture.model
@@ -84,11 +86,17 @@ class Model:
             decay_rate=learning_rate_decay_factor,
             staircase=True)
 
-    def train_model(self, kernels_mb: list[tuple[int, int, int]], kernels_db: list[tuple[int, int]]) -> None:
+    def train_model(self,
+                    kernels_mb: list[tuple[int, int, int]],
+                    kernels_db: list[tuple[int, int]],
+                    filters_mb: list[int],
+                    filters_db: list[int]) -> None:
         """
         Train the model with the given hyperparameters.
         :param kernels_mb: list of kernel sizes for the main branch
         :param kernels_db: list of kernel sizes for the detail branch
+        :param filters_mb: list of number of filters for each layer in the main branch
+        :param filters_db: list of number of filters for each layer in the detail branch
         :return: None
         """
         train_args = {'data_dir': self.train_data_dir,
@@ -113,7 +121,8 @@ class Model:
         self.learning_rate = self.set_lr_schedule()
         loss = ms_ssim_l1_loss  # self.loss_function
 
-        self.define_model(hyperparameters={'k_mb': kernels_mb, 'k_db': kernels_db})
+        self.define_model(
+            hyperparameters={'k_mb': kernels_mb, 'k_db': kernels_db, 'f_mb': filters_mb, 'f_db': filters_db})
         optimizer = optimizers.Adam(learning_rate=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
         self.model.summary()
@@ -152,8 +161,8 @@ class Model:
         ]
 
         filters_mb = [
-            [64, 64, 64, 64],
-            [64, 32, 9, 1]
+            [64, 64, 64],
+            [64, 32, 9]
         ]
         filters_db = [
             [64, 64, 64],
@@ -168,38 +177,41 @@ class Model:
         start = time.time()
         for k_mb in kernel_sizes_mb:
             for k_db in kernel_sizes_db:
-                self.model = None
+                for f_mb in filters_mb:
+                    for f_db in filters_db:
+                        self.model = None
 
-                print('Main branch kernels: ', k_mb)
-                print('Detail branch kernels: ', k_db)
+                        print('Main branch kernels: ', k_mb)
+                        print('Detail branch kernels: ', k_db)
 
-                self.train_model(kernels_mb=k_mb, kernels_db=k_db)
+                        self.train_model(kernels_mb=k_mb, kernels_db=k_db, filters_mb=f_mb, filters_db=f_db)
 
-                history_list.append({'k_mb': k_mb, 'k_db': k_db, 'hist': self.history})
+                        # history_list.append({'k_mb': k_mb, 'k_db': k_db, 'hist': self.history})
+                        history_list.append({'f_mb': f_mb, 'f_db': f_db, 'hist': self.history})
 
-                ssim_psnr = self.history['val_ssim'][-1] + self.history['val_psnr'][-1] / 100
+                        ssim_psnr = self.history['val_ssim'][-1] + self.history['val_psnr'][-1] / 100
 
-                # save model if better than previous (metric: ssim + psnr / 100)
-                if ssim_psnr > best_ssim_psnr:
-                    print('New best model found! Saving...')
-                    best_ssim_psnr = ssim_psnr
-                    best_kernels = {'k_mb': k_mb, 'k_db': k_db}
-                    self.model.save(self.output_dir + 'models/' + self.name + '.keras')
-                    print('Saved model:', self.name)
+                        # save model if better than previous (metric: ssim + psnr / 100)
+                        if ssim_psnr > best_ssim_psnr:
+                            print('New best model found! Saving...')
+                            best_ssim_psnr = ssim_psnr
+                            # best_kernels = {'k_mb': k_mb, 'k_db': k_db}
+                            best_filters = {'f_mb': f_mb, 'f_db': f_db}
+                            self.model.save(self.output_dir + 'models/' + self.name + '.keras')
+                            print('Saved model:', self.name)
 
-                print('-' * 98)
+                        print('-' * 98)
 
-                # clear sequential model graph and delete model to avoid clutter from old models and free memory
-                tf.keras.backend.clear_session()
-
-                # todo hypertuner by keras: https://www.tensorflow.org/tutorials/keras/keras_tuner
+                        # clear sequential model graph and delete model to avoid clutter from old models and free memory
+                        tf.keras.backend.clear_session()
 
         # save history list
         with open(self.output_dir + 'models/' + self.name + '_hyperparam_history.txt', 'w') as f:
             f.write(str(history_list))
 
         print("Hyperparameter search finished!")
-        print("Best Kernels: \n", best_kernels)
+        # print("Best Kernels: \n", best_kernels)
+        print("Best Filters: \n", best_kernels)
         end = time.time()
         print("---HyperparameterSearch---Elapsed time: %.2fs seconds ---" % (end - start))
 
