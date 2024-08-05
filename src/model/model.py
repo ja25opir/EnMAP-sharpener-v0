@@ -183,6 +183,8 @@ class Model:
 
                         print('Main branch kernels: ', k_mb)
                         print('Detail branch kernels: ', k_db)
+                        print('Main branch filters: ', f_mb)
+                        print('Detail branch filters: ', f_db)
 
                         self.train_model(kernels_mb=k_mb, kernels_db=k_db, filters_mb=f_mb, filters_db=f_db)
 
