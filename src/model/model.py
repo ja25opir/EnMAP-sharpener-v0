@@ -87,7 +87,6 @@ class Model:
             decay_rate=learning_rate_decay_factor,
             staircase=True)
 
-    @multiple_gpu_distribution
     def train_model(self,
                     kernels_mb: list[tuple[int, int, int]],
                     kernels_db: list[tuple[int, int]],
@@ -181,6 +180,8 @@ class Model:
             for k_db in kernel_sizes_db:
                 for f_mb in filters_mb:
                     for f_db in filters_db:
+                        if f_db == [64,64,64] and f_mb == [64,64,64]:
+                            continue
                         self.model = None
 
                         print('Main branch kernels: ', k_mb)
