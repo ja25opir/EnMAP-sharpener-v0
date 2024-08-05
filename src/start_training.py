@@ -45,10 +45,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     train_data_dir = os.getcwd() + args.train_data_dir
-    if os.path.exists(train_data_dir + 'x/.gitkeep'):
-        os.remove(train_data_dir + 'x/.gitkeep')
-    if os.path.exists(train_data_dir + 'y/.gitkeep'):
-        os.remove(train_data_dir + 'y/.gitkeep')
 
     limit_gpu_memory_usage(args.gpus, args.mem_limit)
 

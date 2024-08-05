@@ -1,4 +1,5 @@
-import os, random
+import os, random, time
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
@@ -135,22 +136,25 @@ class Model:
         Train model with different hyperparameters, compare and save best model.
         :return: trained model with best accuracy
         """
-        kernel_sizes_db = [[(3, 3), (3, 3), (3, 3)],
-                           [(7, 7), (7, 7), (7, 7)],
-                           [(9, 9), (3, 3), (5, 5)],
-                           [(9, 9), (5, 5), (3, 3)],
-                           ]
-        kernel_sizes_mb = [[(3, 3, 3), (3, 3, 3), (3, 3, 3), (3, 3, 3)],
-                           [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)],
-                           [(9, 9, 7), (1, 1, 1), (1, 1, 1), (5, 5, 3)],
-                           [(9, 9, 7), (3, 3, 1), (3, 3, 1), (5, 5, 3)],
-                           [(9, 9, 7), (3, 3, 3), (3, 3, 3), (5, 5, 3)],
-                           [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
-                           ]
+        kernel_sizes_db = [
+            # [(3, 3), (3, 3), (3, 3)],
+            # [(7, 7), (7, 7), (7, 7)],
+            [(9, 9), (3, 3), (5, 5)],
+            # [(9, 9), (5, 5), (3, 3)],
+        ]
+        kernel_sizes_mb = [
+            # [(3, 3, 3), (3, 3, 3), (3, 3, 3), (3, 3, 3)],
+            [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)],
+            # [(9, 9, 7), (1, 1, 1), (1, 1, 1), (5, 5, 3)],
+            # [(9, 9, 7), (3, 3, 1), (3, 3, 1), (5, 5, 3)],
+            # [(9, 9, 7), (3, 3, 3), (3, 3, 3), (5, 5, 3)],
+            # [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
+        ]
 
         best_ssim_psnr = 0
         best_kernels = None
         history_list = []
+        start = time.time()
         for k_mb in kernel_sizes_mb:
             for k_db in kernel_sizes_db:
                 self.model = None
@@ -185,6 +189,8 @@ class Model:
 
         print("Hyperparameter search finished!")
         print("Best Kernels: \n", best_kernels)
+        end = time.time()
+        print("---HyperparameterSearch---Elapsed time: %.2fs seconds ---" % (end - start))
 
     def plot_history(self):
         history = self.history

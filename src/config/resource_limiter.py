@@ -46,6 +46,5 @@ def multiple_gpu_distribution(func):
                 return func(*args, **kwargs)
         except Exception as e:
             print('Error during distributed training: ', e)
-            return func(*args, **kwargs)
 
     return wrapper
