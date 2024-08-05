@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss, \
     residual_loss, ssim, mse, variance, psnr
 from .load_data import DuoBranchDataGenerator
-from ..config.resource_limiter import multiple_gpu_distribution
+from src.config.resource_limiter import multiple_gpu_distribution
 
 
 # input shape: https://stackoverflow.com/questions/60157742/convolutional-neural-network-cnn-input-shape
