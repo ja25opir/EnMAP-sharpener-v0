@@ -8,7 +8,6 @@ from matplotlib import pyplot as plt
 from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss, \
     residual_loss, ssim, mse, variance, psnr
 from .load_data import DuoBranchDataGenerator
-from src.config.resource_limiter import multiple_gpu_distribution
 
 
 # input shape: https://stackoverflow.com/questions/60157742/convolutional-neural-network-cnn-input-shape
@@ -181,7 +180,7 @@ class Model:
             for k_db in kernel_sizes_db:
                 for f_mb in filters_mb:
                     for f_db in filters_db:
-                        if f_db == [64,64,64] and f_mb == [64,64,64]:
+                        if f_db == [64, 64, 64] and f_mb == [64, 64, 64]:
                             continue
                         self.model = None
 
