@@ -44,3 +44,12 @@ def plot_3_band_image(bands, title='', cmap='viridis'):
     plt.title(title)
     plt.imshow(rgb_norm, cmap=cmap)
     plt.show()
+
+
+def plot_3_band_image_clipped(bands, max_reflectance=10000, title='', cmap='viridis'):
+    norm_band = (lambda x: np.clip(x, 0, max_reflectance) / max_reflectance * 255)
+    plt.title(title)
+    plt.imshow(
+        np.dstack((norm_band(bands[0]), norm_band(bands[1]), norm_band(bands[2]))).astype(np.uint8),
+        cmap=cmap)
+    plt.show()

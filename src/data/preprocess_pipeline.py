@@ -210,11 +210,11 @@ class PreprocessPipeline:
                 for filename in directory[2]:
                     if re.search(".*METADATA.xml$", filename, re.IGNORECASE):
                         metadata_path = directory[0] + '/' + filename
-                    if re.search(".*SPECTRAL_IMAGE.tif$", filename, re.IGNORECASE):
+                    if re.search(".*SPECTRAL_IMAGE.tif*$", filename, re.IGNORECASE):
                         spectral_img_path = directory[0] + '/' + filename
-                    if re.search(".*QL_QUALITY_CLOUD.tif$", filename, re.IGNORECASE):
+                    if re.search(".*QL_QUALITY_CLOUD.tif*$", filename, re.IGNORECASE):
                         cloud_mask_path = directory[0] + '/' + filename
-                    if re.search(".*QL_QUALITY_CLOUDSHADOW.tif$", filename, re.IGNORECASE):
+                    if re.search(".*QL_QUALITY_CLOUDSHADOW.tif*$", filename, re.IGNORECASE):
                         cloudshadow_mask_path = directory[0] + '/' + filename
                 i += 1
                 if metadata_path and spectral_img_path and cloud_mask_path and cloud_mask_path:

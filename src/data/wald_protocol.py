@@ -63,7 +63,7 @@ def get_gradient(img):
 def align_sentinel(enmap_raster, sentinel_raster_downscaled):
     """align Sentinel Raster to EnMAP Raster with ECC algorithm and openCV"""
     # read 4 enmap bands near to sentinel bands as array
-    enmap_array = enmap_raster.read((15, 29, 47, 71)).T.astype(np.uint8)
+    enmap_array = enmap_raster.read((16, 30, 48, 72)).T.astype(np.uint8)
     # downscale sentinel to enmap shape and read as array
     sentinel_array = sentinel_raster_downscaled.read((1, 2, 3, 4)).T.astype(np.uint8)
 

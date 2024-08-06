@@ -116,22 +116,55 @@ def make_prediction(x, x1, model, output_bands):
     return model.predict({'x': x, 'x1': x1}, verbose=0).reshape(32, 32, output_bands).T
 
 
+def normalize_rasters(prediction, x1, y):
+    """Normalize the rasters to the range [0, 1] and move the channels to the last dimension."""
+    max_reflectance = 10000
+    prediction = (prediction / max_reflectance).T
+    x1 = (x1 / max_reflectance).T
+    y = (y / max_reflectance).T
+    return prediction, x1, y
+
+
+def evaluate_on_validation_scene(model, test_file_list):
+    """Evaluate the model on a list of test files. Calculate MSE, PSNR, SSIM, SAM and NIQE."""
+    evaluations = []
+    iterations = len(test_file_list)
+    for no in range(iterations):
+        x_rast, x1_rast, y_rast = load_data(test_file_list[i])
+        predicted_rast = make_prediction(x_rast, x1_rast, model, NO_OUTPUT_BANDS)
+        if residual_leaning:
+            predicted_rast = predicted_rast + x1_rast
+        predicted_rast, x1_rast, y_rast = normalize_rasters(predicted_rast, x1_rast, y_rast)
+        evaluations.append(evaluate_prediction(predicted_rast, x1_rast, y_rast))
+        if (no + 1) % 25 == 0:
+            print(f'Evaluated {no + 1} / {iterations} files')
+
+    print('Average evaluation metrics:')
+    print(
+        f'MSE  p|y: {np.mean([e["mse_predicted"] for e in evaluations]):.2f} | {np.mean([e["mse_input"] for e in evaluations]):.2f}')
+    print(
+        f'PSNR p|y: {np.mean([e["psnr_predicted"] for e in evaluations]):.2f} | {np.mean([e["psnr_input"] for e in evaluations]):.2f}')
+    print(
+        f'SSIM p|y: {np.mean([e["ssim_predicted"] for e in evaluations]):.2f} | {np.mean([e["ssim_input"] for e in evaluations]):.2f}')
+    print(
+        f'SAM  p|y: {np.mean([e["sam_predicted"] for e in evaluations]):.2f} | {np.mean([e["sam_input"] for e in evaluations]):.2f}')
+    # TODO implement NIQE
+
+
 X_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x/'
 X1_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x1/'
 Y_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/y/'
 MODEL_PATH = os.getcwd() + '/../../output/models/'
 
-no_output_bands = 40
+NO_OUTPUT_BANDS = 40
 residual_leaning = False
 test_file = '20220627T104548Z_0_0.npy'
-# test_file = '20220916T104547Z_13_8.npy'
-# test_file = '20230814T105224Z_6_17.npy'
-# test_file = '20230925T104236Z_19_14.npy'
-sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes.keras', custom_objects=CUSTOM_LAYERS)
+# sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_best_kernels.keras', custom_objects=CUSTOM_LAYERS)
+sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_second_best_kernels.keras', custom_objects=CUSTOM_LAYERS)
 
 print(sr_model.summary())
 x_raster, x1_raster, y_raster = load_data(test_file)
-predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
+predicted_raster = make_prediction(x_raster, x1_raster, sr_model, NO_OUTPUT_BANDS)
 
 bands = [1, 2, 3]
 predicted_rgb = get_bands_from_array(predicted_raster, bands)
@@ -169,53 +202,39 @@ plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(15, 15))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
 
+"""Evaluate on validation scenes"""
+# print('Evaluating on validation scene from Australia...')
+# australia_file = os.getcwd() + '/../../data/testfiles_Australia.txt'
+# with open(australia_file, 'r') as f:
+#     australia_list = f.read().splitlines()
+# evaluate_on_validation_scene(sr_model, australia_list)
 
-# shift data range to [0, 1] and move channels to last dimension
-def normalize_rasters(prediction, x1, y):
-    max_reflectance = 10000
-    prediction = (prediction / max_reflectance).T
-    x1 = (x1 / max_reflectance).T
-    y = (y / max_reflectance).T
-    return prediction, x1, y
+print('Evaluating on validation scene from Namibia...')
+namibia_file = os.getcwd() + '/../../data/testfiles_Namibia.txt'
+with open(namibia_file, 'r') as f:
+    namibia_list = f.read().splitlines()
+evaluate_on_validation_scene(sr_model, namibia_list)
 
+print('Evaluating on validation scene from Peru...')
+peru_file = os.getcwd() + '/../../data/testfiles_Peru.txt'
+with open(peru_file, 'r') as f:
+    peru_list = f.read().splitlines()
+evaluate_on_validation_scene(sr_model, peru_list)
 
-predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
-metrics = evaluate_prediction(predicted_raster, x1_raster, y_raster)
+print('Evaluating on validation scene from Leipzig...')
+leipzig_file = os.getcwd() + '/../../data/testfiles_Leipzig.txt'
+with open(leipzig_file, 'r') as f:
+    leipzig_list = f.read().splitlines()
+evaluate_on_validation_scene(sr_model, leipzig_list)
 
-evaluations = []
-iterations = 250
-test_file_list = os.getcwd() + '/../../data/test_file_list.txt'
-with open(test_file_list, 'r') as f:
-    test_files = f.readlines()
-    test_files = [f.strip() for f in test_files]
-
-for i in range(iterations):
-    x_raster, x1_raster, y_raster = load_data(test_files[i])
-    predicted_raster = make_prediction(x_raster, x1_raster, sr_model, no_output_bands)
-    if residual_leaning:
-        predicted_raster = predicted_raster + x1_raster
-    predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
-    evaluations.append(evaluate_prediction(predicted_raster, x1_raster, y_raster))
-    if (i + 1) % 25 == 0:
-        print(f'Evaluated {i + 1} / {iterations} files')
-
-print('Average evaluation metrics:')
-print(
-    f'MSE  p|y: {np.mean([e["mse_predicted"] for e in evaluations]):.2f} | {np.mean([e["mse_input"] for e in evaluations]):.2f}')
-print(
-    f'PSNR p|y: {np.mean([e["psnr_predicted"] for e in evaluations]):.2f} | {np.mean([e["psnr_input"] for e in evaluations]):.2f}')
-print(
-    f'SSIM p|y: {np.mean([e["ssim_predicted"] for e in evaluations]):.2f} | {np.mean([e["ssim_input"] for e in evaluations]):.2f}')
-print(
-    f'SAM  p|y: {np.mean([e["sam_predicted"] for e in evaluations]):.2f} | {np.mean([e["sam_input"] for e in evaluations]):.2f}')
-# TODO implement NIQE
-
-print('Selected file:')
-print(
-    f'MSE  p|y: {metrics["mse_predicted"]:.2f} | {metrics["mse_input"]:.2f} | 0 == perfect')
-print(
-    f'PSNR p|y: {metrics["psnr_predicted"]:.2f} | {metrics["psnr_input"]:.2f} | 100 == perfect')
-print(
-    f'SSIM p|y: {metrics["ssim_predicted"]:.2f} | {metrics["ssim_input"]:.2f} | 1.0 == perfect')
-print(
-    f'SAM  p|y: {metrics["sam_predicted"]:.2f} | {metrics["sam_input"]:.2f} | 0 == perfect')
+# predicted_raster, x1_raster, y_raster = normalize_rasters(predicted_raster, x1_raster, y_raster)
+# metrics = evaluate_prediction(predicted_raster, x1_raster, y_raster)
+# print('Selected file:')
+# print(
+#     f'MSE  p|y: {metrics["mse_predicted"]:.2f} | {metrics["mse_input"]:.2f} | 0 == perfect')
+# print(
+#     f'PSNR p|y: {metrics["psnr_predicted"]:.2f} | {metrics["psnr_input"]:.2f} | 100 == perfect')
+# print(
+#     f'SSIM p|y: {metrics["ssim_predicted"]:.2f} | {metrics["ssim_input"]:.2f} | 1.0 == perfect')
+# print(
+#     f'SAM  p|y: {metrics["sam_predicted"]:.2f} | {metrics["sam_input"]:.2f} | 0 == perfect')

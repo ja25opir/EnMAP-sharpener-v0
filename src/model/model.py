@@ -163,17 +163,18 @@ class Model:
 
         filters_mb = [
             [64, 64, 64],
-            [64, 32, 9]
+            # [64, 32, 9]
         ]
         filters_db = [
-            [64, 64, 64],
+            # [64, 64, 64],
             [64, 32, 9],
-            [9, 6, 3],
-            [3, 3, 3]
+            # [9, 6, 3],
+            # [3, 3, 3]
         ]
 
         best_ssim_psnr = 0
         best_kernels = None
+        best_filters = None
         history_list = []
         start = time.time()
         for k_mb in kernel_sizes_mb:
@@ -200,7 +201,7 @@ class Model:
                         if ssim_psnr > best_ssim_psnr:
                             print('New best model found! Saving...')
                             best_ssim_psnr = ssim_psnr
-                            # best_kernels = {'k_mb': k_mb, 'k_db': k_db}
+                            best_kernels = {'k_mb': k_mb, 'k_db': k_db}
                             best_filters = {'f_mb': f_mb, 'f_db': f_db}
                             self.model.save(self.output_dir + 'models/' + self.name + '.keras')
                             print('Saved model:', self.name)
@@ -215,8 +216,8 @@ class Model:
             f.write(str(history_list))
 
         print("Hyperparameter search finished!")
-        # print("Best Kernels: \n", best_kernels)
-        print("Best Filters: \n", best_kernels)
+        print("Best Kernels: \n", best_kernels)
+        print("Best Filters: \n", best_filters)
         end = time.time()
         print("---HyperparameterSearch---Elapsed time: %.2fs seconds ---" % (end - start))
 
