@@ -180,8 +180,6 @@ class Model:
             for k_db in kernel_sizes_db:
                 for f_mb in filters_mb:
                     for f_db in filters_db:
-                        if f_db == [64, 64, 64] and f_mb == [64, 64, 64]:
-                            continue
                         self.model = None
 
                         print('Main branch kernels: ', k_mb)
