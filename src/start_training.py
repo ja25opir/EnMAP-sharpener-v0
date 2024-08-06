@@ -10,7 +10,7 @@ TILE_SIZE = 32
 # NO_INPUT_BANDS = 224 + 4
 # NO_OUTPUT_BANDS = 224
 NO_INPUT_BANDS = 4
-NO_OUTPUT_BANDS = 40
+NO_OUTPUT_BANDS = 224
 
 OUTPUT_DIR = os.getcwd() + '/output/'
 LOSS_FUNCTION = 'mean_squared_error'

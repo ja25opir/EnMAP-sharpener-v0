@@ -83,7 +83,7 @@ class DuoBranchDataGenerator(DataGenerator):
             y_img = np.load(y_path)
 
             # todo: testing with c bands
-            x1_img = x_img[20:60, :, :]
+            x1_img = x_img[:224, :, :]
             # x1_img = x_img[:112, :, :]
             x_img = x_img[(224, 225, 226, 227), :, :]
             # indices = np.hstack([np.arange(20, 40), np.arange(224, 228)])
@@ -91,7 +91,7 @@ class DuoBranchDataGenerator(DataGenerator):
             # x1_img = x1_img[(15, 29, 47, 71), :, :]
             # y_img = y_img[(15, 29, 47, 71), :, :]
             # x1_img = x1_img[:, :, :]
-            y_img = y_img[20:60, :, :]
+            y_img = y_img[:, :, :]
             # sort and stack sentinel bands into enmap image (use only one input file)
             # x1_img = np.insert(x1_img, 15, x_img[0,:,:], axis=0)
             # x1_img = np.insert(x1_img, 29, x_img[0,:,:], axis=0)

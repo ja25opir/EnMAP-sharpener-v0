@@ -1,4 +1,4 @@
-import os, random
+import os, random, time
 import rasterio
 import tensorflow as tf
 import numpy as np
@@ -160,7 +160,9 @@ NO_OUTPUT_BANDS = 40
 residual_leaning = False
 test_file = '20220627T104548Z_0_0.npy'
 # sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_best_kernels.keras', custom_objects=CUSTOM_LAYERS)
-sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_second_best_kernels.keras', custom_objects=CUSTOM_LAYERS)
+# sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_second_best_kernels.keras', custom_objects=CUSTOM_LAYERS)
+# sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_best_filters.keras', custom_objects=CUSTOM_LAYERS)
+sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_second_best_filters.keras', custom_objects=CUSTOM_LAYERS)
 
 print(sr_model.summary())
 x_raster, x1_raster, y_raster = load_data(test_file)
@@ -203,11 +205,11 @@ plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
 
 """Evaluate on validation scenes"""
-# print('Evaluating on validation scene from Australia...')
-# australia_file = os.getcwd() + '/../../data/testfiles_Australia.txt'
-# with open(australia_file, 'r') as f:
-#     australia_list = f.read().splitlines()
-# evaluate_on_validation_scene(sr_model, australia_list)
+print('Evaluating on validation scene from Australia...')
+australia_file = os.getcwd() + '/../../data/testfiles_Australia.txt'
+with open(australia_file, 'r') as f:
+    australia_list = f.read().splitlines()
+evaluate_on_validation_scene(sr_model, australia_list)
 
 print('Evaluating on validation scene from Namibia...')
 namibia_file = os.getcwd() + '/../../data/testfiles_Namibia.txt'

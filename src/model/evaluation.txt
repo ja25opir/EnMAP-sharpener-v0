@@ -195,23 +195,8 @@ plotted bands:
 hyper param search:
 kernel search with filters 3+3+3 and 64+32+9+1 (for faster training time)
 best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5, 5)]
-	training time: 2565.59s (16 epochs)
-	prediction time:
-	test_file_list:
-		MSE  p|y: 34.91 | 73.73
-		PSNR p|y: 37.37 | 35.28
-		SSIM p|y: 0.93 | 0.89
-		SAM  p|y: 2.53 | 3.10
-	test_file_list1:
-		MSE  p|y: 19.92 | 39.49
-		PSNR p|y: 38.02 | 35.97
-		SSIM p|y: 0.94 | 0.89
-		SAM  p|y: 2.54 | 3.17
-	test_file_list2:
-		MSE  p|y: 25.62 | 59.44
-		PSNR p|y: 37.80 | 35.60
-		SSIM p|y: 0.94 | 0.89
-		SAM  p|y: 2.50 | 3.06
+	training time: 2565.59s (16 epochs, 2gpus)
+	prediction time: 1.409s
 	Australia:
 		MSE  p|y: 7.78 | 12.40
 		PSNR p|y: 39.22 | 37.20
@@ -235,30 +220,63 @@ best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5
 		
 
 2nd best kernels: [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)] + [(9, 9), (5, 5), (3, 3)]
-	training time: 1571.29s (16 epochs)
-	prediction time: 
-	test_file_list:
-		MSE  p|y: 33.84 | 73.73
-		PSNR p|y: 37.45 | 35.28
-		SSIM p|y: 0.93 | 0.89
-		SAM  p|y: 2.51 | 3.10
-	test_file_list1:
-		MSE  p|y: 19.49 | 39.49
-		PSNR p|y: 38.07 | 35.97
-		SSIM p|y: 0.94 | 0.89
-		SAM  p|y: 2.52 | 3.17
-	test_file_list2:
-		MSE  p|y: 25.24 | 59.44
-		PSNR p|y: 37.85 | 35.60
-		SSIM p|y: 0.94 | 0.89
-		SAM  p|y: 2.47 | 3.06
+	training time: 1571.29s (16 epochs, 2gpus)
+	prediction time: 0.982s
 	Australia:
+		MSE  p|y: 7.71 | 12.40
+		PSNR p|y: 39.26 | 37.20
+		SSIM p|y: 0.93 | 0.88
+		SAM  p|y: 2.65 | 3.38
 	Namibia:
+		MSE  p|y: 7.42 | 13.55
+		PSNR p|y: 39.43 | 36.81
+		SSIM p|y: 0.93 | 0.86
+		SAM  p|y: 0.95 | 1.06
 	Peru:
+		MSE  p|y: 8.35 | 13.98
+		PSNR p|y: 38.91 | 36.68
+		SSIM p|y: 0.95 | 0.92
+		SAM  p|y: 2.52 | 3.51
 	Germany:
+		MSE  p|y: 8.48 | 13.37
+		PSNR p|y: 38.85 | 36.87
+		SSIM p|y: 0.94 | 0.89
+		SAM  p|y: 2.97 | 3.86
 	
 filter search with kernels [(9, 9), (5, 5), (3, 3)] + [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
-best kernels: [64, 32, 9, 1] + [64, 64, 64]
+best kernels: mb: [64, 64, 64, 1] + db: [64, 32, 9]
+training time: 3248.86s (16 epochs, 2gpus)
+prediction time: 
+	Australia:
+		MSE  p|y: 8.88 | 12.40
+		PSNR p|y: 38.65 | 37.20
+		SSIM p|y: 0.92 | 0.88
+		SAM  p|y: 2.96 | 3.38
+	Namibia: 
+		MSE  p|y: 5.26 | 13.55
+		PSNR p|y: 40.92 | 36.81
+		SSIM p|y: 0.95 | 0.86
+		SAM  p|y: 0.86 | 1.06
+	Peru:
+		MSE  p|y: 6.82 | 13.98
+		PSNR p|y: 39.79 | 36.68
+		SSIM p|y: 0.96 | 0.92
+		SAM  p|y: 2.43 | 3.51
+	Germany:
+		MSE  p|y: 8.49 | 13.37
+		PSNR p|y: 38.84 | 36.87
+		SSIM p|y: 0.94 | 0.89
+		SAM  p|y: 2.94 | 3.86
+		
 
-2nd best kernels: [64, 64, 64, 64] + [64, 64, 64]
-training time:
+2nd best kernels: mb: [64, 64, 64, 1] + db: [64, 64, 64]
+training time: 3701.32s
+prediction time: 
+	Australia:
+		
+	Namibia: 
+		
+	Peru:
+		
+	Germany:
+		
