@@ -206,7 +206,7 @@ class Model:
                         print('-' * 98)
 
                         # clear sequential model graph and delete model to avoid clutter from old models and free memory
-                        tf.keras.backend.clear_session()
+                        # tf.keras.backend.clear_session()
 
         # save history list
         with open(self.output_dir + 'models/' + self.name + '_hyperparam_history.txt', 'w') as f:
