@@ -139,8 +139,8 @@ def stack_raster_and_array(raster1, array2):
 def crop_after_warp(raster, warp_dict):
     """crop raster after warp to remove borders caused by translation"""
     resolution = raster.transform[0]
-    x_shift = warp_dict['x'] * resolution
-    y_shift = warp_dict['y'] * resolution
+    x_shift = np.round(warp_dict['x'] * resolution)
+    y_shift = np.round(warp_dict['y'] * resolution)
     # construct bbox coordinates
     ul = [raster.bounds.left, raster.bounds.top]
     ur = [raster.bounds.right, raster.bounds.top]
@@ -195,7 +195,7 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
         for i_v in range(vertical_tiles):
             file_name = f'{save_name}_{i_h}_{i_v}.npy'
             left_x = i_v * (tile_size - overlap) + left_edge_margin
-            left_y = i_h * (tile_size - overlap)
+            left_y = i_h * (tile_size - overlap) + top_edge_margin
             w = raster.read(window=Window(left_x, left_y, tile_size, tile_size))
             if not np.any(w):
                 skip_list.append(file_name)
