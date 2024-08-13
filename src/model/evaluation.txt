@@ -196,7 +196,7 @@ hyper param search:
 loss: 0.001 to 0.00001
 kernel search with filters 3+3+3 and 64+32+9+1 (for faster training time)
 best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5, 5)]
-	training time: 6533.54s (16 epochs, 2gpus)
+	training time: 5349.83s (16 epochs, 2gpus)
 	prediction time: 1.409s
 	Australia:
 		MSE  p|y: 7.78 | 12.40
