@@ -194,6 +194,7 @@ plotted bands:
 	
 hyper param search:
 loss: 0.001 to 0.00001
+batch size: 32
 kernel search with filters 3+3+3 and 64+32+9+1 (for faster training time)
 best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5, 5)]
 	training time: 5349.83s (16 epochs, 2gpus)
@@ -218,7 +219,7 @@ best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5
 		PSNR p|y: 38.72 | 36.87
 		SSIM p|y: 0.94 | 0.89
 		SAM  p|y: 2.97 | 3.86
-... todo: reevaluate; currently training 2nd best kernels
+... todo: reevaluate; currently training best filters
 		
 
 2nd best kernels: [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)] + [(9, 9), (5, 5), (3, 3)]
@@ -247,7 +248,7 @@ best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5
 	
 filter search with kernels [(9, 9), (5, 5), (3, 3)] + [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
 best filters: mb: [64, 64, 64, 1] + db: [64, 32, 9]
-training time: 3248.86s (16 epochs, 2gpus)
+training time: 6950.86s (16 epochs, 2gpus)
 prediction time: 
 	Australia:
 		MSE  p|y: 8.88 | 12.40
