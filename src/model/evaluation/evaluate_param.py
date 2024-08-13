@@ -79,6 +79,7 @@ def print_best_metrics(hist, hyperparams="kernels"):
 # print_best_metrics(kernels_history, hyperparams='kernels')
 
 filters_history_path = os.getcwd() + '/../../../output/models/MMSRes_hyperparam_history_filters.txt'
+# filters_history_path = os.getcwd() + '/../../../output/models/MMSRes_hyperparam_history_224.txt'
 with open(filters_history_path, 'r') as f:
     # read dict from file
     filters_history = eval(f.read())

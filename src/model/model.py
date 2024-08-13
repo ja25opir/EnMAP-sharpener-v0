@@ -76,8 +76,8 @@ class Model:
         print('Test data size:', len(self.test_files))
 
     def set_lr_schedule(self):
-        initial_learning_rate = 0.0001
-        final_learning_rate = 0.00001
+        initial_learning_rate = 0.001 # 0.0001 # training 224 bands
+        final_learning_rate = 0.00001 #0.00001 # training 224 bands
         learning_rate_decay_factor = (final_learning_rate / initial_learning_rate) ** (1 / self.train_epochs)
         steps_per_epoch = int(len(self.train_files) / self.batch_size)
         return optimizers.schedules.ExponentialDecay(
@@ -153,22 +153,22 @@ class Model:
         ]
         kernel_sizes_mb = [
             # [(3, 3, 3), (3, 3, 3), (3, 3, 3), (3, 3, 3)],
-            # [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)],
+            [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)],
             # [(9, 9, 7), (1, 1, 1), (1, 1, 1), (5, 5, 3)],
             # [(9, 9, 7), (3, 3, 1), (3, 3, 1), (5, 5, 3)],
             # [(9, 9, 7), (3, 3, 3), (3, 3, 3), (5, 5, 3)],
-            [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
+            # [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
         ]
 
         filters_mb = [
-            [64, 64, 64],
-            # [64, 32, 9]
+            # [64, 64, 64],
+            [64, 32, 9]
         ]
         filters_db = [
             # [64, 64, 64],
-            [64, 32, 9],
+            # [64, 32, 9],
             # [9, 6, 3],
-            # [3, 3, 3]
+            [3, 3, 3]
         ]
 
         best_ssim_psnr = 0

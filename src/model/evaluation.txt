@@ -172,12 +172,12 @@ leakyReLU in detail branch: --> best atm
 	- Australia, May 2024
 	(https://epsg.io/map#srs=32755&x=551520.000000&y=5889390.000000&z=2&layer=sATELLITE)
 	- Victorian Alps, Tambo River
-	- 770 x 831 (width x height) x 30m / pixel; 440 tiles
+	- 770 x 831 (width x height) x 30m / pixel; 440 tiles --> check no. of tiles again!
 20240602T155832Z
 	- Peru, June 2024
 	(https://epsg.io/map#srs=32718&x=492000&y=9093600&z=12&layer=satellite)
 	- Rio Aguaytia, Amazon basin
-	- 796 x 831; 484 tiles
+	- 796 x 831; 484 tiles (400 tiles remaining) --> maybe tiles in test set shouldnt be filtered out in wald protocol
 20240611T100311Z
 	- Namibia, June 2024
 	(https://epsg.io/map#srs=32733&x=248790.000000&y=8079720.000000&z=10&layer=satellite9
@@ -187,12 +187,13 @@ leakyReLU in detail branch: --> best atm
 	- Germany, June 2022
 	(https://epsg.io/map#srs=32633&x=312420.000000&y=5688990.000000&z=12&layer=satellite)
 	- City of Leipzig (half of it), Leipzig South Region, South Auwald, South Neuseenland
-	- 697 x 759; 295 tiles
+	- 697 x 759; 295 tiles (292 tiles remaining)
 	
 plotted bands: 
 	53, 27, 4 (rgb) | color factor 0.78, 1.1, 1.4 | max reflectance = 4000
 	
 hyper param search:
+loss: 0.001 to 0.00001
 kernel search with filters 3+3+3 and 64+32+9+1 (for faster training time)
 best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5, 5)]
 	training time: 2565.59s (16 epochs, 2gpus)
@@ -244,7 +245,7 @@ best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5
 		SAM  p|y: 2.97 | 3.86
 	
 filter search with kernels [(9, 9), (5, 5), (3, 3)] + [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
-best kernels: mb: [64, 64, 64, 1] + db: [64, 32, 9]
+best filters: mb: [64, 64, 64, 1] + db: [64, 32, 9]
 training time: 3248.86s (16 epochs, 2gpus)
 prediction time: 
 	Australia:
@@ -269,14 +270,55 @@ prediction time:
 		SAM  p|y: 2.94 | 3.86
 		
 
-2nd best kernels: mb: [64, 64, 64, 1] + db: [64, 64, 64]
+2nd best filters: mb: [64, 64, 64, 1] + db: [64, 64, 64]
 training time: 3701.32s
 prediction time: 
 	Australia:
-		
+		MSE  p|y: 9.04 | 12.40
+		PSNR p|y: 38.57 | 37.20
+		SSIM p|y: 0.92 | 0.88
+		SAM  p|y: 3.00 | 3.38
 	Namibia: 
-		
+		MSE  p|y: 5.50 | 13.55
+		PSNR p|y: 40.73 | 36.81
+		SSIM p|y: 0.95 | 0.86
+		SAM  p|y: 0.87 | 1.06
 	Peru:
-		
+		MSE  p|y: 6.92 | 13.98
+		PSNR p|y: 39.73 | 36.68
+		SSIM p|y: 0.96 | 0.92
+		SAM  p|y: 2.47 | 3.51
 	Germany:
-		
+		MSE  p|y: 9.23 | 13.37
+		PSNR p|y: 38.48 | 36.87
+		SSIM p|y: 0.93 | 0.89
+		SAM  p|y: 3.07 | 3.86
+
+full network:
+	loss: 0.0001 to 0.00001
+	training time: 171219s = 47:33:39h
+	Australia:
+		MSE  p|y: 141.47 | 182.93
+		PSNR p|y: 30.19 | 28.48
+		SSIM p|y: 0.91 | 0.81
+		SAM  p|y: 4.99 | 6.30
+	Namibia:
+		MSE  p|y: 15.35 | 25.70
+		PSNR p|y: 37.70 | 35.28
+		SSIM p|y: 0.92 | 0.84
+		SAM  p|y: 1.44 | 1.81
+	Peru:
+		MSE  p|y: 53.13 | 68.11
+		PSNR p|y: 32.28 | 31.26
+		SSIM p|y: 0.92 | 0.87
+		SAM  p|y: 2.65 | 3.08
+	Germany:
+		MSE  p|y: 92.43 | 94.93
+		PSNR p|y: 28.92 | 28.83
+		SSIM p|y: 0.87 | 0.83
+		SAM  p|y: 4.68 | 5.19
+	
+	
+# TODO redo wald protocol for whole dataset again? cropping after alignment was only done for x files!!!
+-> also redo training of 40band models and redo all evaluations
+--> before retraining with 40 bands: which bands / wavelength reflect what?

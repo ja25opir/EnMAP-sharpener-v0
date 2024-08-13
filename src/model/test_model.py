@@ -11,16 +11,22 @@ from src.visualization.helpers import get_bands_from_array
 from src.visualization.plot_raster import plot_3_band_image
 
 
+def print_layer_names(model):
+    print('Layer names and indices')
+    for i in range(len(model.layers)):
+        print(model.layers[i].name, i)
+    print('----------')
+
+
 def plot_detail_branch(model, x):
     get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=model.layers[j].output))
-    padded = get_layer_output(1)(x)  # TODO: is this the wrong input lol?
+    padded = get_layer_output(1)(x)
     first_2d = get_layer_output(2)(padded)
     first_2d_readable = first_2d[0, :, :, :].T
     first_2d_batch = get_layer_output(3)(first_2d)
     first_2d_activation = get_layer_output(4)(first_2d_batch)
 
-    arr = get_bands_from_array(first_2d_activation[0, :, :, :].T, [0, 1,
-                                                                   2])  # todo: only extract 3 feat maps with 2d convs and inject (merged = 3 * 64 feature maps for first layer)
+    arr = get_bands_from_array(first_2d_activation[0, :, :, :].T, [0, 1, 2])
     plot_3_band_image(arr, title='First 2d conv + batch + activation')
 
     padded = get_layer_output(5)(first_2d)
@@ -105,8 +111,9 @@ def load_data(file_name):
     y = np.load(Y_DATA_PATH + file_name)
     x = x[(224, 225, 226, 227), :, :]
     # x1_raster = x1_raster[(15, 29, 47, 71), :, :]  # 4 bands only
-    x1 = np.load(X_DATA_PATH + file_name)[20:60, :, :]  # 20 bands only
-    y = y[20:60, :, :]  # 20 bands only
+    # x1 = np.load(X_DATA_PATH + file_name)[20:60, :, :]  # 20 bands only
+    x1 = np.load(X_DATA_PATH + file_name)[:224, :, :]
+    # y = y[20:60, :, :]  # 20 bands only
     return x, x1, y
 
 
@@ -130,7 +137,7 @@ def evaluate_on_validation_scene(model, test_file_list):
     evaluations = []
     iterations = len(test_file_list)
     for no in range(iterations):
-        x_rast, x1_rast, y_rast = load_data(test_file_list[i])
+        x_rast, x1_rast, y_rast = load_data(test_file_list[no])
         predicted_rast = make_prediction(x_rast, x1_rast, model, NO_OUTPUT_BANDS)
         if residual_leaning:
             predicted_rast = predicted_rast + x1_rast
@@ -156,45 +163,46 @@ X1_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/x1/'
 Y_DATA_PATH = os.getcwd() + '/../../data/preprocessing/model_input/y/'
 MODEL_PATH = os.getcwd() + '/../../output/models/'
 
-NO_OUTPUT_BANDS = 40
+NO_OUTPUT_BANDS = 224
 residual_leaning = False
 test_file = '20220627T104548Z_0_0.npy'
+# test_file = '20240516T004729Z_16_7.npy'
+# test_file = '20240602T155832Z_19_3.npy'
+# test_file = '20240611T100311Z_0_0.npy'
 # sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_best_kernels.keras', custom_objects=CUSTOM_LAYERS)
 # sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_second_best_kernels.keras', custom_objects=CUSTOM_LAYERS)
 # sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_best_filters.keras', custom_objects=CUSTOM_LAYERS)
-sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_second_best_filters.keras', custom_objects=CUSTOM_LAYERS)
+# sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_second_best_filters.keras', custom_objects=CUSTOM_LAYERS)
+sr_model = tf.keras.models.load_model(MODEL_PATH + 'MMSRes_224.keras', custom_objects=CUSTOM_LAYERS)
+
+# tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)
+
+print_layer_names(sr_model)
 
 print(sr_model.summary())
 x_raster, x1_raster, y_raster = load_data(test_file)
 predicted_raster = make_prediction(x_raster, x1_raster, sr_model, NO_OUTPUT_BANDS)
 
-bands = [1, 2, 3]
-predicted_rgb = get_bands_from_array(predicted_raster, bands)
+plot_bands = [16, 30, 48]
+predicted_rgb = get_bands_from_array(predicted_raster, plot_bands)
 plot_3_band_image(predicted_rgb, title='Predicted Image')
 
 x_rgb = get_bands_from_array(x_raster, [0, 1, 2])
 plot_3_band_image(x_rgb, title='Input Image x (Sentinel)')
-x1_rgb = get_bands_from_array(x1_raster, bands)
+x1_rgb = get_bands_from_array(x1_raster, plot_bands)
 plot_3_band_image(x1_rgb, title='Input Image x1 (EnMAP)')
-y_rgb = get_bands_from_array(y_raster, bands)
+y_rgb = get_bands_from_array(y_raster, plot_bands)
 plot_3_band_image(y_rgb, title='Original Image')
 
 if residual_leaning:
     residual = y_raster - x1_raster
-    residual_rgb = get_bands_from_array(residual, bands)
+    residual_rgb = get_bands_from_array(residual, plot_bands)
     plot_3_band_image(residual_rgb, title='Residual between y and x1')
 
     residual_added = x1_raster + predicted_raster
-    residual_added_rgb = get_bands_from_array(residual_added, bands)
+    residual_added_rgb = get_bands_from_array(residual_added, plot_bands)
     plot_3_band_image(residual_added_rgb, title='Residual added to x1')
     predicted_raster = residual_added
-
-# tf.keras.utils.plot_model(model, to_file='model_graph.png', show_shapes=True)
-
-print('Layer names and indices')
-for i in range(len(sr_model.layers)):
-    print(sr_model.layers[i].name, i)
-print('----------')
 
 # plot_detail_branch(sr_model, x_raster.T.reshape(1, 32, 32, 4))
 
@@ -205,17 +213,17 @@ plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
 plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
 
 """Evaluate on validation scenes"""
-print('Evaluating on validation scene from Australia...')
-australia_file = os.getcwd() + '/../../data/testfiles_Australia.txt'
-with open(australia_file, 'r') as f:
-    australia_list = f.read().splitlines()
-evaluate_on_validation_scene(sr_model, australia_list)
-
-print('Evaluating on validation scene from Namibia...')
-namibia_file = os.getcwd() + '/../../data/testfiles_Namibia.txt'
-with open(namibia_file, 'r') as f:
-    namibia_list = f.read().splitlines()
-evaluate_on_validation_scene(sr_model, namibia_list)
+# print('Evaluating on validation scene from Australia...')
+# australia_file = os.getcwd() + '/../../data/testfiles_Australia.txt'
+# with open(australia_file, 'r') as f:
+#     australia_list = f.read().splitlines()
+# evaluate_on_validation_scene(sr_model, australia_list)
+#
+# print('Evaluating on validation scene from Namibia...')
+# namibia_file = os.getcwd() + '/../../data/testfiles_Namibia.txt'
+# with open(namibia_file, 'r') as f:
+#     namibia_list = f.read().splitlines()
+# evaluate_on_validation_scene(sr_model, namibia_list)
 
 print('Evaluating on validation scene from Peru...')
 peru_file = os.getcwd() + '/../../data/testfiles_Peru.txt'
