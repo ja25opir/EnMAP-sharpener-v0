@@ -222,7 +222,7 @@ best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5
 		
 
 2nd best kernels: [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)] + [(9, 9), (5, 5), (3, 3)]
-	training time: 1571.29s (16 epochs, 2gpus)
+	training time: 3500.23s (16 epochs, 2gpus)
 	prediction time: 0.982s
 	Australia:
 		MSE  p|y: 7.71 | 12.40
