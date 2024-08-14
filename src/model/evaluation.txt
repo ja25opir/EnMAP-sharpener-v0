@@ -273,7 +273,7 @@ prediction time:
 		
 
 2nd best filters: mb: [64, 64, 64, 1] + db: [64, 64, 64]
-training time: 3701.32s
+training time: 8340.10s
 prediction time: 
 	Australia:
 		MSE  p|y: 9.04 | 12.40
