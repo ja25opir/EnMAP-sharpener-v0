@@ -69,14 +69,14 @@ class Model:
     def train_test_split(self):
         all_files = os.listdir(self.train_data_dir + 'x/')
         all_files = random.sample(all_files, len(all_files))
-        train_ratio = 0.8
+        train_ratio = 0.1
         self.train_files = all_files[:int(len(all_files) * train_ratio)]
-        self.test_files = all_files[int(len(all_files) * train_ratio):]
+        self.test_files = all_files[int(len(all_files) * 0.95):]
         print('Train data size:', len(self.train_files))
         print('Test data size:', len(self.test_files))
 
     def set_lr_schedule(self):
-        initial_learning_rate = 0.0001 # training 224 bands # 0.001 hyperparams
+        initial_learning_rate = 0.0001  # training 224 bands # 0.001 hyperparams
         final_learning_rate = 0.00001
         learning_rate_decay_factor = (final_learning_rate / initial_learning_rate) ** (1 / self.train_epochs)
         steps_per_epoch = int(len(self.train_files) / self.batch_size)
@@ -127,6 +127,10 @@ class Model:
         self.model.compile(optimizer=optimizer, loss=loss, metrics=[ssim, psnr, mse, variance])
         self.model.summary()
         stop_nan = tf.keras.callbacks.TerminateOnNaN()
+        early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                          min_delta=0.02,
+                                                          patience=5,
+                                                          restore_best_weights=True)
         history = None
         attempts = 3
         # retry twice if loss is nan
@@ -135,7 +139,7 @@ class Model:
                                      validation_data=test_generator,
                                      epochs=self.train_epochs,
                                      verbose=1,
-                                     callbacks=[stop_nan])
+                                     callbacks=[stop_nan, early_stopping])
             attempts -= 1
 
         self.history = history.history
