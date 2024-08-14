@@ -128,8 +128,8 @@ class Model:
         self.model.summary()
         stop_nan = tf.keras.callbacks.TerminateOnNaN()
         early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
-                                                          min_delta=0.02,
-                                                          patience=5,
+                                                          min_delta=1,
+                                                          patience=3,
                                                           restore_best_weights=True)
         history = None
         attempts = 3
