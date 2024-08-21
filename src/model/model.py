@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, MMSRes, ms_ssim_l1_loss, \
+from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, SupErMAPnet, ms_ssim_l1_loss, \
     residual_loss, ssim, mse, variance, psnr
 from .load_data import DuoBranchDataGenerator
 
@@ -57,7 +57,7 @@ class Model:
         # architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # architecture = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
         # MMSRes
-        architecture = MMSRes(self.tile_size, self.no_input_bands, self.no_output_bands,
+        architecture = SupErMAPnet(self.tile_size, self.no_input_bands, self.no_output_bands,
                               kernels_mb=hyperparameters['k_mb'],
                               kernels_db=hyperparameters['k_db'],
                               filters_mb=hyperparameters['f_mb'],

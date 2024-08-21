@@ -359,11 +359,11 @@ class DILayer(layers.Layer):
         return merged
 
 
-class MMSRes:
+class SupErMAPnet:
     """full custom network"""
 
     def __init__(self, tile_size, no_input_bands, no_output_bands, kernels_mb, kernels_db, filters_mb, filters_db):
-        self.name = 'MMSRes'
+        self.name = 'supErMAPnet'
         self.tile_size = tile_size
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
