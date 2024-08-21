@@ -9,7 +9,7 @@ if __name__ == '__main__':
                         help='Path to the directory where the output data will be saved')
     parser.add_argument('--stages', nargs='+', default='[all]', help='Stages to run (all, crop, scrape, mask, wald)')
     parser.add_argument('--cpus', nargs='+', type=int, default=[0, 1, 2, 3], help='Assigned logical CPUs for the pipeline')
-    parser.add_argument('--mem-limit', type=int, default=10, help='Memory limit for the pipeline in GB')
+    parser.add_argument('--mem-limit', type=int, default=16, help='Memory limit for the pipeline in GB')
 
     args = parser.parse_args()
 
@@ -37,6 +37,8 @@ if __name__ == '__main__':
         pipeline.clean_up()
     elif 'wald' in args.stages:
         pipeline.wald_protocol_all()
+    elif 'predictions' in args.stages:
+        pipeline.prediction_ready_all()
 
     print("---PreprocessPipeline---Elapsed time: %.2fs seconds ---" % (time.time() - start_time))
     print("---PreprocessPipeline---CPU time: %.2fs seconds ---" % (time.process_time() - cpu_start))

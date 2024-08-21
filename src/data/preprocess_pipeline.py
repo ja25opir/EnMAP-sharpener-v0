@@ -8,7 +8,7 @@ from rasterio.io import MemoryFile
 
 from .helpers import crop_raster
 from .scrape_sentinel import request_and_save_response, SentinelSession
-from .wald_protocol import start_wald_protocol
+from .wald_protocol import start_wald_protocol, start_prediction_preprocessing
 
 
 def get_bounding_box_from_xml(xml_path):
@@ -185,7 +185,9 @@ class PreprocessPipeline:
         self.output_sentinel_dir_path = output_dir_path + 'Sentinel2/'
         self.masked_scenes_path = output_dir_path + 'masked_scenes/'
         self.model_input_path = output_dir_path + 'model_input/'
+        self.prediction_input_path = output_dir_path + 'prediction_input/'
         self.value_range = [0, 10000]
+        self.tile_size = 32
         print('PreprocessPipeline initialized.')
 
     def start_all_steps(self):
@@ -353,8 +355,6 @@ class PreprocessPipeline:
         input_files = os.listdir(self.masked_scenes_path)
         enmap_files = [x for x in input_files if re.search(".*enmap_masked.tif", x)]
         sentinel_files = [x for x in input_files if re.search(".*sentinel_masked.tif", x)]
-        tile_size = 32
-        # tile_size = 10
 
         i = 1
         for enmap_scene in enmap_files:
@@ -363,8 +363,27 @@ class PreprocessPipeline:
             print('Timestamp:', timestamp)
             for sentinel_scene in sentinel_files:
                 if re.search(timestamp, sentinel_scene):
-                    start_wald_protocol(self.masked_scenes_path, tile_size, enmap_scene, sentinel_scene, timestamp,
+                    start_wald_protocol(self.masked_scenes_path, self.tile_size, enmap_scene, sentinel_scene, timestamp,
                                         self.model_input_path, save_lr_enmap=False)
+                    sentinel_files.remove(sentinel_scene)
+                    break
+            i += 1
+
+    def prediction_ready_all(self):
+        """Tile and stack masked EnMAP and Sentinel scenes for prediction."""
+        print('Starting tiling and stacking for predictions... \n--------------------------')
+        input_files = os.listdir(self.masked_scenes_path)
+        enmap_files = [x for x in input_files if re.search(".*enmap_masked.tif", x)]
+        sentinel_files = [x for x in input_files if re.search(".*sentinel_masked.tif", x)]
+        i = 1
+        for enmap_scene in enmap_files:
+            print('Processing scene', i, 'of', len(enmap_files), '...')
+            timestamp = enmap_scene.split('_')[0]
+            print('Timestamp:', timestamp)
+            for sentinel_scene in sentinel_files:
+                if re.search(timestamp, sentinel_scene):
+                    start_prediction_preprocessing(self.masked_scenes_path, self.tile_size, enmap_scene, sentinel_scene,
+                                                   timestamp, self.prediction_input_path)
                     sentinel_files.remove(sentinel_scene)
                     break
             i += 1

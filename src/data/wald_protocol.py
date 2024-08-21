@@ -1,4 +1,6 @@
 import os
+import sys
+
 import rasterio
 import time
 import numpy as np
@@ -121,7 +123,7 @@ def stack_rasters(raster1, raster2):
         return memfile.open()
 
 
-def stack_raster_and_array(raster1, array2):
+def stack_raster_and_array(raster1, array2, in_memory=True, temp_file_path=''):
     raster_stack = []
     for band in range(1, raster1.count + 1):
         raster_stack.append(raster1.read(band))
@@ -130,10 +132,20 @@ def stack_raster_and_array(raster1, array2):
 
     meta = raster1.meta.copy()
     meta.update(count=len(raster_stack))
+    if not in_memory:
+        # temporary save raster file to disk, read from disk and return raster object
+        with rasterio.open(temp_file_path + 'stacked_raster.tif', 'w', **meta) as dataset:
+            dataset.write(np.array(raster_stack))
+        stacked_raster = rasterio.open(temp_file_path + 'stacked_raster.tif')
+        os.remove(temp_file_path + 'stacked_raster.tif')
+        return stacked_raster
+
     with MemoryFile() as memfile:
         with memfile.open(**meta) as dataset:
             dataset.write(np.array(raster_stack))
         return memfile.open()
+
+
 
 
 def crop_after_warp(raster, warp_dict):
@@ -269,4 +281,34 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
         for file in sparse_y_tiles:
             remove_tile(x1_tiles_path, file)
 
+    print("Tiling time: %.4fs" % (time.time() - start_time))
+
+
+def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_file, save_name, output_dir_path):
+    enmap_raster = rasterio.open(dir_path + enmap_file)
+    sentinel_raster = rasterio.open(dir_path + sentinel_file)
+
+    # upscale and interpolate EnMAP raster to Sentinel raster resolution
+    print('Resampling...')
+    start_time = time.time()
+    enmap_upscaled = resample_raster_in_memory(enmap_raster, sentinel_raster.shape)
+    print("Resampling time: %.4fs" % (time.time() - start_time))
+
+    print('Aligning Sentinel raster to EnMAP raster...')
+    start_time = time.time()
+    # align Sentinel raster to EnMAP raster
+    (sentinel_aligned, warp_dictionary) = align_sentinel(enmap_upscaled, sentinel_raster)
+    print("Alignment time: %.4fs" % (time.time() - start_time))
+
+    print('Stacking upscaled EnMAP and original Sentinel rasters...')
+    start_time = time.time()
+    # stack upscaled EnMAP and aligned Sentinel rasters
+    x_image = stack_raster_and_array(enmap_upscaled, sentinel_aligned, in_memory=False, temp_file_path=dir_path)
+    x_image = crop_after_warp(x_image, warp_dictionary)
+    print("Stacking time: %.4fs" % (time.time() - start_time))
+
+    print('Tiling and saving X image...')
+    start_time = time.time()
+    # tile raster and save tiles
+    tile_raster(x_image, tile_size, output_dir_path, save_name, min_value_ratio=0, overlap=0)
     print("Tiling time: %.4fs" % (time.time() - start_time))
