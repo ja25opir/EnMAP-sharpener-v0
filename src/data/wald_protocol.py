@@ -1,4 +1,6 @@
 import os
+import sys
+
 import rasterio
 import time
 import numpy as np
@@ -63,7 +65,7 @@ def get_gradient(img):
 def align_sentinel(enmap_raster, sentinel_raster_downscaled):
     """align Sentinel Raster to EnMAP Raster with ECC algorithm and openCV"""
     # read 4 enmap bands near to sentinel bands as array
-    enmap_array = enmap_raster.read((15, 29, 47, 71)).T.astype(np.uint8)
+    enmap_array = enmap_raster.read((16, 30, 48, 72)).T.astype(np.uint8)
     # downscale sentinel to enmap shape and read as array
     sentinel_array = sentinel_raster_downscaled.read((1, 2, 3, 4)).T.astype(np.uint8)
 
@@ -74,30 +76,34 @@ def align_sentinel(enmap_raster, sentinel_raster_downscaled):
     termination_eps = 1e-10
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, number_of_iterations, termination_eps)
 
-    warp_matrices = []
+    warp_matrices = np.zeros((4, 2, 3), dtype=np.float32)
     # find warp matrices with ECC and gradients of four bands
     for band in range(4):
         e_gradient = get_gradient(enmap_array[:, :, band])
         s_gradient = get_gradient(sentinel_array[:, :, band])
 
-        (cc, warp_mat) = cv2.findTransformECC(e_gradient, s_gradient, warp_mat, warp_mode, criteria)
-        # only use integer values for translation (no interpolation)
-        if not len(warp_matrices):
-            warp_matrices = [warp_mat]
-        else:
-            warp_matrices.append(warp_mat)
+        try:
+            (cc, warp_mat) = cv2.findTransformECC(e_gradient, s_gradient, warp_mat, warp_mode, criteria)
+        except cv2.error as e:
+            print(f'Error: {e}')
+            warp_mat = np.eye(2, 3, dtype=np.float32)
+
+        warp_matrices[band] = warp_mat
 
     # average matrix of all gradient warp matrices
     sum_matrix = np.sum(warp_matrices, axis=0)
     warp_matrix = sum_matrix / len(warp_matrices)
 
     # round to integer values to avoid interpolation
-    warp_matrix = np.round(warp_matrix).astype(np.float32)
+    # warp_matrix = np.round(warp_matrix)
 
     # apply affine transformation to original sentinel image
     sentinel_original = sentinel_raster_downscaled.read((1, 2, 3, 4)).T
     sentinel_aligned = cv2.warpAffine(sentinel_original, warp_matrix, (enmap_array.shape[1], enmap_array.shape[0]),
                                       flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
+
+    # round warp_matrix towards infinity for latter cropping
+    warp_matrix = np.copysign(np.ceil(np.abs(warp_matrix)), warp_matrix)
 
     return sentinel_aligned.T, {'y': warp_matrix[0, -1], 'x': warp_matrix[1, -1]}
 
@@ -117,7 +123,7 @@ def stack_rasters(raster1, raster2):
         return memfile.open()
 
 
-def stack_raster_and_array(raster1, array2):
+def stack_raster_and_array(raster1, array2, in_memory=True, temp_file_path=''):
     raster_stack = []
     for band in range(1, raster1.count + 1):
         raster_stack.append(raster1.read(band))
@@ -126,17 +132,27 @@ def stack_raster_and_array(raster1, array2):
 
     meta = raster1.meta.copy()
     meta.update(count=len(raster_stack))
+    if not in_memory:
+        # temporary save raster file to disk, read from disk and return raster object
+        with rasterio.open(temp_file_path + 'stacked_raster.tif', 'w', **meta) as dataset:
+            dataset.write(np.array(raster_stack))
+        stacked_raster = rasterio.open(temp_file_path + 'stacked_raster.tif')
+        os.remove(temp_file_path + 'stacked_raster.tif')
+        return stacked_raster
+
     with MemoryFile() as memfile:
         with memfile.open(**meta) as dataset:
             dataset.write(np.array(raster_stack))
         return memfile.open()
 
 
+
+
 def crop_after_warp(raster, warp_dict):
     """crop raster after warp to remove borders caused by translation"""
     resolution = raster.transform[0]
-    x_shift = warp_dict['x'] * resolution
-    y_shift = warp_dict['y'] * resolution
+    x_shift = np.round(warp_dict['x'] * resolution)
+    y_shift = np.round(warp_dict['y'] * resolution)
     # construct bbox coordinates
     ul = [raster.bounds.left, raster.bounds.top]
     ur = [raster.bounds.right, raster.bounds.top]
@@ -191,7 +207,7 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
         for i_v in range(vertical_tiles):
             file_name = f'{save_name}_{i_h}_{i_v}.npy'
             left_x = i_v * (tile_size - overlap) + left_edge_margin
-            left_y = i_h * (tile_size - overlap)
+            left_y = i_h * (tile_size - overlap) + top_edge_margin
             w = raster.read(window=Window(left_x, left_y, tile_size, tile_size))
             if not np.any(w):
                 skip_list.append(file_name)
@@ -225,7 +241,8 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
 
     print('Aligning Sentinel raster to EnMAP raster...')
     start_time = time.time()
-    (sentinel_aligned, warp_dictionary) = align_sentinel(enmap_rescaled, sentinel_downscaled)
+    # align downscaled sentinel raster to original enmap raster
+    (sentinel_aligned, warp_dictionary) = align_sentinel(enmap_raster, sentinel_downscaled)
     print("Alignment time: %.4fs" % (time.time() - start_time))
 
     print('Stacking resampled EnMAP and downsampled Sentinel rasters...')
@@ -251,7 +268,7 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
     for file in sparse_y_tiles:
         remove_tile(x_tiles_path, file)
 
-    # save resampled EnMAP raster as x1 files
+    # save resampled EnMAP raster as x1 files # todo: maybe not even necessary, can be handled in DataLoader
     if save_lr_enmap:
         x1_tiles_path = output_dir_path + 'x1/'
         sparse_x1_tiles = tile_raster(enmap_rescaled, tile_size, x1_tiles_path, save_name,
@@ -264,4 +281,34 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
         for file in sparse_y_tiles:
             remove_tile(x1_tiles_path, file)
 
+    print("Tiling time: %.4fs" % (time.time() - start_time))
+
+
+def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_file, save_name, output_dir_path):
+    enmap_raster = rasterio.open(dir_path + enmap_file)
+    sentinel_raster = rasterio.open(dir_path + sentinel_file)
+
+    # upscale and interpolate EnMAP raster to Sentinel raster resolution
+    print('Resampling...')
+    start_time = time.time()
+    enmap_upscaled = resample_raster_in_memory(enmap_raster, sentinel_raster.shape)
+    print("Resampling time: %.4fs" % (time.time() - start_time))
+
+    print('Aligning Sentinel raster to EnMAP raster...')
+    start_time = time.time()
+    # align Sentinel raster to EnMAP raster
+    (sentinel_aligned, warp_dictionary) = align_sentinel(enmap_upscaled, sentinel_raster)
+    print("Alignment time: %.4fs" % (time.time() - start_time))
+
+    print('Stacking upscaled EnMAP and original Sentinel rasters...')
+    start_time = time.time()
+    # stack upscaled EnMAP and aligned Sentinel rasters
+    x_image = stack_raster_and_array(enmap_upscaled, sentinel_aligned, in_memory=False, temp_file_path=dir_path)
+    x_image = crop_after_warp(x_image, warp_dictionary)
+    print("Stacking time: %.4fs" % (time.time() - start_time))
+
+    print('Tiling and saving X image...')
+    start_time = time.time()
+    # tile raster and save tiles
+    tile_raster(x_image, tile_size, output_dir_path, save_name, min_value_ratio=0, overlap=0)
     print("Tiling time: %.4fs" % (time.time() - start_time))

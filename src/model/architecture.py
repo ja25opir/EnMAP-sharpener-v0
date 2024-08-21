@@ -2,6 +2,58 @@ import tensorflow as tf
 from tensorflow.keras import models, layers, regularizers, Input, Model
 
 
+@tf.keras.utils.register_keras_serializable()
+def ms_ssim_l1_loss(y_true, y_pred):
+    # alpha * (1 - MS_SSIM) + (1 - alpha) * L1_loss
+    # source: https://arxiv.org/pdf/1511.08861
+    max_raster_value = 10000
+    alpha = 0.84
+
+    l1 = tf.reduce_mean(tf.abs(y_true - y_pred))  # == mean absolute error
+    # if l1 <= 4000:
+    #     ms_ssim_loss = (1 - tf.image.ssim_multiscale(y_true, y_pred, max_val=max_raster_value,
+    #                                                  filter_size=2))
+    # else:
+    ms_ssim_loss = (1 - tf.image.ssim(y_true, y_pred, max_raster_value))
+
+    loss = (alpha * ms_ssim_loss + (1 - alpha) * l1)
+
+    return tf.reduce_mean(loss)
+
+
+@tf.keras.utils.register_keras_serializable()
+def l1_loss(y_true, y_pred):
+    return tf.reduce_mean(tf.abs(y_true - y_pred))
+
+
+@tf.keras.utils.register_keras_serializable()
+def residual_loss(y_true, y_pred):
+    # source: https://openaccess.thecvf.com/content_cvpr_2016/papers/Kim_Accurate_Image_Super-Resolution_CVPR_2016_paper.pdf
+    return 1 / 2 * tf.square(tf.abs(y_true - y_pred))
+
+
+@tf.keras.utils.register_keras_serializable()
+def ssim(y_true, y_pred):
+    max_raster_value = 10000
+    return tf.image.ssim(y_true, y_pred, max_raster_value)
+
+
+@tf.keras.utils.register_keras_serializable()
+def mse(y_true, y_pred):
+    return tf.reduce_mean(tf.square(y_true - y_pred))
+
+
+@tf.keras.utils.register_keras_serializable()
+def variance(y_true, y_pred):
+    return tf.math.reduce_variance(y_true - y_pred)
+
+
+@tf.keras.utils.register_keras_serializable()
+def psnr(y_true, y_pred):
+    max_raster_value = 10000
+    return tf.image.psnr(y_true, y_pred, max_raster_value)
+
+
 class ReflectionPadding2D(layers.Layer):
     def __init__(self, padding=(1, 1), **kwargs):
         self.padding = tuple(padding)
@@ -20,7 +72,7 @@ class ReflectionPadding2D(layers.Layer):
                                    [padding_height, padding_height],
                                    [padding_width, padding_width],
                                    [0, 0]]),
-                      'SYMMETRIC')
+                      'REFLECT')
 
 
 class Masi:
@@ -110,7 +162,7 @@ class ReflectionPadding3D(layers.Layer):
                                    [padding_height, padding_height],
                                    [padding_width, padding_width],
                                    [0, 0]]),
-                      'SYMMETRIC')
+                      'REFLECT')
 
 
 class SFTLayer(layers.Layer):
@@ -258,60 +310,127 @@ class TestSaPNN:
         # todo: kernel size very important! fcnn doesnt fit with all kernels = (7,7,3)
 
 
-class MMSRes:
-    """full custom network"""
+class DILayer(layers.Layer):
+    """detail injection layer"""
 
-    def __init__(self, tile_size, no_input_bands, no_output_bands):
-        self.name = 'MMSRes'
-        self.tile_size = tile_size
-        self.no_input_bands = no_input_bands
-        self.no_output_bands = no_output_bands
-        self.model = None
-        self.create_layers()
+    def __init__(self, kernel_size=(3, 3), **kwargs):
+        super(DILayer, self).__init__(**kwargs)
+        self.kernel = kernel_size
+        self.x_shape = None
 
-    def inject_edges(self, x, edges):
+    def build(self, input_shape):
+        self.x_shape = input_shape[0]
+
+    def call(self, inputs):
+        x, edges = inputs
         merged = None
 
-        for band_no in range(self.no_output_bands):
+        """Add() edges to each input feature map"""
+        # learning doesnt start
+        # for band_no in range(self.x_shape[-2]):
+        #     x_band = x[:, :, :, band_no, :]
+        #     x_band_merged = None
+        #
+        #     for feature_map in range(self.x_shape[-1]):
+        #         x_map = x_band[:, :, :, feature_map]
+        #         x_map = layers.Add()([x_map, edges[:, :, :, 0]])
+        #         x_map = layers.Add()([x_map, edges[:, :, :, 1]])
+        #         x_map = layers.Add()([x_map, edges[:, :, :, 2]])
+        #         x_map = tf.expand_dims(x_map, axis=-1)
+        #
+        #         x_band_merged = tf.concat([x_band_merged, x_map], axis=-1) if x_band_merged is not None else x_map
+        #
+        #     x_band_merged = tf.expand_dims(x_band_merged, axis=-2)
+        #     if merged is None:
+        #         merged = x_band_merged
+        #     else:
+        #         merged = tf.concat([merged, x_band_merged], axis=-2)
+
+        """stack edges feature map(s) to input feature maps"""
+        for band_no in range(self.x_shape[-2]):
             x_band = x[:, :, :, band_no, :]
-            for feature_map in range(x_band.shape[-1]):
-                # x_band = layers.Multiply()([x_band, edges])
-                x_band = layers.Add()([x_band, edges])
-            x_band = tf.expand_dims(x_band, axis=-2)
+            x_stacked = tf.concat([x_band, edges], axis=-1)
+            x_stacked = tf.expand_dims(x_stacked, axis=-2)
             if merged is None:
-                merged = x_band
+                merged = x_stacked
             else:
-                merged = tf.concat([merged, x_band], axis=-2)
+                merged = tf.concat([merged, x_stacked], axis=-2)
 
         return merged
 
+
+class SupErMAPnet:
+    """full custom network"""
+
+    def __init__(self, tile_size, no_input_bands, no_output_bands, kernels_mb, kernels_db, filters_mb, filters_db):
+        self.name = 'supErMAPnet'
+        self.tile_size = tile_size
+        self.no_input_bands = no_input_bands
+        self.no_output_bands = no_output_bands
+        self.kernels_mb = kernels_mb
+        self.kernels_db = kernels_db
+        self.filters_mb = filters_mb
+        self.filters_db = filters_db
+        self.padding2d = (lambda x: (x[0] // 2, x[1] // 2))
+        self.model = None
+        self.create_layers()
+
     def create_layers(self):
-        # seed_gen = tf.keras.utils.set_random_seed(42)
-        # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1., seed=seed_gen)
+        # todo: restart from here
+        # todo: batch normalization as described in https://www.mdpi.com/2076-3417/11/1/288
+        #  --> this does not help in main branch (but looks reasonable in 2d branch)
+        # todo: test SaPNN (or others) with current data
+        # todo: (0.1) prevent negative prediction values
+        # todo: (0.2) test different loss functions (see 5.1 https://www.mdpi.com/2072-4292/12/10/1660)
+        # todo: (1) increase training samples
+        # todo: (2) increase bands / try other input bands (15,29,47)
+        # todo: (2.1) use relu for last but one layer to avoid negative values
+        # todo: (3) add skip connections
+        # todo: (4) add reflection padding for 3d layers
+        # todo: add more layers
+        # todo: alter kernel sizes / feature maps in 3d layers
+        # todo: concat both branches only at the end
+        # todo: (use grayscaled msi image)
+        # ---
+        # todo: negative values possible as long as last layer has a linear activation function https://stats.stackexchange.com/questions/362588/how-can-a-network-with-only-relu-nodes-output-negative-values
 
-        # edge detection
-        input2d = Input(shape=(self.tile_size, self.tile_size, 3), name='x')
-        edges1 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(input2d)
-        edges2 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(edges1)
-        edges3 = layers.Conv2D(1, (3, 3), padding='same', activation='relu')(edges2)
+        """detail detection"""
+        input2d = Input(shape=(self.tile_size, self.tile_size, 4), name='x')
+        leakyRelu = layers.LeakyReLU()
+        padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[0]))(input2d)
+        edges1 = layers.Conv2D(self.filters_db[0], self.kernels_db[0], padding='valid')(padded)
+        edges1 = layers.BatchNormalization()(edges1)
+        edges1 = layers.Activation(leakyRelu)(edges1)
+        padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[1]))(edges1)
+        edges2 = layers.Conv2D(self.filters_db[1], self.kernels_db[1], padding='valid')(padded)
+        edges2 = layers.BatchNormalization()(edges2)
+        edges2 = layers.Activation(leakyRelu)(edges2)
+        padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[2]))(edges2)
+        edges3 = layers.Conv2D(self.filters_db[2], self.kernels_db[2], padding='valid')(padded)
+        edges3 = layers.BatchNormalization()(edges3)
+        edges3 = layers.Activation(leakyRelu)(edges3)
 
+        """main branch"""
         input3d = Input(shape=(self.tile_size, self.tile_size, self.no_output_bands, 1), name='x1')
-        conv1 = layers.Conv3D(64, (9, 9, 7), padding='same',
-                              activation='relu')(input3d)
-        merged1 = self.inject_edges(conv1, edges1)
+        conv1 = layers.Conv3D(self.filters_mb[0], self.kernels_mb[0], padding='same', activation=leakyRelu)(input3d)
+        merged1 = DILayer()([conv1, edges1])
 
-        conv2 = layers.Conv3D(32, (1, 1, 1), padding='same',
-                              activation='relu')(merged1)
-        merged2 = self.inject_edges(conv2, edges2)
+        # skip_connection = layers.Add()([input3d, merged1])
 
-        conv3 = layers.Conv3D(9, (1, 1, 1), padding='same',
-                              activation='relu')(merged2)
+        conv2 = layers.Conv3D(self.filters_mb[1], self.kernels_mb[1], padding='same', activation=leakyRelu)(merged1)
+        merged2 = DILayer()([conv2, edges2])
 
-        merged3 = self.inject_edges(conv3, edges3)
+        # skip_connection = layers.Add()([input3d, merged2])
 
-        convOut = layers.Conv3D(1, (5, 5, 3), padding='same',
+        conv3 = layers.Conv3D(self.filters_mb[2], self.kernels_mb[2], padding='same', activation=leakyRelu)(merged2)
+        merged3 = DILayer()([conv3, edges3])
+
+        convOut = layers.Conv3D(1, self.kernels_mb[3], padding='same',
                                 activation='linear')(merged3)
-        y = tf.squeeze(convOut, axis=-1)
+
+        skip_connection = layers.Add()([input3d, convOut])
+
+        y = tf.squeeze(skip_connection, axis=-1)
 
         self.model = Model(inputs=[input3d, input2d], outputs=y)
 

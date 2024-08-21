@@ -1,0 +1,326 @@
+20 bands, 10 epochs
+-----------
+detail branch 64, 32, 9
+main branch 64, 32, 9
+3 skip connections
+
+Average evaluation metrics:
+MSE  p|y: 25.91 | 63.61
+PSNR p|y: 39.45 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.21 | 1.18
+
+-----------
+detail branch 9, 6, 3
+main branch 64, 32, 9
+3 skip connections
+
+loss: 9.7, acc: 0.63
+Average evaluation metrics:
+MSE  p|y: 26.71 | 63.61
+PSNR p|y: 39.24 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.18 | 1.18
+
+-----------deeper network --> WORSE
+detail branch 9, 6, 3
+main branch 64, 64, 64, 32, 32, 32, 9, 9, 9
+3 skip connections
+
+loss: 14.29, acc: 0.53
+Average evaluation metrics:
+MSE  p|y: 45.33 | 63.61
+PSNR p|y: 37.30 | 37.41
+SSIM p|y: 0.92 | 0.91
+SAM  p|y: 1.97 | 1.18
+
+-----------residual learning --> a little better, but weird accuracy (faster tho)
+detail branch 9, 6, 3
+main branch 64, 32, 9
+0 skip connections
+
+loss: 9.57, acc: 0.20 (???)
+Average evaluation metrics:
+MSE  p|y: 25.76 | 63.61
+PSNR p|y: 39.54 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.16 | 1.18
+-----------skip connection instead of residual  --> similar results to residual learning --> better than all above
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 9.82, acc: 0.65
+Average evaluation metrics:
+MSE  p|y: 26.00 | 63.61
+PSNR p|y: 39.48 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.15 | 1.18
+-----------skip connection moved to the very end --> similar results as before
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 9.43, acc: 0.63
+MSE  p|y: 25.81 | 63.61
+PSNR p|y: 39.49 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.17 | 1.18
+-----------no detail branch --> nearly same results as before --> detail branch with no impact
+main branch 64, 32, 9
+1 skip connection
+
+loss: 10.90, acc: 0.64
+MSE  p|y: 25.69 | 63.61
+PSNR p|y: 39.21 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.17 | 1.18
+-----------detail branch: stacked image as input, (64, 32, #ouput bands) neurons, merged before output --> little worse but not a huge impact
+
+loss: 10.50, acc: 0.62
+MSE  p|y: 25.57 | 63.61
+PSNR p|y: 39.29 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.21 | 1.18
+
+-----------new huge dataset --> smaller loss, worse acc, metrics similar
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 8.80, acc: 0.62
+MSE  p|y: 26.05 | 63.61
+PSNR p|y: 39.55 | 37.41
+SSIM p|y: 0.94 | 0.91
+SAM  p|y: 1.19 | 1.18
+
+-----------new small dataset (LE and around, 8 scenes) --> significantly worse (doesnt fit enough)
+--> first dataset is best
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 14.46, acc: 0.58
+MSE  p|y: 59.87 | 63.61
+PSNR p|y: 38.04 | 37.41
+SSIM p|y: 0.92 | 0.91
+SAM  p|y: 1.43 | 1.18
+
+-----------normal dataset, 40 bands (20:60) --> crazy acc, sharpening average as usual; works also for bands not included in the training
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 12.60, acc: 0.94(!!!)
+MSE  p|y: 33.47 | 73.73
+PSNR p|y: 37.56 | 35.28
+SSIM p|y: 0.93 | 0.89
+SAM  p|y: 2.49 | 3.10
+
+-----------normal dataset, 40 bands (140:180) --> a bit worse than bands above (looked a bit stuck in local extrema tho)
+detail branch 9, 6, 3
+main branch 64, 32, 9
+1 skip connection
+
+loss: 36.03, acc: 0.79
+MSE  p|y: 197.72 | 230.39
+PSNR p|y: 28.31 | 27.21
+SSIM p|y: 0.87 | 0.82
+SAM  p|y: 3.84 | 4.39
+
+kernels:
+current best: (9,9,7) (3,3,1) (3,3,1) (5,5,3)
+tried: 
+ (9,9,7) (3,3,1) (1,1,1) (5,5,3) --> worse
+ (9,9,7) (1,1,1) (3,3,1) (5,5,3) --> worse (spectral distortion)
+ # todo: evaluate the following things again (x1 and y bands were different!!!)
+ (9,9,7) (3,3,9) (3,3,1) (5,5,3) --> worse (good acc but metrics are bad --> acc not meaningful)
+ loss: 30.36, acc: 0.81
+ (9,9,7) (3,3,6) (3,3,6) (5,5,3)
+	loss: 13.58, ssim: 0.94
+	MSE  p|y: 36.77 | 73.73
+	PSNR p|y: 37.02 | 35.28
+	SSIM p|y: 0.93 | 0.89
+	SAM  p|y: 2.63 | 3.10
+ (9,9,7) (3,3,2) (3,3,2) (5,5,3) --> similar to 2x (3,3,6), little worse
+	loss: 13.64, ssim: 0.94
+	MSE  p|y: 37.19 | 73.73
+	PSNR p|y: 36.95 | 35.28
+	SSIM p|y: 0.93 | 0.89
+	SAM  p|y: 2.65 | 3.10
+ (9,9,7) (3,3,1) (3,3,1) (5,5,3) --> better
+	loss: 13.04, ssim: 0.94
+	MSE  p|y: 35.52 | 73.73
+	PSNR p|y: 37.15 | 35.28
+	SSIM p|y: 0.93 | 0.89
+	SAM  p|y: 2.57 | 3.10
+ 
+leakyReLU in detail branch: --> best atm
+	loss: 12.73, ssim: 0.94
+	MSE  p|y: 35.18 | 73.73
+	PSNR p|y: 37.19 | 35.28
+	SSIM p|y: 0.93 | 0.89
+	SAM  p|y: 2.57 | 3.10
+
+
+# todo: obtain a new testset with files outside of trainsets time and location
+# dataset contains scenes from xx to xx in locations xx, ... and have low to high cloud cover (to prove that preprocessing also works) --> do tests for each scene (mountains, desert, city, germany with clouds)
+# compare train and prediction time --> 2nd best kernels have better performance (and generalize better?)
+
+"""evaluation dataset"""
+20240516T004729Z
+	- Australia, May 2024
+	(https://epsg.io/map#srs=32755&x=551520.000000&y=5889390.000000&z=2&layer=sATELLITE)
+	- Victorian Alps, Tambo River
+	- 770 x 831 (width x height) x 30m / pixel; 440 tiles
+20240602T155832Z
+	- Peru, June 2024
+	(https://epsg.io/map#srs=32718&x=492000&y=9093600&z=12&layer=satellite)
+	- Rio Aguaytia, Amazon basin
+	- 796 x 831; 484 tiles
+20240611T100311Z
+	- Namibia, June 2024
+	(https://epsg.io/map#srs=32733&x=248790.000000&y=8079720.000000&z=10&layer=satellite9
+	- Baynes Mountains near Namib desert
+	- 824 x 831; 400 tiles
+20220627T104548Z
+	- Germany, June 2022; mixed urban
+	(https://epsg.io/map#srs=32633&x=312420.000000&y=5688990.000000&z=12&layer=satellite)
+	- City of Leipzig (half of it), Leipzig South Region, South Auwald, South Neuseenland
+	- 697 x 759; 292 tiles
+	
+plotted bands: 
+	53, 27, 4 (rgb) | color factor 0.78, 1.1, 1.4 | max reflectance = 4000
+	
+hyper param search:
+loss: 0.001 to 0.00001
+batch size: 32
+kernel search with filters 3+3+3 and 64+32+9+1 (for faster training time)
+best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5, 5)]
+	training time: 5349.83s (16 epochs, 2gpus)
+	prediction time: 1.409s
+	Australia:
+		MSE  p|y: 7.78 | 12.40
+		PSNR p|y: 39.22 | 37.20
+		SSIM p|y: 0.93 | 0.88
+		SAM  p|y: 2.77 | 3.38
+	Namibia:
+		MSE  p|y: 6.26 | 13.55
+		PSNR p|y: 40.17 | 36.81
+		SSIM p|y: 0.94 | 0.86
+		SAM  p|y: 0.99 | 1.06
+	Peru:
+		MSE  p|y: 7.72 | 13.98
+		PSNR p|y: 39.25 | 36.68
+		SSIM p|y: 0.95 | 0.92
+		SAM  p|y: 2.60 | 3.51
+	Germany:
+		MSE  p|y: 8.72 | 13.37
+		PSNR p|y: 38.72 | 36.87
+		SSIM p|y: 0.94 | 0.89
+		SAM  p|y: 2.97 | 3.86
+... todo: reevaluate all hyperparam models;
+		
+
+2nd best kernels: [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)] + [(9, 9), (5, 5), (3, 3)]
+	training time: 3500.23s (16 epochs, 2gpus)
+	prediction time: 0.982s
+	Australia:
+		MSE  p|y: 7.71 | 12.40
+		PSNR p|y: 39.26 | 37.20
+		SSIM p|y: 0.93 | 0.88
+		SAM  p|y: 2.65 | 3.38
+	Namibia:
+		MSE  p|y: 7.42 | 13.55
+		PSNR p|y: 39.43 | 36.81
+		SSIM p|y: 0.93 | 0.86
+		SAM  p|y: 0.95 | 1.06
+	Peru:
+		MSE  p|y: 8.35 | 13.98
+		PSNR p|y: 38.91 | 36.68
+		SSIM p|y: 0.95 | 0.92
+		SAM  p|y: 2.52 | 3.51
+	Germany:
+		MSE  p|y: 8.48 | 13.37
+		PSNR p|y: 38.85 | 36.87
+		SSIM p|y: 0.94 | 0.89
+		SAM  p|y: 2.97 | 3.86
+	
+filter search with kernels [(9, 9), (5, 5), (3, 3)] + [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
+best filters: mb: [64, 64, 64, 1] + db: [64, 32, 9]
+training time: 6950.86s (16 epochs, 2gpus)
+prediction time: 
+	Australia:
+		MSE  p|y: 8.88 | 12.40
+		PSNR p|y: 38.65 | 37.20
+		SSIM p|y: 0.92 | 0.88
+		SAM  p|y: 2.96 | 3.38
+	Namibia: 
+		MSE  p|y: 5.26 | 13.55
+		PSNR p|y: 40.92 | 36.81
+		SSIM p|y: 0.95 | 0.86
+		SAM  p|y: 0.86 | 1.06
+	Peru:
+		MSE  p|y: 6.82 | 13.98
+		PSNR p|y: 39.79 | 36.68
+		SSIM p|y: 0.96 | 0.92
+		SAM  p|y: 2.43 | 3.51
+	Germany:
+		MSE  p|y: 8.49 | 13.37
+		PSNR p|y: 38.84 | 36.87
+		SSIM p|y: 0.94 | 0.89
+		SAM  p|y: 2.94 | 3.86
+		
+
+2nd best filters: mb: [64, 64, 64, 1] + db: [64, 64, 64]
+training time: 8340.10s
+prediction time: 
+	Australia:
+		MSE  p|y: 9.04 | 12.40
+		PSNR p|y: 38.57 | 37.20
+		SSIM p|y: 0.92 | 0.88
+		SAM  p|y: 3.00 | 3.38
+	Namibia: 
+		MSE  p|y: 5.50 | 13.55
+		PSNR p|y: 40.73 | 36.81
+		SSIM p|y: 0.95 | 0.86
+		SAM  p|y: 0.87 | 1.06
+	Peru:
+		MSE  p|y: 6.92 | 13.98
+		PSNR p|y: 39.73 | 36.68
+		SSIM p|y: 0.96 | 0.92
+		SAM  p|y: 2.47 | 3.51
+	Germany:
+		MSE  p|y: 9.23 | 13.37
+		PSNR p|y: 38.48 | 36.87
+		SSIM p|y: 0.93 | 0.89
+		SAM  p|y: 3.07 | 3.86
+
+full network:
+	loss: 0.0001 to 0.00001
+	Train data size: 39216 
+	Test data size: 9805 
+	training time: 171219s = 47:33:39h || new: 259413s = 72:03:33s
+	prediction time: 
+	
+	Australia:
+		MSE  p|y: 137.77 | 201.50
+		PSNR p|y: 30.47 | 28.02
+		SSIM p|y: 0.92 | 0.80
+		SAM  p|y: 4.79 | 6.66
+	Namibia:
+		MSE  p|y: 14.82 | 25.70
+		PSNR p|y: 37.93 | 35.28
+		SSIM p|y: 0.92 | 0.84
+		SAM  p|y: 1.41 | 1.81
+	Peru:
+		MSE  p|y: 47.48 | 68.11
+		PSNR p|y: 32.78 | 31.26
+		SSIM p|y: 0.93 | 0.87
+		SAM  p|y: 2.51 | 3.08
+	Germany:
+		MSE  p|y: 90.77 | 94.93
+		PSNR p|y: 28.99 | 28.83
+		SSIM p|y: 0.87 | 0.83
+		SAM  p|y: 4.59 | 5.19
+	--> results maybe not that good because of shift in sentinel and therefor predicted image

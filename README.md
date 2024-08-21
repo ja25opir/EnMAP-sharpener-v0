@@ -6,8 +6,11 @@ Sharpening spectral resolution of scenes from EnMAP satellite mission using Mach
 
 ``pip install -r  requirements.txt``
 
-create requirements.txt:
+(create requirements.txt:)
 ``pipreqs --force``
+
+set the PYTHONPATH environment variable to include the project root:
+``export PYTHONPATH=$(pwd)``
 
 ## create .env
 
