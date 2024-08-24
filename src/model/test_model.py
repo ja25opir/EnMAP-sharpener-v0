@@ -6,6 +6,8 @@ import keras.backend as K
 from matplotlib import pyplot as plt
 from image_similarity_measures.quality_metrics import psnr, ssim, sam
 
+from .use_model import make_prediction
+
 
 # from src.visualization.helpers import get_bands_from_array
 # from src.visualization.plot_raster import plot_3_band_image
@@ -99,52 +101,13 @@ def evaluate_prediction(prediction, input_x, ground_truth):
             'sam_predicted': sam_predicted, 'sam_input': sam_input}
 
 
-def make_prediction(x, x1, model, output_bands):
-    x = x.T.reshape(1, 32, 32, 4)
-    x1 = x1.T.reshape(1, 32, 32, output_bands, 1)
-    return model.predict({'x': x, 'x1': x1}, verbose=0).reshape(32, 32, output_bands).T
-
-
 def normalize_rasters(prediction, x1, y):
-    """Normalize the rasters to the range [0, 1] and move the channels to the last dimension."""
+    """Normalize a raster to the range [0, 1] and move the channels to the last dimension."""
     max_reflectance = 10000
     prediction = (prediction / max_reflectance).T
     x1 = (x1 / max_reflectance).T
     y = (y / max_reflectance).T
     return prediction, x1, y
-
-
-class Predictor:
-    def __init__(self, model, input_data_path, output_data_path, no_output_bands):
-        self.model = model
-        self.x_data_path = input_data_path
-        self.output_data_path = output_data_path
-        self.no_output_bands = no_output_bands
-
-    def load_data(self, file_name):
-        x = np.load(self.x_data_path + file_name)
-        x = x[(224, 225, 226, 227), :, :]
-        x1 = np.load(self.x_data_path + file_name)[:224, :, :]
-        # x1 = np.load(X_DATA_PATH + file_name)[20:60, :, :]  # 40 bands only
-        # y = y[20:60, :, :]  # 40 bands only
-        return x, x1
-
-    def make_predictions(self):
-        """Make predictions on the input data"""
-        i = 1
-        files = os.listdir(self.x_data_path)
-        no_files = len(files)
-        start = time.time()
-        for file_name in files:
-            x_rast, x1_rast = self.load_data(file_name)
-            predicted_rast = make_prediction(x_rast, x1_rast, self.model, self.no_output_bands)
-            predicted_rast, x1_rast, _ = normalize_rasters(predicted_rast, x1_rast, x_rast)
-            np.save(self.output_data_path + file_name, predicted_rast)
-            i += 1
-            if i % 25 == 0:
-                print(f'Predicted {i} / {no_files} files')
-        print(f'Predicted {no_files} files in {time.time() - start} seconds')
-        print(f'Average prediction time per file: {(time.time() - start) / no_files} seconds')
 
 
 class Evaluator:

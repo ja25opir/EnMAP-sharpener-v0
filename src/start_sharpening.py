@@ -1,7 +1,7 @@
 import argparse, os
 import tensorflow as tf
 from model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFTLayer, DILayer, ms_ssim_l1_loss
-from model.test_model import Predictor
+from model.use_model import Predictor
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start EnMAP sharpening.')
