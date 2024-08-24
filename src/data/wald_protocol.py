@@ -1,5 +1,5 @@
 import os
-import sys
+import pickle
 
 import rasterio
 import time
@@ -198,16 +198,16 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
     # set a margin as pixel values on the left and upper border of enmap scenes are sometimes skewed
     left_edge_margin = 5
     top_edge_margin = 5
-    horizontal_tiles = int(raster.width / (tile_size - overlap + top_edge_margin))
-    vertical_tiles = int(raster.height / (tile_size - overlap + left_edge_margin))
+    horizontal_tiles = int((raster.width - left_edge_margin) / (tile_size - overlap))
+    vertical_tiles = int((raster.height - top_edge_margin) / (tile_size - overlap))
     skip_list = []
     minimum_values = min_value_ratio * tile_size * tile_size * raster.count
 
     for i_h in range(horizontal_tiles):
         for i_v in range(vertical_tiles):
             file_name = f'{save_name}_{i_h}_{i_v}.npy'
-            left_x = i_v * (tile_size - overlap) + left_edge_margin
-            left_y = i_h * (tile_size - overlap) + top_edge_margin
+            left_x = i_h * (tile_size - overlap) + left_edge_margin
+            left_y = i_v * (tile_size - overlap) + top_edge_margin
             w = raster.read(window=Window(left_x, left_y, tile_size, tile_size))
             if not np.any(w):
                 skip_list.append(file_name)
@@ -305,6 +305,9 @@ def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_fil
     # stack upscaled EnMAP and aligned Sentinel rasters
     x_image = stack_raster_and_array(enmap_upscaled, sentinel_aligned, in_memory=False, temp_file_path=dir_path)
     x_image = crop_after_warp(x_image, warp_dictionary)
+    # save meta to file for reconstruction
+    with open(output_dir_path + save_name + '_meta.pkl', 'wb') as f:
+        pickle.dump(x_image.meta, f)
     print("Stacking time: %.4fs" % (time.time() - start_time))
 
     print('Tiling and saving X image...')
