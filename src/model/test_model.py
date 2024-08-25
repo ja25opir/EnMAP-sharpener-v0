@@ -6,7 +6,7 @@ import keras.backend as K
 from matplotlib import pyplot as plt
 from image_similarity_measures.quality_metrics import psnr, ssim, sam
 
-from .use_model import make_prediction
+from .use_model import prediction
 
 
 # from src.visualization.helpers import get_bands_from_array
@@ -134,7 +134,7 @@ class Evaluator:
         iterations = len(test_file_list)
         for no in range(iterations):
             x_rast, x1_rast, y_rast = self.load_data(test_file_list[no])
-            predicted_rast = make_prediction(x_rast, x1_rast, self.model, self.no_output_bands)
+            predicted_rast = prediction(x_rast, x1_rast, self.model, self.no_output_bands)
             # if residual_leaning:
             #     predicted_rast = predicted_rast + x1_rast
             predicted_rast, x1_rast, y_rast = normalize_rasters(predicted_rast, x1_rast, y_rast)

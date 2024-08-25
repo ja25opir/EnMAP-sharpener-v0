@@ -8,7 +8,6 @@ if __name__ == '__main__':
     parser.add_argument('--input-dir', type=str, default='/data/preprocessing/prediction_input/')
     parser.add_argument('--output-dir', type=str, default='/output/predictions/')
     parser.add_argument('--model', type=str, default='/output/models/supErMAPnet.keras')
-
     args = parser.parse_args()
 
     input_dir = os.getcwd() + args.input_dir
