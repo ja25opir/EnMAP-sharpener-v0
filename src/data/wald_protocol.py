@@ -259,6 +259,7 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
     sparse_x_tiles = tile_raster(x_image, tile_size, x_tiles_path, save_name, min_value_ratio=min_value_ratio,
                                  overlap=0)
     y_tiles_path = output_dir_path + 'y/'
+    enmap_raster = crop_after_warp(enmap_raster, warp_dictionary)
     sparse_y_tiles = tile_raster(enmap_raster, tile_size, y_tiles_path, save_name, min_value_ratio=min_value_ratio,
                                  overlap=0)
 
