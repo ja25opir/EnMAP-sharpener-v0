@@ -4,17 +4,17 @@ import pandas as pd
 from data.find_outlier import copy_outliers
 from visualization.plot_outlier import plot_size_histogram, plot_corresponding_scenes
 
-SENTINEL_DIR = os.getcwd() + '/data/preprocessing/Sentinel2/'
-ENMAP_DIR = os.getcwd() + '/data/preprocessing/EnMAP/'
+SENTINEL_DIR = os.getcwd() + '/data/preprocessing_06_09/Sentinel2/'
+ENMAP_DIR = os.getcwd() + '/data/preprocessing_06_09/EnMAP/'
 
 if __name__ == '__main__':
     # find Sentinel outliers
-    sentinel_outlier_dir = os.getcwd() + '/data/preprocessing/Sentinel2_outlier/'
+    sentinel_outlier_dir = os.getcwd() + '/data/preprocessing_06_09/Sentinel2_outlier/'
     sentinel_figures_dir = os.getcwd() + '/output/figures/broken_files/Sentinel/'
     copy_outliers(SENTINEL_DIR, ENMAP_DIR, sentinel_outlier_dir, sentinel_figures_dir, quantile=0.07)
 
     # find EnMAP outliers
-    enmap_outlier_dir = os.getcwd() + '/data/preprocessing/EnMAP_outlier/'
+    enmap_outlier_dir = os.getcwd() + '/data/preprocessing_06_09/EnMAP_outlier/'
     enmap_figures_dir = os.getcwd() + '/output/figures/broken_files/EnMAP/'
     copy_outliers(ENMAP_DIR, SENTINEL_DIR, enmap_outlier_dir, enmap_figures_dir, corr_suffix='_sentinel_spectral.tif',
                   quantile=0.1)
