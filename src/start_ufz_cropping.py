@@ -54,5 +54,5 @@ ll = raster.bounds[0] - margin_x, raster.bounds[1] + margin_y
 bbox = [[ul[0], ur[1]], [lr[0], ur[1]], [lr[0], ll[1]], [ul[0], ll[1]], [ul[0], ur[1]]]
 crop_shape = [{'type': 'Polygon',
                'coordinates': [bbox]}]
-UFZ_path = '/data/UFZ_flightdata/'
+UFZ_path = os.getcwd() + '/data/UFZ_flightdata/'
 cropped_raster, out_meta = crop_raster(raster, crop_shape, mem_raster=True, save=True, output_dir=UFZ_path, save_name='UFZ_cropped_raster')
