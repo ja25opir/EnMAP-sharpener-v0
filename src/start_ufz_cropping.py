@@ -54,12 +54,15 @@ def crop_raster(raster, shape, mem_raster=False, save=False, output_dir='', save
 
 
 def resample_raster(raster_name, raster, resample_size, save_name, output_dir):
+    print('Raster loaded! Reading into memory and downsampling...')
     out_img = raster.read(
         out_shape=(raster.count,
                    resample_size[0],
                    resample_size[1]),
-        resampling=rasterio.enums.Resampling.bilinear
+        resampling=rasterio.enums.Resampling.nearest
     )
+
+    print('Raster resampled! Saving...')
     # scale image transform
     out_transform = raster.transform * raster.transform.scale(
         (raster.width / out_img.shape[-1]),
