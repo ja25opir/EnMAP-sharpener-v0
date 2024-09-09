@@ -387,5 +387,3 @@ class PreprocessPipeline:
                     sentinel_files.remove(sentinel_scene)
                     break
             i += 1
-
-# TODO: save logs for long runs in case of crashing (e.g. sentinel scraping)

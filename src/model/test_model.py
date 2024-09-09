@@ -81,15 +81,17 @@ def get_mse(prediction, ground_truth):
 
 
 def evaluate_prediction(prediction, input_x, ground_truth):
-    mse_predicted = get_mse(prediction * 255, ground_truth * 255)
-    mse_input = get_mse(input_x * 255, ground_truth * 255)
+    mse_predicted = get_mse(prediction * 1, ground_truth * 1)
+    mse_input = get_mse(input_x * 1, ground_truth * 1)
 
-    psnr_predicted = psnr(prediction, ground_truth, max_p=1)
-    psnr_input = psnr(input_x, ground_truth, max_p=1)
+    # get value range from ground truth
+    max_pixel_value = ground_truth.max() - ground_truth.min()
+    psnr_predicted = psnr(prediction, ground_truth, max_p=max_pixel_value)
+    psnr_input = psnr(input_x, ground_truth, max_p=max_pixel_value)
 
     # todo: SSIM data range [0, 1] or prediction.max() - prediction.min()?
-    ssim_predicted = ssim(prediction, ground_truth, max_p=1)
-    ssim_input = ssim(input_x, ground_truth, max_p=1)
+    ssim_predicted = ssim(prediction, ground_truth, max_p=max_pixel_value)
+    ssim_input = ssim(input_x, ground_truth, max_p=max_pixel_value)
 
     # SAM: https://ntrs.nasa.gov/citations/19940012238
     sam_predicted = sam(prediction, ground_truth)
@@ -103,7 +105,8 @@ def evaluate_prediction(prediction, input_x, ground_truth):
 
 def normalize_rasters(prediction, x1, y):
     """Normalize a raster to the range [0, 1] and move the channels to the last dimension."""
-    max_reflectance = 10000
+    # max_reflectance = 10000
+    max_reflectance = 1 # no value normalization
     prediction = (prediction / max_reflectance).T
     x1 = (x1 / max_reflectance).T
     y = (y / max_reflectance).T
@@ -124,7 +127,7 @@ class Evaluator:
         y = np.load(self.y_data_path + file_name)
         x = x[(224, 225, 226, 227), :, :]
         x1 = np.load(self.x_data_path + file_name)[:224, :, :]
-        # x1 = np.load(X_DATA_PATH + file_name)[20:60, :, :]  # 40 bands only
+        # x1 = np.load(self.x_data_path + file_name)[20:60, :, :]  # 40 bands only
         # y = y[20:60, :, :]  # 40 bands only
         return x, x1, y
 
@@ -132,9 +135,11 @@ class Evaluator:
         """Evaluate the model on a list of test files. Calculate MSE, PSNR, SSIM, SAM and NIQE."""
         evaluations = []
         iterations = len(test_file_list)
+        prediction_times = []
         for no in range(iterations):
             x_rast, x1_rast, y_rast = self.load_data(test_file_list[no])
-            predicted_rast = prediction(x_rast, x1_rast, self.model, self.no_output_bands)
+            predicted_rast, prediction_time = prediction(x_rast, x1_rast, self.model, self.no_output_bands)
+            prediction_times.append(prediction_time)
             # if residual_leaning:
             #     predicted_rast = predicted_rast + x1_rast
             predicted_rast, x1_rast, y_rast = normalize_rasters(predicted_rast, x1_rast, y_rast)
@@ -142,6 +147,7 @@ class Evaluator:
             if (no + 1) % 25 == 0:
                 print(f'Evaluated {no + 1} / {iterations} files')
 
+        print(f'Average prediction time: {np.mean(prediction_times):.5f} seconds')
         print('Average evaluation metrics:')
         print(
             f'MSE  p|y: {np.mean([e["mse_predicted"] for e in evaluations]):.2f} | {np.mean([e["mse_input"] for e in evaluations]):.2f}')

@@ -24,7 +24,8 @@ if __name__ == '__main__':
 
     # evaluation
     evaluator = Evaluator(model, validation_data_dir, 224)
-    # evaluator.evaluate_model()
-    evaluator.plot_model_graph(output_dir=os.getcwd() + '/output/figures/')
+    # evaluator = Evaluator(model, validation_data_dir, 40)
+    evaluator.evaluate_model()
+    # evaluator.plot_model_graph(output_dir=os.getcwd() + '/output/figures/')
 
     # TODO: evaluate on an even sharper resolution!

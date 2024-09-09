@@ -168,25 +168,33 @@ leakyReLU in detail branch: --> best atm
 # compare train and prediction time --> 2nd best kernels have better performance (and generalize better?)
 
 """evaluation dataset"""
-20240516T004729Z
+20240516T004729Z (UTC)
 	- Australia, May 2024
+	- 10:47:29 local time (AEST, UTC+10)
 	(https://epsg.io/map#srs=32755&x=551520.000000&y=5889390.000000&z=2&layer=sATELLITE)
 	- Victorian Alps, Tambo River
+	- Biome: Temperate Broadleaf and Mixed Forests
 	- 770 x 831 (width x height) x 30m / pixel; 440 tiles
 20240602T155832Z
 	- Peru, June 2024
+	- 10:58:32 local time (UTC-5)
 	(https://epsg.io/map#srs=32718&x=492000&y=9093600&z=12&layer=satellite)
 	- Rio Aguaytia, Amazon basin
+	- Biome: Tropical and Subtropical Moist Broadleaf Forests
 	- 796 x 831; 484 tiles
 20240611T100311Z
 	- Namibia, June 2024
+	- 12:03:11 local time (CAT, UTC+2)
 	(https://epsg.io/map#srs=32733&x=248790.000000&y=8079720.000000&z=10&layer=satellite9
 	- Baynes Mountains near Namib desert
+	- Biome: Deserts and Xeric Shrublands
 	- 824 x 831; 400 tiles
 20220627T104548Z
 	- Germany, June 2022; mixed urban
+	- 12:45:48 local time (CEST, UTC+2)
 	(https://epsg.io/map#srs=32633&x=312420.000000&y=5688990.000000&z=12&layer=satellite)
 	- City of Leipzig (half of it), Leipzig South Region, South Auwald, South Neuseenland
+	- Biome: Temperate Broadleaf and Mixed Forests
 	- 697 x 759; 292 tiles
 	
 plotted bands: 
@@ -204,22 +212,41 @@ best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5
 		PSNR p|y: 39.22 | 37.20
 		SSIM p|y: 0.93 | 0.88
 		SAM  p|y: 2.77 | 3.38
+		new:
+			MSE  p|y: 691967.87 | 875555.39
+			PSNR p|y: 25.65 | 24.41
+			SSIM p|y: 0.85 | 0.77
+			SAM  p|y: 8.46 | 9.30
 	Namibia:
 		MSE  p|y: 6.26 | 13.55
 		PSNR p|y: 40.17 | 36.81
 		SSIM p|y: 0.94 | 0.86
 		SAM  p|y: 0.99 | 1.06
+		new:
+			MSE  p|y: 19428.78 | 24672.42
+			PSNR p|y: 29.03 | 27.22
+			SSIM p|y: 0.83 | 0.67
+			SAM  p|y: 0.92 | 0.80 (???)
 	Peru:
 		MSE  p|y: 7.72 | 13.98
 		PSNR p|y: 39.25 | 36.68
 		SSIM p|y: 0.95 | 0.92
 		SAM  p|y: 2.60 | 3.51
+		new:
+			MSE  p|y: 11059.57 | 17940.48
+			PSNR p|y: 33.38 | 31.39
+			SSIM p|y: 0.92 | 0.85
+			SAM  p|y: 1.35 | 1.86
 	Germany:
 		MSE  p|y: 8.72 | 13.37
 		PSNR p|y: 38.72 | 36.87
 		SSIM p|y: 0.94 | 0.89
 		SAM  p|y: 2.97 | 3.86
-... todo: reevaluate all hyperparam models;
+		new: 
+			MSE  p|y: 41696.86 | 55622.75
+			PSNR p|y: 29.90 | 28.37
+			SSIM p|y: 0.87 | 0.78
+			SAM  p|y: 3.13 | 3.84
 		
 
 2nd best kernels: [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)] + [(9, 9), (5, 5), (3, 3)]
@@ -230,21 +257,41 @@ best kernels: [(7, 7, 7), (7, 7, 7), (7, 7, 7), (7, 7, 7)] + [(9, 9), (3, 3), (5
 		PSNR p|y: 39.26 | 37.20
 		SSIM p|y: 0.93 | 0.88
 		SAM  p|y: 2.65 | 3.38
+		new: 
+			MSE  p|y: 671535.15 | 875555.39
+			PSNR p|y: 25.78 | 24.41
+			SSIM p|y: 0.86 | 0.77
+			SAM  p|y: 7.99 | 9.30
 	Namibia:
 		MSE  p|y: 7.42 | 13.55
 		PSNR p|y: 39.43 | 36.81
 		SSIM p|y: 0.93 | 0.86
 		SAM  p|y: 0.95 | 1.06
+		new:
+			MSE  p|y: 19361.60 | 24672.42
+			PSNR p|y: 29.08 | 27.22
+			SSIM p|y: 0.83 | 0.67
+			SAM  p|y: 0.82 | 0.80
 	Peru:
 		MSE  p|y: 8.35 | 13.98
 		PSNR p|y: 38.91 | 36.68
 		SSIM p|y: 0.95 | 0.92
 		SAM  p|y: 2.52 | 3.51
+		new:
+			MSE  p|y: 10269.08 | 17940.48
+			PSNR p|y: 33.71 | 31.39
+			SSIM p|y: 0.92 | 0.85
+			SAM  p|y: 1.29 | 1.86
 	Germany:
 		MSE  p|y: 8.48 | 13.37
 		PSNR p|y: 38.85 | 36.87
 		SSIM p|y: 0.94 | 0.89
 		SAM  p|y: 2.97 | 3.86
+		new:
+			MSE  p|y: 40735.85 | 55622.75
+			PSNR p|y: 30.03 | 28.37
+			SSIM p|y: 0.87 | 0.78
+			SAM  p|y: 3.07 | 3.84
 	
 filter search with kernels [(9, 9), (5, 5), (3, 3)] + [(9, 9, 7), (3, 3, 6), (3, 3, 6), (5, 5, 3)]
 best filters: mb: [64, 64, 64, 1] + db: [64, 32, 9]
@@ -255,21 +302,41 @@ prediction time:
 		PSNR p|y: 38.65 | 37.20
 		SSIM p|y: 0.92 | 0.88
 		SAM  p|y: 2.96 | 3.38
+		new:
+			MSE  p|y: 650645.53 | 875555.39
+			PSNR p|y: 25.85 | 24.41
+			SSIM p|y: 0.86 | 0.77
+			SAM  p|y: 7.59 | 9.30
 	Namibia: 
 		MSE  p|y: 5.26 | 13.55
 		PSNR p|y: 40.92 | 36.81
 		SSIM p|y: 0.95 | 0.86
 		SAM  p|y: 0.86 | 1.06
+		new: 
+			MSE  p|y: 17813.04 | 24672.42
+			PSNR p|y: 29.60 | 27.22
+			SSIM p|y: 0.85 | 0.67
+			SAM  p|y: 0.77 | 0.80
 	Peru:
 		MSE  p|y: 6.82 | 13.98
 		PSNR p|y: 39.79 | 36.68
 		SSIM p|y: 0.96 | 0.92
 		SAM  p|y: 2.43 | 3.51
+		new:
+			MSE  p|y: 10962.82 | 17940.48
+			PSNR p|y: 33.49 | 31.39
+			SSIM p|y: 0.92 | 0.85
+			SAM  p|y: 1.30 | 1.86
 	Germany:
 		MSE  p|y: 8.49 | 13.37
 		PSNR p|y: 38.84 | 36.87
 		SSIM p|y: 0.94 | 0.89
 		SAM  p|y: 2.94 | 3.86
+		new:
+			MSE  p|y: 42430.56 | 55622.75
+			PSNR p|y: 29.78 | 28.37
+			SSIM p|y: 0.86 | 0.78
+			SAM  p|y: 3.06 | 3.84
 		
 
 2nd best filters: mb: [64, 64, 64, 1] + db: [64, 64, 64]
@@ -280,27 +347,48 @@ prediction time:
 		PSNR p|y: 38.57 | 37.20
 		SSIM p|y: 0.92 | 0.88
 		SAM  p|y: 3.00 | 3.38
+		new: 
+			MSE  p|y: 653071.29 | 875555.39
+			PSNR p|y: 25.90 | 24.41
+			SSIM p|y: 0.86 | 0.77
+			SAM  p|y: 7.45 | 9.30
 	Namibia: 
 		MSE  p|y: 5.50 | 13.55
 		PSNR p|y: 40.73 | 36.81
 		SSIM p|y: 0.95 | 0.86
 		SAM  p|y: 0.87 | 1.06
+		new:
+			MSE  p|y: 17786.38 | 24672.42
+			PSNR p|y: 29.63 | 27.22
+			SSIM p|y: 0.85 | 0.67
+			SAM  p|y: 0.76 | 0.80
 	Peru:
 		MSE  p|y: 6.92 | 13.98
 		PSNR p|y: 39.73 | 36.68
 		SSIM p|y: 0.96 | 0.92
 		SAM  p|y: 2.47 | 3.51
+		new:
+			MSE  p|y: 10997.86 | 17940.48
+			PSNR p|y: 33.47 | 31.39
+			SSIM p|y: 0.92 | 0.85
+			SAM  p|y: 1.31 | 1.86
 	Germany:
 		MSE  p|y: 9.23 | 13.37
 		PSNR p|y: 38.48 | 36.87
 		SSIM p|y: 0.93 | 0.89
 		SAM  p|y: 3.07 | 3.86
+		new:
+			MSE  p|y: 43002.45 | 55622.75
+			PSNR p|y: 29.71 | 28.37
+			SSIM p|y: 0.86 | 0.78
+			SAM  p|y: 3.10 | 3.84
+
 
 full network:
 	loss: 0.0001 to 0.00001
 	Train data size: 39216 
 	Test data size: 9805 
-	training time: 171219s = 47:33:39h || new: 259413s = 72:03:33s
+	training time: 171219s = 47:33:39h || new: 259413s = 72:03:33h
 	prediction time: 
 	
 	Australia:
@@ -308,19 +396,59 @@ full network:
 		PSNR p|y: 30.47 | 28.02
 		SSIM p|y: 0.92 | 0.80
 		SAM  p|y: 4.79 | 6.66
+		new:
+			MSE  p|y: 191015.71 | 261836.26
+			PSNR p|y: 30.62 | 28.86
+			SSIM p|y: 0.90 | 0.82
+			SAM  p|y: 4.66 | 6.00
 	Namibia:
 		MSE  p|y: 14.82 | 25.70
 		PSNR p|y: 37.93 | 35.28
 		SSIM p|y: 0.92 | 0.84
 		SAM  p|y: 1.41 | 1.81
+		new:
+			MSE  p|y: 22789.11 | 39524.64
+			PSNR p|y: 37.78 | 35.13
+			SSIM p|y: 0.92 | 0.84
+			SAM  p|y: 1.41 | 1.81
 	Peru:
 		MSE  p|y: 47.48 | 68.11
 		PSNR p|y: 32.78 | 31.26
 		SSIM p|y: 0.93 | 0.87
 		SAM  p|y: 2.51 | 3.08
+		new:
+			MSE  p|y: 74404.42 | 111989.26
+			PSNR p|y: 32.60 | 30.94
+			SSIM p|y: 0.93 | 0.86
+			SAM  p|y: 2.19 | 2.69
 	Germany:
 		MSE  p|y: 90.77 | 94.93
 		PSNR p|y: 28.99 | 28.83
 		SSIM p|y: 0.87 | 0.83
 		SAM  p|y: 4.59 | 5.19
+		new:
+			MSE  p|y: 161046.29 | 177368.71
+			PSNR p|y: 28.43 | 28.10
+			SSIM p|y: 0.87 | 0.83
+			SAM  p|y: 4.41 | 5.06
+
 	--> results maybe not that good because of shift in sentinel and therefor predicted image
+	
+Prediction for prediction folder:
+ - 21.649 files
+ - 62.460s
+ - avg prediction + saving time per tile: 2.885s
+ 
+new: 
+ avg time per tile:
+	- Australia: 3.32474 s
+	- Namibia: 3.20700 s
+	- Peru: 2.94023 s
+	- Germany: 2.83973 s
+ 
+Reconstruction:
+- scene 20240516T004729Z in 19.54s
+- scene 20220627T104548Z in 44.08s 
+- scene 20240611T100311Z in 145.36s
+- scene 20240602T155832Z in 21.34s
+

@@ -1,3 +1,5 @@
+import os
+
 import rasterio
 from rasterio.mask import mask
 from rasterio.io import MemoryFile
@@ -36,3 +38,21 @@ def crop_raster(raster, shape, mem_raster=False, save=False, output_dir='', save
             return memfile.open(), out_meta
 
     return out_img, out_meta
+
+
+FILE_PATH = os.getcwd() + '/data/UFZ_flightdata/leipzig-auwald-sued_20230612_ref_geo_mosaic.bsq'
+# HEADER_PATH = '../../data/UFZ_flightdata/leipzig-auwald-sued_20230612_ref_geo_mosaic.hdr'
+
+raster = rasterio.open(FILE_PATH)
+
+margin_y = 2000
+margin_x = 650
+ul = raster.bounds[0] - margin_x, raster.bounds[3] + margin_y
+ur = raster.bounds[2] - margin_x, raster.bounds[3] + margin_y
+lr = raster.bounds[2] - margin_x, raster.bounds[1] + margin_y
+ll = raster.bounds[0] - margin_x, raster.bounds[1] + margin_y
+bbox = [[ul[0], ur[1]], [lr[0], ur[1]], [lr[0], ll[1]], [ul[0], ll[1]], [ul[0], ur[1]]]
+crop_shape = [{'type': 'Polygon',
+               'coordinates': [bbox]}]
+UFZ_path = '/data/UFZ_flightdata/'
+cropped_raster, out_meta = crop_raster(raster, crop_shape, mem_raster=True, save=True, output_dir=UFZ_path, save_name='UFZ_cropped_raster')
