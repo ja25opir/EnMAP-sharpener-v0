@@ -4,6 +4,8 @@ import rasterio
 from rasterio.mask import mask
 from rasterio.io import MemoryFile
 
+from src.config.resource_limiter import limit_memory_usage, limit_logical_cpus
+
 
 def crop_raster(raster, shape, mem_raster=False, save=False, output_dir='', save_name=''):
     """
@@ -62,6 +64,7 @@ def resample_raster(raster_name, raster, resample_size, save_name, output_dir):
                        **out_meta) as dest:
         dest.write(out_img)
 
+
 # FILE_PATH = os.getcwd() + '/../20230612_leipzig-auwald-s_final-mosaic/leipzig-auwald-sued_20230612_ref_geo_mosaic.bsq'
 # # HEADER_PATH = '../../data/UFZ_flightdata/leipzig-auwald-sued_20230612_ref_geo_mosaic.hdr'
 #
@@ -79,5 +82,9 @@ def resample_raster(raster_name, raster, resample_size, save_name, output_dir):
 # UFZ_path = os.getcwd() + '/data/UFZ_flightdata/'
 # cropped_raster, out_meta = crop_raster(raster, crop_shape, mem_raster=True, save=True, output_dir=UFZ_path, save_name='UFZ_cropped_raster')
 
+limit_logical_cpus([0, 1, 2, 3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20])
+limit_memory_usage(40)
+
 UFZ_cropped = os.getcwd() + '/data/UFZ_flightdata/UFZ_cropped_raster.tif'
-resample_raster('UFZ_cropped_raster.tif', rasterio.open(UFZ_cropped), (287, 210), '_resampled.tif', os.getcwd() + '/data/UFZ_flightdata/')
+resample_raster('UFZ_cropped_raster.tif', rasterio.open(UFZ_cropped), (287, 210), '_resampled.tif',
+                os.getcwd() + '/data/UFZ_flightdata/')
