@@ -79,22 +79,22 @@ def resample_raster(raster_name, raster, resample_size, save_name, output_dir):
         dest.write(out_img)
 
 
-# FILE_PATH = os.getcwd() + '/../20230612_leipzig-auwald-s_final-mosaic/leipzig-auwald-sued_20230612_ref_geo_mosaic.bsq'
-# # HEADER_PATH = '../../data/UFZ_flightdata/leipzig-auwald-sued_20230612_ref_geo_mosaic.hdr'
-#
-# raster = rasterio.open(FILE_PATH)
-#
-# margin_y = 0
-# margin_x = 0
-# ul = raster.bounds[0] - margin_x, raster.bounds[3] + margin_y
-# ur = raster.bounds[2] - margin_x, raster.bounds[3] + margin_y
-# lr = raster.bounds[2] - margin_x, raster.bounds[1] + margin_y
-# ll = raster.bounds[0] - margin_x, raster.bounds[1] + margin_y
-# bbox = [[ul[0], ur[1]], [lr[0], ur[1]], [lr[0], ll[1]], [ul[0], ll[1]], [ul[0], ur[1]]]
-# crop_shape = [{'type': 'Polygon',
-#                'coordinates': [bbox]}]
-# UFZ_path = os.getcwd() + '/data/UFZ_flightdata/'
-# cropped_raster, out_meta = crop_raster(raster, crop_shape, mem_raster=True, save=True, output_dir=UFZ_path, save_name='UFZ_cropped_raster')
+FILE_PATH = os.getcwd() + '/../20230612_leipzig-auwald-s_final-mosaic/leipzig-auwald-sued_20230612_ref_geo_mosaic.bsq'
+# HEADER_PATH = '../../data/UFZ_flightdata/leipzig-auwald-sued_20230612_ref_geo_mosaic.hdr'
+
+raster = rasterio.open(FILE_PATH)
+
+margin_y = 200
+margin_x = 200
+ul = raster.bounds[0] - margin_x, raster.bounds[3] + margin_y
+ur = raster.bounds[2] - margin_x, raster.bounds[3] + margin_y
+lr = raster.bounds[2] - margin_x, raster.bounds[1] + margin_y
+ll = raster.bounds[0] - margin_x, raster.bounds[1] + margin_y
+bbox = [[ul[0], ur[1]], [lr[0], ur[1]], [lr[0], ll[1]], [ul[0], ll[1]], [ul[0], ur[1]]]
+crop_shape = [{'type': 'Polygon',
+               'coordinates': [bbox]}]
+UFZ_path = os.getcwd() + '/data/UFZ_flightdata/'
+cropped_raster, out_meta = crop_raster(raster, crop_shape, mem_raster=True, save=True, output_dir=UFZ_path, save_name='UFZ_cropped_raster')
 
 limit_logical_cpus([0, 1, 2, 3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20])
 limit_memory_usage(40)
