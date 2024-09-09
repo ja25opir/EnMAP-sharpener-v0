@@ -86,21 +86,21 @@ raster = rasterio.open(FILE_PATH)
 
 margin_y = 200
 margin_x = 200
-ul = raster.bounds[0] - margin_x, raster.bounds[3] + margin_y
-ur = raster.bounds[2] - margin_x, raster.bounds[3] + margin_y
+ul = raster.bounds[0] + margin_x, raster.bounds[3] - margin_y
+ur = raster.bounds[2] - margin_x, raster.bounds[3] - margin_y
 lr = raster.bounds[2] - margin_x, raster.bounds[1] + margin_y
-ll = raster.bounds[0] - margin_x, raster.bounds[1] + margin_y
+ll = raster.bounds[0] + margin_x, raster.bounds[1] + margin_y
 bbox = [[ul[0], ur[1]], [lr[0], ur[1]], [lr[0], ll[1]], [ul[0], ll[1]], [ul[0], ur[1]]]
 crop_shape = [{'type': 'Polygon',
                'coordinates': [bbox]}]
 UFZ_path = os.getcwd() + '/data/UFZ_flightdata/'
 print('Cropping raster...')
-# cropped_raster, out_meta = crop_raster(raster, crop_shape, mem_raster=True, save=True, output_dir=UFZ_path, save_name='UFZ_cropped_raster')
+cropped_raster, out_meta = crop_raster(raster, crop_shape, mem_raster=True, save=True, output_dir=UFZ_path, save_name='UFZ_cropped_raster')
 print('Raster cropped!')
 
 limit_logical_cpus([0, 1, 2, 3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20])
 limit_memory_usage(50)
 
 UFZ_cropped = os.getcwd() + '/data/UFZ_flightdata/UFZ_cropped_raster.tif'
-resample_raster('UFZ_cropped_raster.tif', rasterio.open(UFZ_cropped), (287, 210), '_resampled.tif',
+resample_raster('UFZ_cropped_raster.tif', rasterio.open(UFZ_cropped), (267, 170), '_resampled.tif',
                 os.getcwd() + '/data/UFZ_flightdata/')
