@@ -40,7 +40,7 @@ def crop_raster(raster, shape, mem_raster=False, save=False, output_dir='', save
     return out_img, out_meta
 
 
-FILE_PATH = os.getcwd() + '/../UFZ_flightdata_Auwald_Lunzberge/20230612_leipzig-auwald-s_final-mosaic/leipzig-auwald-sued_20230612_ref_geo_mosaic.bsq'
+FILE_PATH = os.getcwd() + '/../20230612_leipzig-auwald-s_final-mosaic/leipzig-auwald-sued_20230612_ref_geo_mosaic.bsq'
 # HEADER_PATH = '../../data/UFZ_flightdata/leipzig-auwald-sued_20230612_ref_geo_mosaic.hdr'
 
 raster = rasterio.open(FILE_PATH)
