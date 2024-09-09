@@ -45,8 +45,8 @@ FILE_PATH = os.getcwd() + '/../20230612_leipzig-auwald-s_final-mosaic/leipzig-au
 
 raster = rasterio.open(FILE_PATH)
 
-margin_y = 2000
-margin_x = 650
+margin_y = 0
+margin_x = 0
 ul = raster.bounds[0] - margin_x, raster.bounds[3] + margin_y
 ur = raster.bounds[2] - margin_x, raster.bounds[3] + margin_y
 lr = raster.bounds[2] - margin_x, raster.bounds[1] + margin_y
