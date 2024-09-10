@@ -103,5 +103,6 @@ limit_logical_cpus([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17
 limit_memory_usage(100)
 
 UFZ_cropped = os.getcwd() + '/data/UFZ_flightdata/UFZ_cropped_raster.tif'
-resample_raster('UFZ_cropped_raster.tif', rasterio.open(UFZ_cropped), (267, 170), '_resampled.tif',
+raster = rasterio.open(UFZ_cropped)
+resample_raster('UFZ_cropped_raster.tif', raster, (int(raster.height / 10), int(raster.width / 10)), '_resampled.tif',
                 os.getcwd() + '/data/UFZ_flightdata/')
