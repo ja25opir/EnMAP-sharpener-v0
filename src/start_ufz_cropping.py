@@ -104,5 +104,5 @@ limit_memory_usage(100)
 
 UFZ_cropped = os.getcwd() + '/data/UFZ_flightdata/UFZ_cropped_raster.tif'
 raster = rasterio.open(UFZ_cropped)
-resample_raster('UFZ_cropped_raster.tif', raster, (int(raster.height / 10), int(raster.width / 10)), '_resampled.tif',
+resample_raster('UFZ_cropped_raster.tif', raster, (int(raster.height / 22.22), int(raster.width / 22.22)), '_resampled.tif',
                 os.getcwd() + '/data/UFZ_flightdata/')
