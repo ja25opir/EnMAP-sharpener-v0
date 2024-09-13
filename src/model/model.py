@@ -5,15 +5,11 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, ReflectionPadding2D, SaPNN, TestSaPNN, FCNN, TestFCNN, SupErMAPnet, ms_ssim_l1_loss, \
-    residual_loss, ssim, mse, variance, psnr
+from .architecture import Masi, SaPNN, TestSaPNN, FCNN, TestFCNN, SupErMAPnet, ms_ssim_l1_loss, ssim, mse, variance, \
+    psnr
 from .load_data import DuoBranchDataGenerator
 
 
-# input shape: https://stackoverflow.com/questions/60157742/convolutional-neural-network-cnn-input-shape
-# SRCNN: https://github.com/Lornatang/SRCNN-PyTorch/blob/main/model.py 64 - 32 - 1 (no. bands)
-# SRCNN: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=7115171
-# Sentinel CNN: https://github.com/jensleitloff/CNN-Sentinel/blob/master/py/02_train_rgb_finetuning.py
 class Model:
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size,
                  loss_function, train_epochs, output_dir):
@@ -35,10 +31,10 @@ class Model:
 
     def define_model(self, hyperparameters=None):
         architecture = SupErMAPnet(self.tile_size, self.no_input_bands, self.no_output_bands,
-                              kernels_mb=hyperparameters['k_mb'],
-                              kernels_db=hyperparameters['k_db'],
-                              filters_mb=hyperparameters['f_mb'],
-                              filters_db=hyperparameters['f_db'])
+                                   kernels_mb=hyperparameters['k_mb'],
+                                   kernels_db=hyperparameters['k_db'],
+                                   filters_mb=hyperparameters['f_mb'],
+                                   filters_db=hyperparameters['f_db'])
 
         self.name = architecture.name
         self.model = architecture.model
