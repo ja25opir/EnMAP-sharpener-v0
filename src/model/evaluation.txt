@@ -457,14 +457,73 @@ Best 20 bands: (array([118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 145, 14
        148, 149, 150, 151, 153, 154, 155, 178, 180, 182, 184, 186, 188,
        190, 192, 193, 194, 195, 196, 197, 198, 199, 200, 202, 203, 204,
        206, 208, 210, 212, 214]),)
-PSNR average: 30.72943091392517 worst: 30.275723338127136 without water: 30.724344849586487
-SSIM average: 0.9189030663795259 worst: 0.9230507924184626 without water: 0.9162225938517761
-MSE average: 3238.146185073823 worst: 3142.108273133189 without water: 3309.583279891212
+reconstructed:	  
+	PSNR average: 30.72943091392517 worst: 30.275723338127136 without water: 30.724344849586487
+	SSIM average: 0.9189030663795259 worst: 0.9230507924184626 without water: 0.9162225938517761
+	MSE average: 3238.146185073823 worst: 3142.108273133189 without water: 3309.583279891212
+	SAM average: 6.861942158144765 worst: 7.068460362412257 without water: 8.279854850582902
+cubic:
+	PSNR average: 29.64487135410309 worst: 29.248161911964417 without water: 29.678120613098145
+	SSIM average: 0.8736726714538309 worst: 0.880273724818895 without water: 0.8693123253996444
+	MSE average: 3254.7609003539947 worst: 3173.6641788811926 without water: 3328.3434224546627
+	SAM average: 7.613582785327341 worst: 7.789408257258955 without water: 9.152535082979135
+um:
+	PSNR average: 29.680992364883423 worst: 29.290001392364502 without water: 29.713340997695923
+	SSIM average: 0.8779165047946622 worst: 0.8841191816910441 without water: 0.8737309161023484
+	MSE average: 3271.4247581616746 worst: 3187.6368123582824 without water: 3345.6142417733226
+	SAM average: 7.588569238298372 worst: 7.758117806338148 without water: 9.122631050845268
+bilinear:
+	PSNR average: 29.203732013702393 worst: 28.82722496986389 without water: 29.23980951309204
+	SSIM average: 0.8553895385963649 worst: 0.8633980882396112 without water: 0.850396376795699
+	MSE average: 3242.41264357711 worst: 3168.125271528529 without water: 3315.788266878537
+	SAM average: 8.001451155155817 worst: 8.166449709735835 without water: 9.615921932421475
+	
+-----Wald comparison on four scenes:
+MSE_RECONS: 3238.146185073823
+PSNR_RECONS: 30.72943091392517
+SSIM_RECONS: 0.9189030663795259
+SAM_RECONS: 6.861942158144765
+MSE_CUBIC: 3254.7609003539947
+PSNR_CUBIC: 29.64487135410309
+SSIM_CUBIC: 0.8736726714538309
+SAM_CUBIC: 7.613582785327341
+MSE_UM: 3271.4247581616746
+PSNR_UM: 29.680992364883423
+SSIM_UM: 0.8779165047946622
+SAM_UM: 7.588569238298372
+
+MSE_BILIN: 3251.5576459537124
+PSNR_BILIN: 29.591540098190308
+SSIM_BILIN: 0.8722335945709373
+SAM_BILIN: 7.670805533417437
+
+
 -----
-
 Reconstruction:
-- scene 20240516T004729Z in 19.54s
-- scene 20220627T104548Z in 44.08s 
-- scene 20240611T100311Z in 145.36s
-- scene 20240602T155832Z in 21.34s
+- scene 20240516T004729Z in 19.54s (Australia)
+- scene 20220627T104548Z in 44.08s (Germany)
+- scene 20240611T100311Z in 145.36s (Namibia)
+- scene 20240602T155832Z in 21.34s (Peru)
+new:
+27.55s (Peru)
+27.35s (Australia)
+44.32s (Germany)
+33.58s (Namibia)
 
+
+
+UFZ
+Zitat von Daniel Doktor <daniel.doktor@ufz.de>:
+
+> Hallo Herr Müller,
+>
+> hört sich nach einer interessanten Masterarbeit an. Vielleicht 
+> könnten Sie mir die nach digital zukommen lassen, wenn Sie 
+> eingereicht haben? Die Aufnahmen sind zwischen 13:08 (Beginn Streifen 
+> +1) und 13:22 (Ende Streifen +4) MESZ Uhrzeit entstanden, alles 
+> flugzeuggetragen. Verwendet wurden die Sensoren HySpex SWIR-384 und 
+> HySpex VNIR-1800 von norsk electro optikk (NEO).
+>
+> Viele Grüße,
+>
+> Daniel Doktor

@@ -20,7 +20,7 @@ def resample_raster(raster, resample_size):
     )
 
 
-def resample_raster_in_memory(input_raster, resample_size):
+def resample_raster_in_memory(input_raster, resample_size, method='bilinear'):
     new_width = resample_size[1]
     new_height = resample_size[0]
 
@@ -36,14 +36,19 @@ def resample_raster_in_memory(input_raster, resample_size):
                  "transform": out_transform,
                  })
 
+    if method == 'bilinear':
+        resampling_method = rasterio.enums.Resampling.bilinear
+    elif method == 'cubic':
+        resampling_method = rasterio.enums.Resampling.cubic
+    else:
+        raise ValueError('Unknown resampling method')
     # create an in-memory file
     with MemoryFile() as memfile:
         with memfile.open(**meta) as dataset:
             # resample the data using bilinear interpolation
             data = input_raster.read(
                 out_shape=(input_raster.count, new_height, new_width),
-                resampling=rasterio.enums.Resampling.bilinear
-                # resampling=rasterio.enums.Resampling.cubic
+                resampling=resampling_method
             )
 
             # write the rescaled data to the in-memory dataset
