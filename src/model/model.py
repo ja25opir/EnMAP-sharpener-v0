@@ -34,29 +34,6 @@ class Model:
         self.train_test_split()
 
     def define_model(self, hyperparameters=None):
-        # padding = same (output size = input size) --> rethink this
-        # activation function relu, relu, linear (Masi) --> rethink this
-        # maybe leaky relu vs vanishing gradients
-        # layers described in Masi p.4 (2.2) 64 - 32 - 3 (no. bands) kernels: 9x9, 1x1 (3x3), 5x5
-        # todo: add padding to tiles (overlap in windows to avoid edge effects caused by zero padding)
-        # maybe use 3d kernels as spectral bands may be "connected" (but maybe sentinel layers need to be sorted in then)
-        # maybe add more sentinel layers as duplicates (bias) to increase the importance of these layers
-        # padding: https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t
-        # stride: https://tcnguyen.github.io/neuralnetworks/cnn_tensorflow.html
-        # padding: https://hidayatullahhaider.medium.com/a-simple-definition-of-overlap-term-in-cnn-f331f6ef3031
-        # padding: https://openreview.net/pdf?id=M4qXqdw3xC#:~:text=Recent%20studies%20have%20shown%20that,of%20padding%20precludes%20position%20encoding
-
-        # Masi
-        # architecture = Masi(self.tile_size, self.no_input_bands, self.no_output_bands)
-
-        # SaPNN
-        # architecture = SaPNN(self.tile_size, self.no_input_bands, self.no_output_bands)
-        # Test
-        # architecture = TestSaPNN(self.tile_size, self.no_input_bands, self.no_output_bands)
-        # FCNN
-        # architecture = FCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
-        # architecture = TestFCNN(self.tile_size, self.no_input_bands, self.no_output_bands)
-        # MMSRes
         architecture = SupErMAPnet(self.tile_size, self.no_input_bands, self.no_output_bands,
                               kernels_mb=hyperparameters['k_mb'],
                               kernels_db=hyperparameters['k_db'],

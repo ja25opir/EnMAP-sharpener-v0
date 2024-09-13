@@ -89,7 +89,6 @@ def evaluate_prediction(prediction, input_x, ground_truth):
     psnr_predicted = psnr(prediction, ground_truth, max_p=max_pixel_value)
     psnr_input = psnr(input_x, ground_truth, max_p=max_pixel_value)
 
-    # todo: SSIM data range [0, 1] or prediction.max() - prediction.min()?
     ssim_predicted = ssim(prediction, ground_truth, max_p=max_pixel_value)
     ssim_input = ssim(input_x, ground_truth, max_p=max_pixel_value)
 
