@@ -1,23 +1,27 @@
+import argparse, os
 import tensorflow as tf
-import numpy as np
-import os
-from matplotlib import pyplot as plt
+from model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFTLayer, DILayer, ms_ssim_l1_loss
+from model.use_model import Predictor
 
-from src.visualization.plot_raster import plot_3_band_image
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Start EnMAP sharpening.')
+    parser.add_argument('--input-dir', type=str, default='/data/preprocessing/prediction_input/')
+    parser.add_argument('--output-dir', type=str, default='/output/predictions/')
+    parser.add_argument('--model', type=str, default='/output/models/supErMAPnet.keras')
+    args = parser.parse_args()
 
-test_tile = np.load(os.getcwd() + '/../data/preprocessing/model_input/x/20220627T104548Z_0_0.npy')
-model_path = os.getcwd() + '/../output/models/first_model.keras'
+    input_dir = os.getcwd() + args.input_dir
+    output_dir = os.getcwd() + args.output_dir
 
-print(test_tile.shape)
-print(test_tile.T.shape)
-X_test = np.empty((1, 100, 100, 228))
-X_test[0,] = test_tile.T
+    # load model with its custom layers
+    CUSTOM_LAYERS = {'ReflectionPadding2D': ReflectionPadding2D,
+                     'ReflectionPadding3D': ReflectionPadding3D,
+                     'SFTLayer': SFTLayer,
+                     'DILayer': DILayer,
+                     'ms_ssim_l1_loss': ms_ssim_l1_loss}
+    model = tf.keras.models.load_model(os.getcwd() + args.model, custom_objects=CUSTOM_LAYERS)
+    print(model.summary())
 
-model = tf.keras.models.load_model(model_path)
-
-print(model.summary())
-
-prediction = model.predict(X_test)
-
-bands = [50, 100, 150]
-plot_3_band_image(prediction[0].T, title='Prediction', cmap='viridis')
+    # sharpening
+    predictor = Predictor(model, input_dir, output_dir, 224)
+    predictor.make_predictions()

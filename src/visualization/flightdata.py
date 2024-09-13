@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import rasterio
 
 from src.visualization.helpers import get_bands_from_raster
-from src.visualization.plot_raster import create_rgb_norm, plot_3_band_image
+from src.visualization.plot_raster import create_rgb_norm, plot_3_band_image, plot_3_band_image_clipped
 
 
 def plot_bands(hdr_path, bands, save=False, savename='bands'):
@@ -32,10 +32,10 @@ def plot_bands(hdr_path, bands, save=False, savename='bands'):
     plt.show()
 
 
-def plot_bands_rasterio(bsq_path, bands):
-    origin = rasterio.open(bsq_path)
-    band_array = get_bands_from_raster(origin, bands)
-    plot_3_band_image(band_array)
+def plot_bands_rasterio(origin, bands):
+    rgb = get_bands_from_raster(origin, bands)
+    rgb = (rgb[0] * 0.75, rgb[1] * 1.05, rgb[2] * 1.1)
+    plot_3_band_image_clipped(rgb, title='', cmap='viridis', max_reflectance = 2000)
 
 
 FILE_PATH = '../../data/UFZ_flightdata/leipzig-auwald-sued_20230612_ref_geo_mosaic.bsq'
@@ -43,10 +43,14 @@ HEADER_PATH = '../../data/UFZ_flightdata/leipzig-auwald-sued_20230612_ref_geo_mo
 # HDR cheat sheet: https://www.nv5geospatialsoftware.com/docs/ENVIHeaderFiles.html
 
 # rgb_bands = [120, 70, 40]
-rgb_bands = [200, 300, 400]
-plot_bands(HEADER_PATH, rgb_bands, save=False, savename='auwald_sued')
+# rgb_bands = [200, 300, 400]
+rgb_bands = [92, 43, 9]
+# plot_bands(HEADER_PATH, rgb_bands, save=False, savename='auwald_sued')
 # works also (and maybe more easily) with rasterio:
-plot_bands_rasterio(FILE_PATH, rgb_bands)
+raster = rasterio.open(FILE_PATH)
+# plot_bands_rasterio(raster, rgb_bands)
+print(raster.width, raster.height)
+
 
 # vegetation indices test:
 # img = spectral.envi.open(HEADER_PATH)

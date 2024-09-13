@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import stats
 
-from src.visualization.helpers import get_bands_from_raster, get_bands_from_array
+from .helpers import get_bands_from_raster, get_bands_from_array
 
 
 def create_rgb_norm(rgb_bands):
@@ -39,8 +39,22 @@ def plot_3_band_zscore_image(raster, bands, title, cmap='viridis', is_array=Fals
     plt.show()
 
 
-def plot_3_band_image(bands, title='', cmap='viridis'):
+def plot_3_band_image(bands, title='', cmap='viridis', tight=False):
     rgb_norm = create_rgb_norm((bands[0], bands[1], bands[2]))
     plt.title(title)
+    if tight:
+        plt.tight_layout()
     plt.imshow(rgb_norm, cmap=cmap)
     plt.show()
+
+
+def plot_3_band_image_clipped(bands, max_reflectance=10000, title='', cmap='viridis', save=False, save_name=None):
+    norm_band = (lambda x: np.clip(x, 0, max_reflectance) / max_reflectance * 255)
+    plt.title(title)
+    plt.imshow(
+        np.dstack((norm_band(bands[0]), norm_band(bands[1]), norm_band(bands[2]))).astype(np.uint8),
+        cmap=cmap)
+    if save:
+        plt.savefig(save_name + '.png', bbox_inches='tight')
+    plt.show()
+
