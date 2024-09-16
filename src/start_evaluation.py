@@ -1,6 +1,6 @@
 import argparse, os
 import tensorflow as tf
-from model.architecture import ReflectionPadding2D, ReflectionPadding3D, SFTLayer, DILayer, ms_ssim_l1_loss
+from model.architecture import ReflectionPadding2D, ReflectionPadding3D, DILayer, ms_ssim_l1_loss
 from model.test_model import Evaluator
 
 if __name__ == '__main__':
@@ -16,7 +16,6 @@ if __name__ == '__main__':
     # load model with its custom layers
     CUSTOM_LAYERS = {'ReflectionPadding2D': ReflectionPadding2D,
                      'ReflectionPadding3D': ReflectionPadding3D,
-                     'SFTLayer': SFTLayer,
                      'DILayer': DILayer,
                      'ms_ssim_l1_loss': ms_ssim_l1_loss}
     model = tf.keras.models.load_model(os.getcwd() + args.model, custom_objects=CUSTOM_LAYERS)
