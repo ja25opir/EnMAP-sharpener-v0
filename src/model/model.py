@@ -2,15 +2,19 @@ import os, random, time
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers, models, optimizers, initializers, regularizers, Input
+from tensorflow.keras import optimizers
 from matplotlib import pyplot as plt
 
-from .architecture import Masi, SaPNN, TestSaPNN, FCNN, TestFCNN, SupErMAPnet, ms_ssim_l1_loss, ssim, mse, variance, \
+from .architecture import SupErMAPnet, ms_ssim_l1_loss, ssim, mse, variance, \
     psnr
 from .load_data import DuoBranchDataGenerator
 
 
 class Model:
+    """
+    Class for training an architecture with given hyperparameters.
+    """
+
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size,
                  loss_function, train_epochs, output_dir):
         self.model = None
@@ -30,6 +34,11 @@ class Model:
         self.train_test_split()
 
     def define_model(self, hyperparameters=None):
+        """
+        Load model architecture with given hyperparameters (list of kernel sizes and number of filters).
+        :param hyperparameters:
+        :return: None
+        """
         architecture = SupErMAPnet(self.tile_size, self.no_input_bands, self.no_output_bands,
                                    kernels_mb=hyperparameters['k_mb'],
                                    kernels_db=hyperparameters['k_db'],
@@ -40,6 +49,10 @@ class Model:
         self.model = architecture.model
 
     def train_test_split(self):
+        """
+        Shuffle the input data and split into training and testing sets by a ratio of 80:20.
+        :return: None
+        """
         all_files = os.listdir(self.train_data_dir + 'x/')
         all_files = random.sample(all_files, len(all_files))
         train_ratio = 0.8
@@ -49,6 +62,10 @@ class Model:
         print('Test data size:', len(self.test_files))
 
     def set_lr_schedule(self):
+        """
+        Set learning rate schedule for training with exponential decay.
+        :return: optimizers.schedules.ExponentialDecay
+        """
         initial_learning_rate = 0.0001  # training 224 bands; 0.001 for hyperparams
         final_learning_rate = 0.00001
         learning_rate_decay_factor = (final_learning_rate / initial_learning_rate) ** (1 / self.train_epochs)
@@ -194,9 +211,13 @@ class Model:
         print("Best Kernels: \n", best_kernels)
         print("Best Filters: \n", best_filters)
         end = time.time()
-        print("---HyperparameterSearch---Elapsed time: %.2fs seconds ---" % (end - start))
+        print(f"---HyperparameterSearch---Elapsed time: {(end - start) :.2f} seconds ---")
 
     def plot_history(self):
+        """
+        Plot and save training history, save model.
+        :return: None
+        """
         history = self.history
         train_ssim = history['ssim']
         val_ssim = history['val_ssim']
@@ -207,7 +228,7 @@ class Model:
 
         epochs = range(1, len(train_ssim) + 1)
 
-        fig, ax = plt.subplots()
+        _fig, ax = plt.subplots()
         ax.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
         ax.xaxis.set_major_locator(plt.MultipleLocator(1))
 
