@@ -6,13 +6,13 @@ from rasterio.io import MemoryFile
 def crop_raster(raster, shape, mem_raster=False, save=False, output_dir='', save_name=''):
     """
     Crops a raster to a given shape.
-    :param mem_raster:
-    :param raster:
-    :param shape:
-    :param save:
-    :param output_dir:
-    :param save_name:
-    :return:
+    :param mem_raster: if True, returns a rasterio dataset object instead of a numpy array
+    :param raster: rasterio dataset object
+    :param shape: shape to crop the raster to
+    :param save: if True, saves the cropped raster to disk
+    :param output_dir: directory to save the cropped raster
+    :param save_name: name of the saved raster
+    :return: cropped raster as numpy array and metadata
     """
     out_img, out_transform = mask(raster, shapes=shape, crop=True)
     # update metadata

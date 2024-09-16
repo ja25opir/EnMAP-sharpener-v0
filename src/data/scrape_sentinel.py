@@ -1,12 +1,12 @@
 import os
 from datetime import timedelta
+import io
+import tarfile
 import rasterio
 from dateutil.parser import parse
 from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
 from requests_oauthlib import OAuth2Session
 from dotenv import load_dotenv, find_dotenv
-import io
-import tarfile
 
 
 def unzip_response_files(response, output_dir, save_name):
@@ -51,6 +51,9 @@ def request_and_save_response(oauth_session, image_path, time, output_dir, save_
 
 
 class SentinelSession:
+    """
+    Class for setting up an authenticated session with the Copernicus Data Space Processing API for Sentinel-2 images.
+    """
     def __init__(self):
         load_dotenv(dotenv_path=find_dotenv())
         self.client_id = os.getenv('COPERNICUS_CLIENT_ID')
@@ -115,6 +118,9 @@ function evaluatePixel(sample) {
 
 
 class Sentinel:
+    """
+    Class for requesting Sentinel-2 images from the Copernicus Data Space Processing API.
+    """
     def __init__(self, img_path, enmap_time, timerange_days=15):
         self.img_path = img_path
         self.enmap_raster = rasterio.open(img_path)
@@ -185,5 +191,3 @@ class Sentinel:
             },
             "evalscript": self.evalscript,
         }
-
-# TODO: (optional) validate found images
