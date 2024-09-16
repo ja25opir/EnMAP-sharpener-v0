@@ -19,11 +19,14 @@ def get_size_df(path, figures_path):
     df.to_pickle(figures_path + 'file_size_df.pkl')
     return df
 
+
 def get_outliers(df, quantile):
     quantile_size = df['size'].quantile(quantile)
     return df[df['size'] < quantile_size]
 
-def copy_outliers(target_dir, corresponding_dir, output_dir, figures_dir, corr_suffix='_enmap_spectral.tif', quantile=0.05):
+
+def copy_outliers(target_dir, corresponding_dir, output_dir, figures_dir, corr_suffix='_enmap_spectral.tif',
+                  quantile=0.05):
     size_df = get_size_df(target_dir, figures_dir)
     outlier_df = get_outliers(size_df, quantile)
     for index, row in outlier_df.iterrows():
@@ -31,9 +34,3 @@ def copy_outliers(target_dir, corresponding_dir, output_dir, figures_dir, corr_s
         timestamp = row['file'].split('_')[0]
         corresponding_file = timestamp + corr_suffix
         shutil.copyfile(corresponding_dir + corresponding_file, output_dir + corresponding_file)
-
-
-
-
-
-

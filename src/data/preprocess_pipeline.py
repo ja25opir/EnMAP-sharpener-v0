@@ -1,7 +1,7 @@
+import os, re, sys
+import xml.etree.ElementTree as ETree
 import shutil
 import rasterio.mask
-import xml.etree.ElementTree as ETree
-import os, re, sys
 import numpy as np
 from pyproj import Proj
 from rasterio.io import MemoryFile
@@ -24,9 +24,9 @@ def get_bounding_box_from_xml(xml_path):
     root = ETree.parse(xml_path).getroot()
     bbox = []
     for base in root.findall('base'):
-        for spatialCoverage in base.findall('spatialCoverage'):
-            for boundingBox in spatialCoverage.findall('boundingPolygon'):
-                for points in boundingBox.findall('point'):
+        for spatial_coverage in base.findall('spatialCoverage'):
+            for bounding_box in spatial_coverage.findall('boundingPolygon'):
+                for points in bounding_box.findall('point'):
                     if points[0].text != 'center':
                         lat = float(points[1].text)
                         lon = float(points[2].text)
@@ -66,7 +66,6 @@ def get_inscribed_rect_from_bbox(bbox, origin_crs, max_width=25000, max_height=2
     ur = long_lat_to_utm(bbox[3][0], bbox[3][1], origin_crs)
     width = lr[0] - ul[0]
     height = ur[1] - ll[1]
-    # TODO: tweak margin
     margin = 100  # to avoid edge cases
     if width > max_width:
         ul[0] = int(ul[0] + (width - max_width) / 2) + int(margin / 2)
@@ -82,12 +81,12 @@ def crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, cloudshadow_ma
     """
     Crops an EnMAP image and its cloud masks to the spatial coverage of the EnMAP metadata.
     Cloudmask is beforehand combined with the cloudshadow mask.
-    :param cloudshadow_mask_path:
-    :param metadata_path:
-    :param spectral_img_path:
-    :param cloud_mask_path:
-    :param output_dir:
-    :return:
+    :param cloudshadow_mask_path: path to the cloudshadow mask
+    :param metadata_path: path to the metadata XML file
+    :param spectral_img_path: path to the spectral raster image
+    :param cloud_mask_path: path to the cloud mask
+    :param output_dir: output directory
+    :return: None
     """
     # calculate inscribed rectangle from original bounding box
     bbox = get_bounding_box_from_xml(metadata_path)
@@ -117,6 +116,11 @@ def crop_enmap(metadata_path, spectral_img_path, cloud_mask_path, cloudshadow_ma
 
 
 def get_time_from_enmap(enmap_path):
+    """
+    Extracts the timestamp from an EnMAP image path.
+    :param enmap_path: string path of the EnMAP image
+    :return: timestamp
+    """
     time_match = re.search('\d{4}\d{2}\d{2}T\d{6}Z', enmap_path)
     try:
         enmap_time = time_match.group()
@@ -127,6 +131,15 @@ def get_time_from_enmap(enmap_path):
 
 
 def resample_raster(raster_name, raster, resample_size, save_name, output_dir):
+    """
+    Resamples a raster to a given size using bilinear interpolation.
+    :param raster_name: filename
+    :param raster: rasterio raster object
+    :param resample_size: tuple of new raster size
+    :param save_name: filename of the resampled raster
+    :param output_dir: output directory
+    :return: None
+    """
     out_img = raster.read(
         out_shape=(raster.count,
                    resample_size[0],
@@ -153,12 +166,12 @@ def mask_raster(masked_scenes_path, raster, mask, save_name, value_range=None):
     """
     Converts all values of a raster to 0 where a given mask is 1.
     Also clips the value range of the raster into [0, 10000].
-    :param value_range:
-    :param masked_scenes_path:
-    :param raster:
-    :param mask:
-    :param save_name:
-    :return:
+    :param value_range: range of values to clip the raster to (default: [0, 10000])
+    :param masked_scenes_path: output directory
+    :param raster: rasterio raster object
+    :param mask: binary mask array
+    :param save_name: filename
+    :return: None
     """
     if value_range is None:
         value_range = [0, 10000]
@@ -177,6 +190,10 @@ def mask_raster(masked_scenes_path, raster, mask, save_name, value_range=None):
 
 
 class PreprocessPipeline:
+    """
+    Preprocess pipeline for EnMAP and Sentinel data.
+    """
+
     def __init__(self, enmap_dir_path, output_dir_path):
         self.enmap_dir_path = enmap_dir_path
         self.enmap_subdir_suffix = 'ENMAP01.*'
@@ -191,6 +208,10 @@ class PreprocessPipeline:
         print('PreprocessPipeline initialized.')
 
     def start_all_steps(self):
+        """
+        Executes all stages of the preprocess pipeline.
+        :return: None
+        """
         self.crop_all()
         self.scrape_all()
         self.check_and_harmonize_scene_directories()
@@ -199,6 +220,9 @@ class PreprocessPipeline:
         self.wald_protocol_all()
 
     def crop_all(self):
+        """
+        Stage 1: Crop EnMAP images and corresponding cloud masks to an axis parallel inscribed rectangle of the spatial coverage.
+        """
         print('Cropping EnMAP images... \n--------------------------')
         i = 0
         all_dirs = os.listdir(self.enmap_dir_path)
@@ -228,6 +252,9 @@ class PreprocessPipeline:
         print('Cropping done.')
 
     def scrape_all(self):
+        """
+        Stage 2: Scrape Sentinel images for the given EnMAP scenes.
+        """
         print('Scraping Sentinel images... \n--------------------------')
         oauth_session = SentinelSession().oauth_session
         # load existing sentinel files
@@ -289,6 +316,9 @@ class PreprocessPipeline:
                         os.remove(self.output_enmap_dir_path + enmap_scene_file)
 
     def cloud_mask_all(self):
+        """
+        Stage 3: Combine and apply cloud masks of EnMAP and Sentinel scenes to the respective images.
+        """
         print('Upsampling and combining cloud masks... \n--------------------------')
         enmap_files = os.listdir(self.output_enmap_dir_path)
         enmap_cloud_masks = [x for x in enmap_files if re.search(".*cloud_mask.tif", x)]
@@ -342,6 +372,10 @@ class PreprocessPipeline:
             i += 1
 
     def clean_up(self):
+        """
+        Deletes temporary files. Can be used to reduce disk space usage.
+        Otherwise, temporary files are kept for debugging or research purposes.
+        """
         print('Cleaning up temporary files... \n--------------------------')
         shutil.rmtree(self.output_masks_path)
         os.mkdir(self.output_masks_path)
@@ -351,6 +385,9 @@ class PreprocessPipeline:
         os.mkdir(self.output_sentinel_dir_path)
 
     def wald_protocol_all(self):
+        """
+        Stage 4: Apply the Wald protocol to all EnMAP and Sentinel scenes to generate model input data.
+        """
         print('Starting Wald protocol... \n--------------------------')
         input_files = os.listdir(self.masked_scenes_path)
         enmap_files = [x for x in input_files if re.search(".*enmap_masked.tif", x)]
@@ -370,7 +407,9 @@ class PreprocessPipeline:
             i += 1
 
     def prediction_ready_all(self):
-        """Tile and stack masked EnMAP and Sentinel scenes for prediction."""
+        """
+        Tile and stack masked EnMAP and Sentinel scenes for prediction.
+        """
         print('Starting tiling and stacking for predictions... \n--------------------------')
         input_files = os.listdir(self.masked_scenes_path)
         enmap_files = [x for x in input_files if re.search(".*enmap_masked.tif", x)]

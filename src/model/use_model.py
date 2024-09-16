@@ -1,6 +1,6 @@
 import os, time
-import numpy as np
 import pickle
+import numpy as np
 import rasterio
 
 
@@ -15,6 +15,9 @@ def prediction(x, x1, model, output_bands):
 
 
 class Predictor:
+    """
+    Class for making predictions for all files in a given directory.
+    """
     def __init__(self, model, input_data_path, output_data_path, no_output_bands):
         self.model = model
         self.x_data_path = input_data_path
@@ -54,6 +57,9 @@ class Predictor:
 
 
 class Reconstructor:
+    """
+    Class for reconstructing full scenes from tiles.
+    """
     def __init__(self, predictions_path, meta_path, output_path):
         self.predictions_path = predictions_path
         self.meta_path = meta_path
@@ -95,10 +101,8 @@ class Reconstructor:
         meta.update(count=224)
         meta.update(width=max_x * self.tile_size)
         meta.update(height=max_y * self.tile_size)
-        # update top left raster corner according to border margin used in tiling
-        margin = 0  # TODO: check this
-        meta.update(transform=rasterio.Affine(10.0, 0.0, meta['transform'][2] + margin,
-                                              0.0, -10.0, meta['transform'][5] + margin))
+        meta.update(transform=rasterio.Affine(10.0, 0.0, meta['transform'][2],
+                                              0.0, -10.0, meta['transform'][5]))
 
         # use max_y for x as rasterio swaps axis
         for x in range(0, max_y):

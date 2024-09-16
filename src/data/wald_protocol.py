@@ -1,8 +1,7 @@
 import os
 import pickle
-
-import rasterio
 import time
+import rasterio
 import numpy as np
 import cv2
 from rasterio.io import MemoryFile
@@ -88,7 +87,7 @@ def align_sentinel(enmap_raster, sentinel_raster_downscaled):
         s_gradient = get_gradient(sentinel_array[:, :, band])
 
         try:
-            (cc, warp_mat) = cv2.findTransformECC(e_gradient, s_gradient, warp_mat, warp_mode, criteria)
+            (_cc, warp_mat) = cv2.findTransformECC(e_gradient, s_gradient, warp_mat, warp_mode, criteria)
         except cv2.error as e:
             print(f'Error: {e}')
             warp_mat = np.eye(2, 3, dtype=np.float32)
@@ -149,8 +148,6 @@ def stack_raster_and_array(raster1, array2, in_memory=True, temp_file_path=''):
         with memfile.open(**meta) as dataset:
             dataset.write(np.array(raster_stack))
         return memfile.open()
-
-
 
 
 def crop_after_warp(raster, warp_dict):
@@ -217,11 +214,10 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
             if not np.any(w):
                 skip_list.append(file_name)
                 continue
-            elif np.count_nonzero(w) < minimum_values:
+            if np.count_nonzero(w) < minimum_values:
                 skip_list.append(file_name)
                 continue
-            else:
-                np.save(f'{save_dir}{file_name}', w)
+            np.save(f'{save_dir}{file_name}', w)
     return skip_list
 
 
@@ -274,7 +270,7 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
     for file in sparse_y_tiles:
         remove_tile(x_tiles_path, file)
 
-    # save resampled EnMAP raster as x1 files # todo: maybe not even necessary, can be handled in DataLoader
+    # save resampled EnMAP raster as x1 files
     if save_lr_enmap:
         x1_tiles_path = output_dir_path + 'x1/'
         sparse_x1_tiles = tile_raster(enmap_rescaled, tile_size, x1_tiles_path, save_name,

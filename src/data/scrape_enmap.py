@@ -3,6 +3,7 @@ import requests
 
 
 def download_file(session, url, save_dir, file_format='tif'):
+    """Download a file from a given URL."""
     response = session.get(url, stream=True)
     save_name = url.split('/')[-1].split('.')[0].strip('_COG')
     if response.status_code == 200:
@@ -14,24 +15,27 @@ def download_file(session, url, save_dir, file_format='tif'):
         return response.status_code
     elif response.status_code == 404:
         return response.status_code
-    else:
-        print('Error downloading file. Status code:', response.status_code, '\n Filename:', save_name)
-        sys.exit()
+    print('Error downloading file. Status code:', response.status_code, '\n Filename:', save_name)
+    sys.exit()
 
 
 def get_item_list(session, url, parameter):
+    """GET a list of items with matching parameters."""
     enmap_collection_response = session.get(url, params=parameter)
     print(enmap_collection_response.url)
     collection = enmap_collection_response.content.decode('utf-8')
     if enmap_collection_response.status_code == 200:
         print('Successfully retrieved item list.')
         return json.loads(collection)
-    else:
-        print('Error retrieving item list. Status code:', enmap_collection_response.status_code)
-        sys.exit()
+    print('Error retrieving item list. Status code:', enmap_collection_response.status_code)
+    sys.exit()
 
 
 class EnMAP:
+    """
+    Class to scrape the DLR Geoservice API for EnMAP scenes.
+    """
+
     def __init__(self, enmap_dir, max_cloud_cover, bbox, date_time, start_index, max_scenes, timestamps_file,
                  session_token):
         self.enmap_dir = enmap_dir
@@ -51,6 +55,7 @@ class EnMAP:
         self.accepted_scenes_listing = 0
 
     def set_auth(self):
+        """Start a session authenticated at the DLR Geoservice API."""
         # load_dotenv(dotenv_path=find_dotenv())
         # username = os.getenv('GEOSERVICE_DLR_USERNAME')
         # password = os.getenv('GEOSERVICE_DLR_PASSWORD')
@@ -149,6 +154,7 @@ class EnMAP:
                 print('Accepted', self.accepted_scenes_listing, 'scenes...')
 
     def scrape_all_scenes(self):
+        """Scrape all scenes from the EnMAP database by given class parameters."""
         next_link = self.default_index_url
         start_idx = self.start_index
         parameter = {
@@ -173,8 +179,7 @@ class EnMAP:
                 if link['rel'] == 'next':
                     next_link = link['href']
                     break
-                else:
-                    next_link = ''
+                next_link = ''
             # initial parameter are provided in next_link (bbox gets cutoff, so we provide the rest again)
             if next_link != '':
                 item_list = get_item_list(self.auth_session, next_link, parameter={'bbox': self.bbox[1:]})

@@ -1,12 +1,9 @@
-import os, time
-
 import tensorflow as tf
 import numpy as np
-import keras.backend as K
 from matplotlib import pyplot as plt
 from image_similarity_measures.quality_metrics import psnr, ssim, sam
 
-from .use_model import prediction
+from .use_model import prediction as make_prediction
 
 
 # from src.visualization.helpers import get_bands_from_array
@@ -19,33 +16,6 @@ def print_layer_names(model):
     for i in range(len(model.layers)):
         print(model.layers[i].name, i)
     print(98 * '-')
-
-
-# def plot_detail_branch(model, x):
-#     get_layer_output = (lambda j: K.function(inputs=model.layers[j].input, outputs=model.layers[j].output))
-#     padded = get_layer_output(1)(x)
-#     first_2d = get_layer_output(2)(padded)
-#     first_2d_readable = first_2d[0, :, :, :].T
-#     first_2d_batch = get_layer_output(3)(first_2d)
-#     first_2d_activation = get_layer_output(4)(first_2d_batch)
-#
-#     arr = get_bands_from_array(first_2d_activation[0, :, :, :].T, [0, 1, 2])
-#     plot_3_band_image(arr, title='First 2d conv + batch + activation')
-#
-#     padded = get_layer_output(5)(first_2d)
-#     second_2d = get_layer_output(6)(padded)
-#     second_2d_batch = get_layer_output(8)(second_2d)
-#     second_2d_activation = get_layer_output(10)(second_2d_batch)
-#     arr = get_bands_from_array(second_2d_activation[0, :, :, :].T, [0, 1, 2])
-#     plot_3_band_image(arr, title='Second 2d conv + batch + activation')
-#
-#     padded = get_layer_output(12)(second_2d)
-#     third_2d = get_layer_output(14)(padded)
-#     third_2d_batch = get_layer_output(16)(third_2d)
-#     third_2d_activation = get_layer_output(18)(third_2d_batch)
-#
-#     arr = get_bands_from_array(third_2d_activation[0, :, :, :].T, [0, 1, 2])
-#     plot_3_band_image(arr, title='Third 2d conv + batch + activation')
 
 
 def plot_band_values(prediction, input_raster, ground_truth, observed_pixel=(15, 15)):
@@ -105,7 +75,7 @@ def evaluate_prediction(prediction, input_x, ground_truth):
 def normalize_rasters(prediction, x1, y):
     """Normalize a raster to the range [0, 1] and move the channels to the last dimension."""
     # max_reflectance = 10000
-    max_reflectance = 1 # no value normalization
+    max_reflectance = 1  # no value normalization
     prediction = (prediction / max_reflectance).T
     x1 = (x1 / max_reflectance).T
     y = (y / max_reflectance).T
@@ -113,6 +83,10 @@ def normalize_rasters(prediction, x1, y):
 
 
 class Evaluator:
+    """
+    Class for evaluating a model on given validation scenes.
+    """
+
     def __init__(self, model, validation_data_path, no_output_bands):
         self.model = model
         self.x_data_path = validation_data_path + 'x/'
@@ -137,7 +111,7 @@ class Evaluator:
         prediction_times = []
         for no in range(iterations):
             x_rast, x1_rast, y_rast = self.load_data(test_file_list[no])
-            predicted_rast, prediction_time = prediction(x_rast, x1_rast, self.model, self.no_output_bands)
+            predicted_rast, prediction_time = make_prediction(x_rast, x1_rast, self.model, self.no_output_bands)
             prediction_times.append(prediction_time)
             # if residual_leaning:
             #     predicted_rast = predicted_rast + x1_rast
@@ -185,41 +159,3 @@ class Evaluator:
 
     def plot_model_graph(self, output_dir='output/'):
         tf.keras.utils.plot_model(self.model, to_file=output_dir + 'model_graph.png', show_shapes=True)
-
-# residual_leaning = False
-# test_file = '20220627T104548Z_0_0.npy'
-# test_file = '20240516T004729Z_16_7.npy'
-# test_file = '20240602T155832Z_19_3.npy'
-# test_file = '20240611T100311Z_0_0.npy'
-
-# x_raster, x1_raster, y_raster = load_data(test_file)
-# predicted_raster = make_prediction(x_raster, x1_raster, sr_model, NO_OUTPUT_BANDS)
-#
-# plot_bands = [16, 30, 48]
-# predicted_rgb = get_bands_from_array(predicted_raster, plot_bands)
-# plot_3_band_image(predicted_rgb, title='Predicted Image')
-#
-# x_rgb = get_bands_from_array(x_raster, [0, 1, 2])
-# plot_3_band_image(x_rgb, title='Input Image x (Sentinel)')
-# x1_rgb = get_bands_from_array(x1_raster, plot_bands)
-# plot_3_band_image(x1_rgb, title='Input Image x1 (EnMAP)')
-# y_rgb = get_bands_from_array(y_raster, plot_bands)
-# plot_3_band_image(y_rgb, title='Original Image')
-#
-# if residual_leaning:
-#     residual = y_raster - x1_raster
-#     residual_rgb = get_bands_from_array(residual, plot_bands)
-#     plot_3_band_image(residual_rgb, title='Residual between y and x1')
-#
-#     residual_added = x1_raster + predicted_raster
-#     residual_added_rgb = get_bands_from_array(residual_added, plot_bands)
-#     plot_3_band_image(residual_added_rgb, title='Residual added to x1')
-#     predicted_raster = residual_added
-
-# plot_detail_branch(sr_model, x_raster.T.reshape(1, 32, 32, 4))
-
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(5, 5))
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(10, 10))
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(15, 15))
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(20, 20))
-# plot_band_values(predicted_raster, x1_raster, y_raster, observed_pixel=(25, 25))
