@@ -44,19 +44,6 @@ possible stages: \
 ``wald``: applies the Wald protocol to the masked scenes to create model input data \
 ``predictions``: creates prediction ready data for the model
 
-    elif 'scrape' in args.stages:
-        pipeline.scrape_all()
-    elif 'check' in args.stages:
-        pipeline.check_and_harmonize_scene_directories()
-    elif 'mask' in args.stages:
-        pipeline.cloud_mask_all()
-    elif 'clean' in args.stages:
-        pipeline.clean_up()
-    elif 'wald' in args.stages:
-        pipeline.wald_protocol_all()
-    elif 'predictions' in args.stages:
-        pipeline.prediction_ready_all()
-
 ### train a model
 
 Example: \
