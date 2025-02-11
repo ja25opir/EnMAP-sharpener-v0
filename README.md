@@ -64,5 +64,4 @@ Example: \
 ``--cpus 1 2 3 4 --mem-limit 40``
 
 ### arguments for GPU cluster usage
-
 ``--gpus 0 1 --mem-limit 40``
