@@ -212,7 +212,10 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
             left_x = i_h * (tile_size - overlap) + left_edge_margin
             left_y = i_v * (tile_size - overlap) + top_edge_margin
             w = raster.read(window=Window(left_x, left_y, tile_size, tile_size))
+            # limit values to the match the value range of reflections
             w = np.clip(w, 0, 10000)
+            # remove NaN and infinite values
+            w = np.nan_to_num(w, nan=0, posinf=10000, neginf=0)
             if not np.any(w):
                 skip_list.append(file_name)
                 continue
