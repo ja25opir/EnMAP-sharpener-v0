@@ -185,7 +185,7 @@ def crop_after_warp(raster, warp_dict):
         return memfile.open()
 
 
-def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, overlap=0):
+def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, overlap=0, margin=5):
     """
     Slices a raster into tiles of size tile_size x tile_size and saves them as .npy files.
     Tiles without any values or with fewer values than a given ratio are skipped.
@@ -195,11 +195,12 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
     :param save_name:
     :param min_value_ratio:
     :param overlap:
+    :param margin:
     :return: list with filenames of skipped tiles
     """
     # set a margin as pixel values on the left and upper border of enmap scenes are sometimes skewed
-    left_edge_margin = 5
-    top_edge_margin = 5
+    left_edge_margin = margin
+    top_edge_margin = margin
     horizontal_tiles = int((raster.width - left_edge_margin) / (tile_size - overlap))
     vertical_tiles = int((raster.height - top_edge_margin) / (tile_size - overlap))
     skip_list = []
@@ -211,6 +212,7 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
             left_x = i_h * (tile_size - overlap) + left_edge_margin
             left_y = i_v * (tile_size - overlap) + top_edge_margin
             w = raster.read(window=Window(left_x, left_y, tile_size, tile_size))
+            w = np.clip(w, 0, 10000)
             if not np.any(w):
                 skip_list.append(file_name)
                 continue
@@ -315,5 +317,5 @@ def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_fil
     print('Tiling and saving X image...')
     start_time = time.time()
     # tile raster and save tiles
-    tile_raster(x_image, tile_size, output_dir_path, save_name, min_value_ratio=0, overlap=0)
+    tile_raster(x_image, tile_size, output_dir_path, save_name, min_value_ratio=0, overlap=0, margin=0)
     print("Tiling time: %.4fs" % (time.time() - start_time))
