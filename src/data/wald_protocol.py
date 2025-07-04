@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 from rasterio.io import MemoryFile
 from rasterio.windows import Window
+from scipy.signal import savgol_filter
 
 from .helpers import crop_raster
 
@@ -185,6 +186,28 @@ def crop_after_warp(raster, warp_dict):
         return memfile.open()
 
 
+def apply_savgol_filter(raster):
+    """
+    Applies a Savitzky-Golay filter across the signal axis (= bands) for each pixel in the raster.
+    :param raster: rasterio dataset object
+    :return: Savgol-smoothed raster as a rasterio dataset object
+    """
+    # read all bands into memory
+    data = raster.read()
+    # flatten to a 2D array where each row is a pixel and each column is a band
+    spectra = data.reshape(raster.count, -1).T
+
+    # apply Savitzky-Golay filter to each pixel along the signal axis, reshape to original 3D shape
+    data = savgol_filter(spectra, window_length=7, polyorder=1, deriv=0, axis=1).T.reshape(data.shape)
+
+    meta = raster.meta.copy()
+    # return the smoothed raster as a rasterio dataset object
+    with MemoryFile() as memfile:
+        with memfile.open(**meta) as dataset:
+            dataset.write(data)
+        return memfile.open()
+
+
 def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, overlap=0, margin=5):
     """
     Slices a raster into tiles of size tile_size x tile_size and saves them as .npy files.
@@ -231,8 +254,7 @@ def remove_tile(path, name):
         os.remove(path + name)
 
 
-def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_name, output_dir_path,
-                        save_lr_enmap=False):
+def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_name, output_dir_path):
     enmap_raster = rasterio.open(dir_path + enmap_file)
     sentinel_raster = rasterio.open(dir_path + sentinel_file)
 
@@ -244,6 +266,11 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
                                                     (int(sentinel_raster.height / 3), int(sentinel_raster.width / 3)))
     enmap_rescaled = resample_raster_in_memory(enmap_downscaled, sentinel_downscaled.shape)
     print("Resampling time: %.4fs" % (time.time() - start_time))
+
+    print('Applying Savitzky-Golay filter to EnMAP raster...')
+    start_time = time.time()
+    enmap_rescaled = apply_savgol_filter(enmap_rescaled)
+    print("Savitzky-Golay filter time: %.4fs" % (time.time() - start_time))
 
     print('Aligning Sentinel raster to EnMAP raster...')
     start_time = time.time()
@@ -275,19 +302,6 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
     for file in sparse_y_tiles:
         remove_tile(x_tiles_path, file)
 
-    # save resampled EnMAP raster as x1 files
-    if save_lr_enmap:
-        x1_tiles_path = output_dir_path + 'x1/'
-        sparse_x1_tiles = tile_raster(enmap_rescaled, tile_size, x1_tiles_path, save_name,
-                                      min_value_ratio=min_value_ratio, overlap=0)
-        for file in sparse_x1_tiles:
-            remove_tile(y_tiles_path, file)
-            remove_tile(x_tiles_path, file)
-        for file in sparse_x_tiles:
-            remove_tile(x1_tiles_path, file)
-        for file in sparse_y_tiles:
-            remove_tile(x1_tiles_path, file)
-
     print("Tiling time: %.4fs" % (time.time() - start_time))
 
 
@@ -306,6 +320,11 @@ def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_fil
     # align Sentinel raster to EnMAP raster
     (sentinel_aligned, warp_dictionary) = align_sentinel(enmap_upscaled, sentinel_raster)
     print("Alignment time: %.4fs" % (time.time() - start_time))
+
+    print('Applying Savitzky-Golay filter to EnMAP raster...')
+    start_time = time.time()
+    enmap_upscaled = apply_savgol_filter(enmap_upscaled)
+    print("Savitzky-Golay filter time: %.4fs" % (time.time() - start_time))
 
     print('Stacking upscaled EnMAP and original Sentinel rasters...')
     start_time = time.time()
