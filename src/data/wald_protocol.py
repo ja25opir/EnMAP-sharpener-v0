@@ -258,6 +258,11 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
     enmap_raster = rasterio.open(dir_path + enmap_file)
     sentinel_raster = rasterio.open(dir_path + sentinel_file)
 
+    print('Applying Savitzky-Golay filter to EnMAP raster...')
+    start_time = time.time()
+    enmap_raster = apply_savgol_filter(enmap_raster)
+    print("Savitzky-Golay filter time: %.4fs" % (time.time() - start_time))
+
     print('Resampling...')
     start_time = time.time()
     enmap_downscaled = resample_raster_in_memory(enmap_raster,
@@ -266,11 +271,6 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
                                                     (int(sentinel_raster.height / 3), int(sentinel_raster.width / 3)))
     enmap_rescaled = resample_raster_in_memory(enmap_downscaled, sentinel_downscaled.shape)
     print("Resampling time: %.4fs" % (time.time() - start_time))
-
-    print('Applying Savitzky-Golay filter to EnMAP raster...')
-    start_time = time.time()
-    enmap_rescaled = apply_savgol_filter(enmap_rescaled)
-    print("Savitzky-Golay filter time: %.4fs" % (time.time() - start_time))
 
     print('Aligning Sentinel raster to EnMAP raster...')
     start_time = time.time()
@@ -309,6 +309,11 @@ def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_fil
     enmap_raster = rasterio.open(dir_path + enmap_file)
     sentinel_raster = rasterio.open(dir_path + sentinel_file)
 
+    print('Applying Savitzky-Golay filter to EnMAP raster...')
+    start_time = time.time()
+    enmap_raster = apply_savgol_filter(enmap_raster)
+    print("Savitzky-Golay filter time: %.4fs" % (time.time() - start_time))
+
     # upscale and interpolate EnMAP raster to Sentinel raster resolution
     print('Resampling...')
     start_time = time.time()
@@ -320,11 +325,6 @@ def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_fil
     # align Sentinel raster to EnMAP raster
     (sentinel_aligned, warp_dictionary) = align_sentinel(enmap_upscaled, sentinel_raster)
     print("Alignment time: %.4fs" % (time.time() - start_time))
-
-    print('Applying Savitzky-Golay filter to EnMAP raster...')
-    start_time = time.time()
-    enmap_upscaled = apply_savgol_filter(enmap_upscaled)
-    print("Savitzky-Golay filter time: %.4fs" % (time.time() - start_time))
 
     print('Stacking upscaled EnMAP and original Sentinel rasters...')
     start_time = time.time()
