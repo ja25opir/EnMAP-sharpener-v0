@@ -1,9 +1,11 @@
 import argparse
 import os
 import time
-from model.model import Model
+import unittest
 
+from model.model import Model
 from config.resource_limiter import limit_gpu_memory_usage, multiple_gpu_distribution
+from tests.test_model_input_data import TestModelInputData
 
 TILE_SIZE = 32
 NO_INPUT_BANDS = 4
@@ -28,6 +30,14 @@ def train_model(batch_size, epochs, train_data):
     return cnn_model
 
 
+def run_data_tests(data_dir):
+    TestModelInputData.DataDir = data_dir
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestModelInputData)
+    runner = unittest.TextTestRunner(verbosity=2).run(suite)
+    if not runner.wasSuccessful():
+        raise RuntimeError("Model input data validation tests failed.")
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Start model training.')
     parser.add_argument('--gpus', nargs='+', type=int, default=[0],
@@ -41,6 +51,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     train_data_dir = os.getcwd() + args.train_data_dir
+
+    run_data_tests(train_data_dir)
 
     limit_gpu_memory_usage(args.gpus, args.mem_limit)
 

@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 from rasterio.io import MemoryFile
 from rasterio.windows import Window
+from scipy.signal import savgol_filter
 
 from .helpers import crop_raster
 
@@ -185,7 +186,29 @@ def crop_after_warp(raster, warp_dict):
         return memfile.open()
 
 
-def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, overlap=0):
+def apply_savgol_filter(raster):
+    """
+    Applies a Savitzky-Golay filter across the signal axis (= bands) for each pixel in the raster.
+    :param raster: rasterio dataset object
+    :return: Savgol-smoothed raster as a rasterio dataset object
+    """
+    # read all bands into memory
+    data = raster.read()
+    # flatten to a 2D array where each row is a pixel and each column is a band
+    spectra = data.reshape(raster.count, -1).T
+
+    # apply Savitzky-Golay filter to each pixel along the signal axis, reshape to original 3D shape
+    data = savgol_filter(spectra, window_length=7, polyorder=1, deriv=0, axis=1).T.reshape(data.shape)
+
+    meta = raster.meta.copy()
+    # return the smoothed raster as a rasterio dataset object
+    with MemoryFile() as memfile:
+        with memfile.open(**meta) as dataset:
+            dataset.write(data)
+        return memfile.open()
+
+
+def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, overlap=0, margin=5):
     """
     Slices a raster into tiles of size tile_size x tile_size and saves them as .npy files.
     Tiles without any values or with fewer values than a given ratio are skipped.
@@ -195,11 +218,12 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
     :param save_name:
     :param min_value_ratio:
     :param overlap:
+    :param margin:
     :return: list with filenames of skipped tiles
     """
     # set a margin as pixel values on the left and upper border of enmap scenes are sometimes skewed
-    left_edge_margin = 5
-    top_edge_margin = 5
+    left_edge_margin = margin
+    top_edge_margin = margin
     horizontal_tiles = int((raster.width - left_edge_margin) / (tile_size - overlap))
     vertical_tiles = int((raster.height - top_edge_margin) / (tile_size - overlap))
     skip_list = []
@@ -211,6 +235,10 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
             left_x = i_h * (tile_size - overlap) + left_edge_margin
             left_y = i_v * (tile_size - overlap) + top_edge_margin
             w = raster.read(window=Window(left_x, left_y, tile_size, tile_size))
+            # limit values to the match the value range of reflections
+            w = np.clip(w, 0, 10000)
+            # remove NaN and infinite values
+            w = np.nan_to_num(w, nan=0, posinf=10000, neginf=0)
             if not np.any(w):
                 skip_list.append(file_name)
                 continue
@@ -226,10 +254,14 @@ def remove_tile(path, name):
         os.remove(path + name)
 
 
-def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_name, output_dir_path,
-                        save_lr_enmap=False):
+def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_name, output_dir_path):
     enmap_raster = rasterio.open(dir_path + enmap_file)
     sentinel_raster = rasterio.open(dir_path + sentinel_file)
+
+    print('Applying Savitzky-Golay filter to EnMAP raster...')
+    start_time = time.time()
+    enmap_raster = apply_savgol_filter(enmap_raster)
+    print("Savitzky-Golay filter time: %.4fs" % (time.time() - start_time))
 
     print('Resampling...')
     start_time = time.time()
@@ -270,25 +302,17 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
     for file in sparse_y_tiles:
         remove_tile(x_tiles_path, file)
 
-    # save resampled EnMAP raster as x1 files
-    if save_lr_enmap:
-        x1_tiles_path = output_dir_path + 'x1/'
-        sparse_x1_tiles = tile_raster(enmap_rescaled, tile_size, x1_tiles_path, save_name,
-                                      min_value_ratio=min_value_ratio, overlap=0)
-        for file in sparse_x1_tiles:
-            remove_tile(y_tiles_path, file)
-            remove_tile(x_tiles_path, file)
-        for file in sparse_x_tiles:
-            remove_tile(x1_tiles_path, file)
-        for file in sparse_y_tiles:
-            remove_tile(x1_tiles_path, file)
-
     print("Tiling time: %.4fs" % (time.time() - start_time))
 
 
 def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_file, save_name, output_dir_path):
     enmap_raster = rasterio.open(dir_path + enmap_file)
     sentinel_raster = rasterio.open(dir_path + sentinel_file)
+
+    print('Applying Savitzky-Golay filter to EnMAP raster...')
+    start_time = time.time()
+    enmap_raster = apply_savgol_filter(enmap_raster)
+    print("Savitzky-Golay filter time: %.4fs" % (time.time() - start_time))
 
     # upscale and interpolate EnMAP raster to Sentinel raster resolution
     print('Resampling...')
@@ -315,5 +339,5 @@ def start_prediction_preprocessing(dir_path, tile_size, enmap_file, sentinel_fil
     print('Tiling and saving X image...')
     start_time = time.time()
     # tile raster and save tiles
-    tile_raster(x_image, tile_size, output_dir_path, save_name, min_value_ratio=0, overlap=0)
+    tile_raster(x_image, tile_size, output_dir_path, save_name, min_value_ratio=0, overlap=0, margin=0)
     print("Tiling time: %.4fs" % (time.time() - start_time))

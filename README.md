@@ -41,7 +41,7 @@ possible stages: \
 ``check``: checks if the scene directories are harmonized \
 ``mask``: combines EnMAP and Sentinel-2 cloud masks and applies them to both rasters \
 ``clean``: removes all files that are not needed for training \
-``wald``: applies the Wald protocol to the masked scenes to create model input data \
+``wald``: applies the Wald protocol to the masked scenes to create model input data used in model training \
 ``predictions``: creates prediction ready data for the model
 
 ### train a model
