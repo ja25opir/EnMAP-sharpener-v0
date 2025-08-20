@@ -2,6 +2,7 @@ import os
 import numpy as np
 import unittest
 import matplotlib.pyplot as plt
+from itertools import islice
 
 DEFAULT_DIR = os.getcwd() + '/data/preprocessing/model_input/'
 
@@ -11,7 +12,8 @@ class TestModelInputData(unittest.TestCase):
         self.data_dir_x = data_dir + 'x'
         self.data_dir_y = data_dir + 'y'
 
-    def test_file_pairs(self):
+    # currently not used as this a) loads all filenames in mem and b) could be done iteratively as the model data loader loads sorted batches of files
+    def _test_file_pairs(self):
         spectral_mat_x = [x for x in os.listdir(self.data_dir_x) if x.endswith('.npy')]
         spectral_mat_y = [y for y in os.listdir(self.data_dir_y) if y.endswith('.npy')]
 
@@ -23,24 +25,22 @@ class TestModelInputData(unittest.TestCase):
             self.assertIn(file_y, spectral_mat_x, f"Missing corresponding file for {file_y} in x directory.")
 
     def check_data_shape(self, data_dir, shape):
-        spectral_mat = [mat for mat in os.listdir(data_dir) if mat.endswith('.npy')]
-
-        for file in spectral_mat:
-            data = np.load(os.path.join(data_dir, file))
-            self.assertTrue(data.shape == shape,
-                            f"File {file} has a dimension of {data.shape}, expected {shape}.")
+        for entry in os.scandir(data_dir):
+            if entry.is_file() and entry.name.endswith('.npy'):
+                data = np.load(os.path.join(data_dir, entry))
+                self.assertTrue(data.shape == shape,
+                                f"File {entry} has a dimension of {data.shape}, expected {shape}.")
 
     def test_data_shape(self):
         self.check_data_shape(self.data_dir_x, (228, 32, 32))
         self.check_data_shape(self.data_dir_y, (224, 32, 32))
 
     def check_value_range(self, data_dir):
-        spectral_mat = [mat for mat in os.listdir(data_dir) if mat.endswith('.npy')]
-
-        for file in spectral_mat:
-            data = np.load(os.path.join(data_dir, file))
-            self.assertTrue(np.all(np.isfinite(data)), f"File {file} contains NaN or infinite values.")
-            self.assertTrue(np.all((data >= 0) & (data <= 10000)), f"Data in {file} is not in the range [0, 10000].")
+        for entry in os.scandir(data_dir):
+            if entry.is_file() and entry.name.endswith('.npy'):
+                data = np.load(os.path.join(data_dir, entry))
+                self.assertTrue(np.all(np.isfinite(data)), f"File {entry} contains NaN or infinite values.")
+                self.assertTrue(np.all((data >= 0) & (data <= 10000)), f"Data in {entry} is not in the range [0, 10000].")
 
     def test_value_range(self):
         self.check_value_range(self.data_dir_x)
@@ -72,10 +72,9 @@ class TestModelInputData(unittest.TestCase):
 
         self.assertTrue(len(spectral_mat) > 0, "No spectral signature files found in the directory.")
 
-    def test_plot_spectral_signatures(self):
-        # self.plot_spectral_signatures(self.data_dir_x)
-        # self.plot_spectral_signatures(self.data_dir_y)
-        pass
+    def _test_plot_spectral_signatures(self):
+        self.plot_spectral_signatures(self.data_dir_x)
+        self.plot_spectral_signatures(self.data_dir_y)
 
 
 if __name__ == '__main__':
