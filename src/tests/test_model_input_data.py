@@ -40,7 +40,10 @@ class TestModelInputData(unittest.TestCase):
             if entry.is_file() and entry.name.endswith('.npy'):
                 data = np.load(os.path.join(data_dir, entry))
                 self.assertTrue(np.all(np.isfinite(data)), f"File {entry} contains NaN or infinite values.")
-                self.assertTrue(np.all((data >= 0) & (data <= 10000)), f"Data in {entry} is not in the range [0, 10000].")
+                self.assertTrue(data.dtype == np.float32,
+                                f"File {entry} has an unsupported data type: {data.dtype}. Expected np.float32 or np.uint16.")
+                self.assertTrue(np.all((data >= 0) & (data <= 10000)),
+                                f"Data in {entry} is not in the range [0, 10000].")
 
     def test_value_range(self):
         self.check_value_range(self.data_dir_x)

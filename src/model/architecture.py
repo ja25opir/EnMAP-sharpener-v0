@@ -159,15 +159,15 @@ class SupErMAPnet:
         leaky_relu = layers.LeakyReLU()
         padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[0]))(input2d)
         edges1 = layers.Conv2D(self.filters_db[0], self.kernels_db[0], padding='valid')(padded)
-        # edges1 = layers.BatchNormalization()(edges1)
+        edges1 = layers.BatchNormalization(momentum=0.9, epsilon=0.01)(edges1)
         edges1 = layers.Activation(leaky_relu)(edges1)
         padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[1]))(edges1)
         edges2 = layers.Conv2D(self.filters_db[1], self.kernels_db[1], padding='valid')(padded)
-        # edges2 = layers.BatchNormalization()(edges2)
+        edges2 = layers.BatchNormalization(momentum=0.9, epsilon=0.01)(edges2)
         edges2 = layers.Activation(leaky_relu)(edges2)
         padded = ReflectionPadding2D(padding=self.padding2d(self.kernels_db[2]))(edges2)
         edges3 = layers.Conv2D(self.filters_db[2], self.kernels_db[2], padding='valid')(padded)
-        # edges3 = layers.BatchNormalization()(edges3)
+        edges3 = layers.BatchNormalization(momentum=0.9, epsilon=0.01)(edges3)
         edges3 = layers.Activation(leaky_relu)(edges3)
 
         # main branch
