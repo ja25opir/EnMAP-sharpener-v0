@@ -41,7 +41,7 @@ class TestModelInputData(unittest.TestCase):
                 data = np.load(os.path.join(data_dir, entry))
                 self.assertTrue(np.all(np.isfinite(data)), f"File {entry} contains NaN or infinite values.")
                 self.assertTrue(data.dtype == np.float32,
-                                f"File {entry} has an unsupported data type: {data.dtype}. Expected np.float32 or np.uint16.")
+                                f"File {entry} has an unsupported data type: {data.dtype}. Expected np.float32.")
                 self.assertTrue(np.all((data >= 0) & (data <= 10000)),
                                 f"Data in {entry} is not in the range [0, 10000].")
 
