@@ -16,7 +16,7 @@ class Model:
     """
 
     def __init__(self, train_data_dir, tile_size, no_input_bands, no_output_bands, batch_size,
-                 loss_function, train_epochs, output_dir):
+                 train_epochs, initial_lr, output_dir):
         self.model = None
         self.name = None
         self.train_data_dir = train_data_dir
@@ -24,8 +24,8 @@ class Model:
         self.no_input_bands = no_input_bands
         self.no_output_bands = no_output_bands
         self.batch_size = batch_size
-        self.loss_function = loss_function
         self.train_epochs = train_epochs
+        self.initial_learning_rate = initial_lr
         self.output_dir = output_dir
         self.train_files = None
         self.test_files = None
@@ -66,12 +66,14 @@ class Model:
         Set learning rate schedule for training with exponential decay.
         :return: optimizers.schedules.ExponentialDecay
         """
-        initial_learning_rate = 0.0001  # training 224 bands; 0.001 for hyperparams
-        final_learning_rate = 0.00001
-        learning_rate_decay_factor = (final_learning_rate / initial_learning_rate) ** (1 / self.train_epochs)
+        # initial_learning_rate = 0.0001  # training 224 bands; 0.001 for hyperparams
+        # final_learning_rate = 0.00001
+
+        final_learning_rate = self.initial_learning_rate * 0.1
+        learning_rate_decay_factor = (final_learning_rate / self.initial_learning_rate) ** (1 / self.train_epochs)
         steps_per_epoch = int(len(self.train_files) / self.batch_size)
         return optimizers.schedules.ExponentialDecay(
-            initial_learning_rate=initial_learning_rate,
+            initial_learning_rate=self.initial_learning_rate,
             decay_steps=steps_per_epoch,
             decay_rate=learning_rate_decay_factor,
             staircase=True)
@@ -109,7 +111,7 @@ class Model:
         test_generator = DuoBranchDataGenerator(**test_args)
 
         self.learning_rate = self.set_lr_schedule()
-        loss = ms_ssim_l1_loss  # self.loss_function
+        loss = ms_ssim_l1_loss
 
         self.define_model(
             hyperparameters={'k_mb': kernels_mb, 'k_db': kernels_db, 'f_mb': filters_mb, 'f_db': filters_db})

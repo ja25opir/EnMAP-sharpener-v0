@@ -235,6 +235,8 @@ def tile_raster(raster, tile_size, save_dir, save_name, min_value_ratio=0.3, ove
             left_x = i_h * (tile_size - overlap) + left_edge_margin
             left_y = i_v * (tile_size - overlap) + top_edge_margin
             w = raster.read(window=Window(left_x, left_y, tile_size, tile_size))
+            # convert to float32
+            w = w.astype(np.float32)
             # limit values to the match the value range of reflections
             w = np.clip(w, 0, 10000)
             # remove NaN and infinite values
@@ -287,7 +289,7 @@ def start_wald_protocol(dir_path, tile_size, enmap_file, sentinel_file, save_nam
     print('Tiling and saving X and Y image...')
     start_time = time.time()
     min_value_ratio = 0.9  # minimum ratio of non-zero values in a tile; others are discarded
-    # x = stacked resampled raster, y = original EnMAP raster, x1 = resampled EnMAP raster
+    # x = stacked resampled raster, y = original EnMAP raster
     x_tiles_path = output_dir_path + 'x/'
     sparse_x_tiles = tile_raster(x_image, tile_size, x_tiles_path, save_name, min_value_ratio=min_value_ratio,
                                  overlap=0)
