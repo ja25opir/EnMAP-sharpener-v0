@@ -56,6 +56,16 @@ to a resolution of 10 m × 10 m.
 |-----------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
 | ![NDVI EnMAP_Bilinear_interpolated](output/figures/evaluation/reconstructions/ndvi_auwald/ndvi_bilin.png) | ![NDVI EnMAP_supErMAPnet_sharpened](output/figures/evaluation/reconstructions/ndvi_auwald/ndvi_recons.png) | ![NDVI UFZ](output/figures/evaluation/reconstructions/ndvi_auwald/ndvi_ufz_origin_legend.png) |
 
+Subsequently, bands with similar center wavelengths as the existing EnMAP bands were selected from the hyperspectral UFZ
+scene and various vegetation indices (NDVI, GNDVI, NDII) were calculated. The same vegetation indices were calculated
+from the bilinear interpolated, as well as the sharpened EnMAP scene. The overall resulting errors, measured in mean
+squared error (MSE), are summarized in the following table:
+
+| Method                | NDVI       | GNDVI      | NDII       |
+|-----------------------|------------|------------|------------|
+| MSE(Bilinear, UFZ)    | 0.0384     | 0.0302     | 0.0693     |
+| MSE(supErMAPnet, UFZ) | **0.0340** | **0.0268** | **0.0462** |
+
 ## Project Setup
 
 ### install dependencies:
