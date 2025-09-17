@@ -16,13 +16,13 @@ additionally sharpened using the trained SupErMAPnet model. \
 For visualization purposes, three bands with center wavelengths of ~435 nm , ~545 nm, and ~700 nm were selected, scaled,
 and high reflectance values discarded to increase brightness and simulate an RGB image.
 
-| Scene | Bilinear Interpolation                                                                    | supErMAPnet Reconstruction                                                               |
-|-------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| a)    | ![Leipzig](output/figures/evaluation/reconstructions/leipzig_window_upscaled.png)         | ![Leipzig](output/figures/evaluation/reconstructions/leipzig_window_reconst.png)         |
-| b)    | ![Namibia](output/figures/evaluation/reconstructions/namibia_window_upscaled.png)         | ![Namibia](output/figures/evaluation/reconstructions/namibia_window_reconst.png)         |
-| c)    | ![Peru](output/figures/evaluation/reconstructions/peru_window_upscaled.png)               | ![Peru](output/figures/evaluation/reconstructions/peru_window_reconst.png)               |
-| d)    | ![Australia 1](output/figures/evaluation/reconstructions/australia_window_1_upscaled.png) | ![Australia 1](output/figures/evaluation/reconstructions/australia_window_1_reconst.png) |
-| e)    | ![Australia 2](output/figures/evaluation/reconstructions/australia_window_2_upscaled.png) | ![Australia 2](output/figures/evaluation/reconstructions/australia_window_2_reconst.png) |
+| Scene     | Bilinear Interpolation                                                                    | supErMAPnet Reconstruction                                                               |
+|-----------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| Germany   | ![Leipzig](output/figures/evaluation/reconstructions/leipzig_window_upscaled.png)         | ![Leipzig](output/figures/evaluation/reconstructions/leipzig_window_reconst.png)         |
+| Namibia   | ![Namibia](output/figures/evaluation/reconstructions/namibia_window_upscaled.png)         | ![Namibia](output/figures/evaluation/reconstructions/namibia_window_reconst.png)         |
+| Peru      | ![Peru](output/figures/evaluation/reconstructions/peru_window_upscaled.png)               | ![Peru](output/figures/evaluation/reconstructions/peru_window_reconst.png)               |
+| Australia | ![Australia 1](output/figures/evaluation/reconstructions/australia_window_1_upscaled.png) | ![Australia 1](output/figures/evaluation/reconstructions/australia_window_1_reconst.png) |
+| Australia | ![Australia 2](output/figures/evaluation/reconstructions/australia_window_2_upscaled.png) | ![Australia 2](output/figures/evaluation/reconstructions/australia_window_2_reconst.png) |
 
 ## Evaluation results
 
@@ -65,6 +65,26 @@ squared error (MSE), are summarized in the following table:
 |-----------------------|------------|------------|------------|
 | MSE(Bilinear, UFZ)    | 0.0384     | 0.0302     | 0.0693     |
 | MSE(supErMAPnet, UFZ) | **0.0340** | **0.0268** | **0.0462** |
+
+## Model insights
+
+The output of each layer in the detail branch is calculated using the weights of a layer $W_l$, an activation function
+$\phi$ and a bias matrix $B_l$. Furthermore, a reflection padding $pad_r$ is performed on the layer inputs and a batch
+normalization $norm_b$ performed before the layer activation $\phi$ function is applied. This can be defined as follows:
+
+$Y_l = \phi(norm_b(W_l * pad_r(X_l) + B_l))$
+
+For a better understanding of how the model works, the outputs of different layers have been visualized during a single
+prediction run. Figure (a) shows the visualization of a multispectral input passed to the detail branch, while figures
+(b) to (d) show the feature maps created by each layer of the detail branch. It can be seen that most feature maps
+emphasize details of the input as expected. Some feature maps only exhibit edges from a certain direction. This is what
+directional Sobel operators do, for example, in a simplified way.
+
+| ![Input tile](output/figures/model_insights/feature_maps/prediction_input_tile.png)                      | ![Feature maps after first detail layer](output/figures/model_insights/feature_maps/feature_maps_1.png) |
+|----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| (a) Input tile                                                                                           | (b) Feature maps after first detail layer                                                               |
+| ![Feature maps after second detail layer](output/figures/model_insights/feature_maps/feature_maps_2.png) | ![Feature maps after third detail layer](output/figures/model_insights/feature_maps/feature_maps_3.png) |
+| (c) Feature maps from second detail layer                                                                | (d) Feature maps after third detail layer                                                               |
 
 ## Project Setup
 
