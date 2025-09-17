@@ -3,24 +3,58 @@
 Sharpening the spatial resolution of hyperspectral scenes from the EnMAP satellite mission using a two-branch CNN with
 three-dimensional convolution kernels and auxiliary scenes from Sentinel-2.
 The trained model can be found in the [models directory](output/models/supErMAPnet.keras).
-This repository was created alongside my [master's thesis](Master_Thesis.pdf) in Computer Science at the University of Leipzig, Germany.
+This repository was created alongside my [master's thesis](Master_Thesis.pdf) in Computer Science at the University of
+Leipzig, Germany.
 
 ## Example Results
 
 In the following table, you can see excerpts of five different scenes recorded by the EnMAP satellite and upscaled from
-the original resolution of 30m x 30m per Pixel to a resolution of 10m x 10m per Pixel. In the second column, you can see
+the original resolution of 30 m × 30 m per Pixel to a resolution of 10 m × 10 m per Pixel. In the second column, you can
+see
 the results of a simple bilinear interpolation, while in the third column, you can see the resulting scenes that were
 additionally sharpened using the trained SupErMAPnet model. \
 For visualization purposes, three bands with center wavelengths of ~435 nm , ~545 nm, and ~700 nm were selected, scaled,
 and high reflectance values discarded to increase brightness and simulate an RGB image.
 
-| Scene | Bilinear Interpolation                                                                    | SupErMAPnet Reconstruction                                                               |
+| Scene | Bilinear Interpolation                                                                    | supErMAPnet Reconstruction                                                               |
 |-------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 | a)    | ![Leipzig](output/figures/evaluation/reconstructions/leipzig_window_upscaled.png)         | ![Leipzig](output/figures/evaluation/reconstructions/leipzig_window_reconst.png)         |
 | b)    | ![Namibia](output/figures/evaluation/reconstructions/namibia_window_upscaled.png)         | ![Namibia](output/figures/evaluation/reconstructions/namibia_window_reconst.png)         |
 | c)    | ![Peru](output/figures/evaluation/reconstructions/peru_window_upscaled.png)               | ![Peru](output/figures/evaluation/reconstructions/peru_window_reconst.png)               |
 | d)    | ![Australia 1](output/figures/evaluation/reconstructions/australia_window_1_upscaled.png) | ![Australia 1](output/figures/evaluation/reconstructions/australia_window_1_reconst.png) |
 | e)    | ![Australia 2](output/figures/evaluation/reconstructions/australia_window_2_upscaled.png) | ![Australia 2](output/figures/evaluation/reconstructions/australia_window_2_reconst.png) |
+
+## Evaluation results
+
+Using Wald’s evaluation strategy and a dataset containing four scenes, supErMAPnet was evaluated based on various
+metrics and compared with bilinear and bicubic interpolation, as well as with a sharpening strategy that uses bilinear
+interpolation and unsharp masking:
+
+| Method        | MSE      | PSNR      | SSIM     | SAM      | 
+|---------------|----------|-----------|----------|----------|
+| Bilinear      | 3251     | 29.20     | 0.86     | 8.00     |
+| Cubic         | 3255     | 29.64     | 0.87     | 7.61     |
+| Bilinear + UM | 3271     | 29.68     | 0.88     | 7.59     |
+| supErMAPnet   | **3238** | **30.73** | **0.92** | **6.86** |
+
+To investigate possible discrepancies in the sharpening quality of supErMAPnet over different spectral bands, the
+coefficient of determination $R^2$ and the SSIM values between the sharpened scenes and their originals were calculated
+for each band and averaged over the four evaluation scenes:
+
+![R2 and SSIM per band](output/figures/evaluation/wald_metrics/mean_r_ssim.png)
+
+To better evaluate the sharpening of EnMAP images to the same spatial resolution as Sentinel-2 data with the proposed
+model, co-registered high spatial resolution hyperspectral data must be available. For this purpose, a hyperspectral
+airborne scene, acquired by the Helmholtz Centre for Environmental Research (UFZ) on June 12, 2023, was used. This scene
+has a spatial resolution of ~0.45 m × ~0.45 m per pixel, a spectral resolution of 455 bands and covers a southern part
+of the Leipziger Auwald, a riparian forest near Leipzig, as well as some urban parts of the city.
+The following figure shows the normalized difference vegetation index (NDVI) for the cropped scene recorded by
+the UFZ in comparison to the same area captured by EnMAP, once bilinear interpolated and once sharpened with supErMAPnet
+to a resolution of 10 m × 10 m.
+
+| Bilinear Interpolation                                                                                    | supErMAPnet Reconstruction                                                                                 | UFZ Hyperspectral Scene                                                                       |
+|-----------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| ![NDVI EnMAP_Bilinear_interpolated](output/figures/evaluation/reconstructions/ndvi_auwald/ndvi_bilin.png) | ![NDVI EnMAP_supErMAPnet_sharpened](output/figures/evaluation/reconstructions/ndvi_auwald/ndvi_recons.png) | ![NDVI UFZ](output/figures/evaluation/reconstructions/ndvi_auwald/ndvi_ufz_origin_legend.png) |
 
 ## Project Setup
 
