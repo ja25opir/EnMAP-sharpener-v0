@@ -99,7 +99,8 @@ function setup() {
       id: "cloud_mask",
       bands: 1,
       sampleType: "AUTO" // output type
-    },]
+    }],
+    mosaicking: Mosaicking.ORBIT
   }
 }
 
@@ -114,6 +115,11 @@ function evaluatePixel(sample) {
     cloud_mask: [cloudmask] // cloud mask
   }
 }
+
+// return metadata
+function updateOutputMetadata(scenes, inputMetadata, outputMetadata) {
+  outputMetadata.userData = { scenes: scenes.orbits }
+}
 """
 
 
@@ -121,6 +127,7 @@ class Sentinel:
     """
     Class for requesting Sentinel-2 images from the Copernicus Data Space Processing API.
     """
+
     def __init__(self, img_path, enmap_time, timerange_days=15):
         self.img_path = img_path
         self.enmap_raster = rasterio.open(img_path)
@@ -186,7 +193,11 @@ class Sentinel:
                     {
                         "identifier": "cloud_mask",
                         "format": {"type": "image/tiff"}
-                    }
+                    },
+                    {
+                        "identifier": "userdata",
+                        "format": {"type": "application/json"},
+                    },
                 ]
             },
             "evalscript": self.evalscript,
