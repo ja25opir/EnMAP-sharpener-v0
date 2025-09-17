@@ -6,7 +6,7 @@ The trained model can be found in the [models directory](output/models/supErMAPn
 
 ## Example Results
 
-<div style="display: flex; gap: 16px;">
+<div style="display: flex; gap: 16px; width: 75%;">
     <div style="display: flex; flex-direction: column; justify-content: space-around; font-weight: bolder;">
         <div>a)</div>
         <div>b)</div>
