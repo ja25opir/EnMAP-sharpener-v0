@@ -6,31 +6,13 @@ The trained model can be found in the [models directory](output/models/supErMAPn
 
 ## Example Results
 
-<div style="display: flex; gap: 16px; width: 75%;">
-    <div style="display: flex; flex-direction: column; justify-content: space-around; font-weight: bolder;">
-        <div>a)</div>
-        <div>b)</div>
-        <div>c)</div>
-        <div>d)</div>
-        <div>e)</div>
-    </div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; font-weight: bolder;">
-        <span>Bilinear interpolation</span>
-        <img alt="" src="output/figures/evaluation/reconstructions/leipzig_window_upscaled.png"/>
-        <img alt="" src="output/figures/evaluation/reconstructions/namibia_window_upscaled.png"/>
-        <img alt="" src="output/figures/evaluation/reconstructions/peru_window_upscaled.png"/>
-        <img alt="" src="output/figures/evaluation/reconstructions/australia_window_1_upscaled.png"/>
-        <img alt="" src="output/figures/evaluation/reconstructions/australia_window_2_upscaled.png"/>
-    </div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; font-weight: bolder;">
-        <span>supErMAPnet reconstruction</span>
-        <img alt="" src="output/figures/evaluation/reconstructions/leipzig_window_reconst.png"/>
-        <img alt="" src="output/figures/evaluation/reconstructions/namibia_window_reconst.png"/>
-        <img alt="" src="output/figures/evaluation/reconstructions/peru_window_reconst.png"/>
-        <img alt="" src="output/figures/evaluation/reconstructions/australia_window_1_reconst.png"/>
-        <img alt="" src="output/figures/evaluation/reconstructions/australia_window_2_reconst.png"/>
-    </div>
-</div>
+| Scene | Bilinear Interpolation                                                                    | SupErMAPnet Reconstruction                                                               |
+|-------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| a)    | ![Leipzig](output/figures/evaluation/reconstructions/leipzig_window_upscaled.png)         | ![Leipzig](output/figures/evaluation/reconstructions/leipzig_window_reconst.png)         |
+| b)    | ![Namibia](output/figures/evaluation/reconstructions/namibia_window_upscaled.png)         | ![Namibia](output/figures/evaluation/reconstructions/namibia_window_reconst.png)         |
+| c)    | ![Peru](output/figures/evaluation/reconstructions/peru_window_upscaled.png)               | ![Peru](output/figures/evaluation/reconstructions/peru_window_reconst.png)               |
+| d)    | ![Australia 1](output/figures/evaluation/reconstructions/australia_window_1_upscaled.png) | ![Australia 1](output/figures/evaluation/reconstructions/australia_window_1_reconst.png) |
+| e)    | ![Australia 2](output/figures/evaluation/reconstructions/australia_window_2_upscaled.png) | ![Australia 2](output/figures/evaluation/reconstructions/australia_window_2_reconst.png) |
 
 ## Project Setup
 
