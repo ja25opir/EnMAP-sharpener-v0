@@ -1,10 +1,18 @@
 # EnMAP-sharpener-v0
 
-Sharpening the spatial resolution of scenes from EnMAP satellite mission using a two-branch CNN with three-dimensional
-convolution kernels and auxiliary scenes from Sentinel-2.
+Sharpening the spatial resolution of hyperspectral scenes from the EnMAP satellite mission using a two-branch CNN with
+three-dimensional convolution kernels and auxiliary scenes from Sentinel-2.
 The trained model can be found in the [models directory](output/models/supErMAPnet.keras).
+This repository was created alongside my [master's thesis](Master_Thesis.pdf) in Computer Science at the University of Leipzig, Germany.
 
 ## Example Results
+
+In the following table, you can see excerpts of five different scenes recorded by the EnMAP satellite and upscaled from
+the original resolution of 30m x 30m per Pixel to a resolution of 10m x 10m per Pixel. In the second column, you can see
+the results of a simple bilinear interpolation, while in the third column, you can see the resulting scenes that were
+additionally sharpened using the trained SupErMAPnet model. \
+For visualization purposes, three bands with center wavelengths of ~435 nm , ~545 nm, and ~700 nm were selected, scaled,
+and high reflectance values discarded to increase brightness and simulate an RGB image.
 
 | Scene | Bilinear Interpolation                                                                    | SupErMAPnet Reconstruction                                                               |
 |-------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
