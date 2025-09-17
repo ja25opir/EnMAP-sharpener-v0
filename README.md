@@ -1,7 +1,36 @@
 # EnMAP-sharpener-v0
 
-Sharpening the spatial resolution of scenes from EnMAP satellite mission using a CNN and scenes from Sentinel-2.
-The used model can be found in the models directory (output/models/supErMAPnet.keras).
+Sharpening the spatial resolution of scenes from EnMAP satellite mission using a two-branch CNN with three-dimensional
+convolution kernels and auxiliary scenes from Sentinel-2.
+The trained model can be found in the [models directory](output/models/supErMAPnet.keras).
+
+## Example Results
+
+<div style="display: flex; gap: 16px;">
+    <div style="display: flex; flex-direction: column; justify-content: space-around; font-weight: bolder;">
+        <div>a)</div>
+        <div>b)</div>
+        <div>c)</div>
+        <div>d)</div>
+        <div>e)</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; font-weight: bolder;">
+        <span>Bilinear interpolation</span>
+        <img alt="" src="output/figures/evaluation/reconstructions/leipzig_window_upscaled.png"/>
+        <img alt="" src="output/figures/evaluation/reconstructions/namibia_window_upscaled.png"/>
+        <img alt="" src="output/figures/evaluation/reconstructions/peru_window_upscaled.png"/>
+        <img alt="" src="output/figures/evaluation/reconstructions/australia_window_1_upscaled.png"/>
+        <img alt="" src="output/figures/evaluation/reconstructions/australia_window_2_upscaled.png"/>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; font-weight: bolder;">
+        <span>supErMAPnet reconstruction</span>
+        <img alt="" src="output/figures/evaluation/reconstructions/leipzig_window_reconst.png"/>
+        <img alt="" src="output/figures/evaluation/reconstructions/namibia_window_reconst.png"/>
+        <img alt="" src="output/figures/evaluation/reconstructions/peru_window_reconst.png"/>
+        <img alt="" src="output/figures/evaluation/reconstructions/australia_window_1_reconst.png"/>
+        <img alt="" src="output/figures/evaluation/reconstructions/australia_window_2_reconst.png"/>
+    </div>
+</div>
 
 ## Project Setup
 
@@ -15,9 +44,10 @@ The used model can be found in the models directory (output/models/supErMAPnet.k
 
 ### create .env
 
-Copy .env.example to .env and fill in COPERNICUS_CLIENT_ID and COPERNICUS_CLIENT_SECRET received from your Copernicus
-user account.
-This is needed to fetch Sentinel-2 data from the Sentinel Hub Process API.
+Copy ``.env.example`` to ``.env`` and add values for ``COPERNICUS_CLIENT_ID`` and ``COPERNICUS_CLIENT_SECRET`` received
+from your
+Copernicus user account.
+This is needed to fetch auxiliary Sentinel-2 data from the Sentinel Hub Process API.
 
 ## CLI tools
 
@@ -64,4 +94,5 @@ Example: \
 ``--cpus 1 2 3 4 --mem-limit 40``
 
 ### arguments for GPU cluster usage
+
 ``--gpus 0 1 --mem-limit 40``
