@@ -26,9 +26,10 @@ and high reflectance values discarded to increase brightness and simulate an RGB
 
 ## Evaluation results
 
-Using Wald’s evaluation strategy and a dataset containing four scenes, supErMAPnet was evaluated based on various
-metrics and compared with bilinear and bicubic interpolation, as well as with a sharpening strategy that uses bilinear
-interpolation and unsharp masking:
+Using Wald’s evaluation strategy and a dataset containing four scenes, supErMAPnet was evaluated and compared with
+bilinear and bicubic interpolation, as well as with a sharpening strategy that uses bilinear interpolation and unsharp
+masking. The comparison was made on the basis of the following metrics: MSE (mean squared error), PSNR (peak
+signal-to-noise ratio), SSIM (structural similarity index measure), and SAM (spectral angle mapper).
 
 | Method        | MSE      | PSNR      | SSIM     | SAM      | 
 |---------------|----------|-----------|----------|----------|
